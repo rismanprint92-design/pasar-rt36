@@ -8,6 +8,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <!-- Firebase SDK v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-gray-100 pb-20 font-sans">
 
@@ -50,7 +54,7 @@
 
     <!-- Grid Produk -->
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
-      <!-- Card Produk -->
+      <!-- Card Produk dimuat secara realtime dari Firebase -->
     </div>
   </main>
 
@@ -128,12 +132,10 @@
           <label class="block font-medium mb-1">No. WhatsApp (Awali 62, contoh: 628...)</label>
           <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789">
         </div>
-
         <div>
           <label class="block font-medium mb-1">Catatan / Keterangan (Opsional)</label>
           <textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi. COD di pos satpam."></textarea>
         </div>
-
         <div>
           <label class="block font-medium mb-1">Foto Produk (Kamera / Galeri HP)</label>
           <input type="file" id="input-file-foto" accept="image/*" class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
@@ -146,35 +148,46 @@
     </div>
   </div>
 
+  <!-- Script Firebase & Logika Aplikasi -->
   <script>
+    // Konfigurasi Firebase Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
+      authDomain: "pasar-rt36.firebaseapp.com",
+      databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "pasar-rt36",
+      storageBucket: "pasar-rt36.firebasestorage.app",
+      messagingSenderId: "217440554731",
+      appId: "1:217440554731:web:876717f8204cf40deeb8ae",
+      measurementId: "G-G5HXM56NWX"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const dbRef = database.ref('produk_pasar');
+
     let isAdmin = false;
     let pinAdminAktif = localStorage.getItem('rt_admin_pin') || "1234";
+    let produkData = [];
 
-    const defaultProduk = [
-      {
-        id: 1700000001,
-        nama: "Nasi Uduk Komplit",
-        harga: 12000,
-        kategori: "kuliner",
-        penjual: "Bu Rina",
-        lokasi: "Blok A2 No. 10",
-        wa: "6281234567890",
-        catatan: "Bisa pesan untuk sarapan pagi. Free ongkir area AR Regency.",
-        foto: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"
+    // Mengambil data secara realtime dari Firebase
+    dbRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      produkData = [];
+      if (data) {
+        Object.keys(data).forEach(key => {
+          produkData.unshift({ id: key, ...data[key] });
+        });
       }
-    ];
-
-    let produkData = JSON.parse(localStorage.getItem('rt_marketplace_data')) || defaultProduk;
-
-    function simpanKeStorage() {
-      localStorage.setItem('rt_marketplace_data', JSON.stringify(produkData));
-    }
+      renderProduk(produkData);
+    });
 
     function renderProduk(data) {
       const container = document.getElementById('daftar-produk');
       container.innerHTML = '';
 
-      if(data.length === 0) {
+      if(!data || data.length === 0) {
         container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang di kategori ini.</div>`;
         return;
       }
@@ -184,7 +197,7 @@
         const catatanHtml = item.catatan ? `<p class="text-[10px] text-gray-400 italic mt-1 line-clamp-2">📝 "${item.catatan}"</p>` : '';
         
         const tombolAdminHapus = isAdmin ? `
-          <button onclick="hapusProduk(${item.id})" class="w-full mt-2 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
+          <button onclick="hapusProduk('${item.id}')" class="w-full mt-2 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
             <i class="ph ph-trash"></i> Hapus (Admin)
           </button>
         ` : '';
@@ -196,7 +209,7 @@
               <div>
                 <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
                 <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${item.nama}</h3>
-                <p class="text-emerald-600 font-bold text-sm">Rp ${item.harga.toLocaleString('id-ID')}</p>
+                <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
                 <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
                 ${catatanHtml}
               </div>
@@ -215,7 +228,7 @@
     }
 
     function pesanWhatsApp(nomorWA, namaBarang, harga, catatanPenjual) {
-      const pesan = `Halo, saya tetangga perumahan RT. 36 AR Regency. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${harga.toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+      const pesan = `Halo, saya tetangga perumahan RT. 36 AR Regency. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
       const url = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
       window.open(url, '_blank');
     }
@@ -265,15 +278,8 @@
       alert('PIN berhasil diubah!');
       tutupModalGantiPin();
     }
-    function hapusProduk(id) {
-      if (confirm('Hapus postingan ini?')) {
-        produkData = produkData.filter(p => p.id !== id);
-        simpanKeStorage();
-        renderProduk(produkData);
-      }
-    }
 
-    // --- FORM TAMBAH PRODUK ---
+    // --- FORM TAMBAH PRODUK KE FIREBASE ---
     function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
     function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
 
@@ -284,17 +290,16 @@
       if (fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
         reader.onload = function(event) {
-          simpanDataBarang(event.target.result);
+          simpanKeFirebase(event.target.result);
         };
         reader.readAsDataURL(fileInput.files[0]);
       } else {
-        simpanDataBarang('https://via.placeholder.com/200?text=Produk+RT');
+        simpanKeFirebase('https://via.placeholder.com/200?text=Produk+RT');
       }
     }
 
-    function simpanDataBarang(fotoUrl) {
-      const baru = {
-        id: Date.now(),
+    function simpanKeFirebase(fotoUrl) {
+      const barangBaru = {
         nama: document.getElementById('nama').value,
         harga: parseInt(document.getElementById('harga').value),
         kategori: document.getElementById('kategori').value,
@@ -302,18 +307,40 @@
         lokasi: document.getElementById('lokasi').value,
         wa: document.getElementById('whatsapp').value,
         catatan: document.getElementById('catatan').value,
-        foto: fotoUrl
+        foto: fotoUrl,
+        timestamp: Date.now()
       };
       
-      produkData.unshift(baru);
-      simpanKeStorage();
-      renderProduk(produkData);
-      tutupModalJual();
-      document.getElementById('form-tambah').reset();
+      dbRef.push(barangBaru).then(() => {
+        tutupModalJual();
+        document.getElementById('form-tambah').reset();
+        
+        // Opsional: Buat draf pesan WhatsApp untuk dikirim ke grup warga
+        if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
+          kirimNotifikasiWA(barangBaru);
+        }
+      }).catch(err => {
+        alert("Gagal menyimpan data: " + err.message);
+      });
     }
 
-    // Inisialisasi Tampilan Awal
-    renderProduk(produkData);
+    function hapusProduk(id) {
+      if (confirm('Hapus postingan ini? Data akan terhapus untuk seluruh warga.')) {
+        dbRef.child(id).remove();
+      }
+    }
+
+    function kirimNotifikasiWA(item) {
+      const teksWA = `🛒 *DAGANGAN BARU DI PASAR RT. 36 AR REGENCY!*\n\n` +
+                     `* *Produk:* ${item.nama}\n` +
+                     `* *Harga:* Rp ${item.harga.toLocaleString('id-ID')}\n` +
+                     `* *Penjual:* ${item.penjual} (${item.lokasi})\n` +
+                     `* *Kategori:* ${item.kategori.toUpperCase()}\n\n` +
+                     `Yuk cek & beli langsung di aplikasi Pasar RT kita! 📱`;
+      
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
+      window.open(url, '_blank');
+    }
   </script>
 </body>
 </html>
