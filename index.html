@@ -62,7 +62,7 @@
   <div id="modal-login-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs">
       <h3 class="font-bold text-gray-800 text-sm mb-2 text-center">Masuk Mode Admin RT</h3>
-      <p class="text-gray-500 mb-4 text-center">Masukkan PIN pengurus RT (Default: 1234).</p>
+      <p class="text-gray-500 mb-4 text-center">Masukkan PIN pengurus RT terpusat.</p>
       <input type="password" id="pin-admin" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••">
       <div class="flex gap-2">
         <button onclick="tutupModalAdmin()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button>
@@ -166,12 +166,24 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const dbRef = database.ref('produk_pasar');
+    const pinRef = database.ref('pengaturan/admin_pin');
 
     let isAdmin = false;
-    let pinAdminAktif = localStorage.getItem('rt_admin_pin') || "1234";
+    let pinAdminAktif = "1234"; // Default awal sebelum tersinkronisasi
     let produkData = [];
 
-    // Mengambil data secara realtime dari Firebase
+    // Sinkronisasi PIN Admin secara realtime dari Firebase
+    pinRef.on('value', (snapshot) => {
+      const pinDb = snapshot.val();
+      if (pinDb) {
+        pinAdminAktif = pinDb;
+      } else {
+        // Jika di database belum ada, set default '1234' ke server
+        pinRef.set("1234");
+      }
+    });
+
+    // Mengambil data produk secara realtime dari Firebase
     dbRef.on('value', (snapshot) => {
       const data = snapshot.val();
       produkData = [];
@@ -242,7 +254,7 @@
       }
     }
 
-    // --- LOGIK ADMIN & PIN ---
+    // --- LOGIK ADMIN & PIN TERPUSAT ---
     function toggleModeAdmin() {
       if (isAdmin) { keluarAdmin(); } 
       else { document.getElementById('modal-login-admin').classList.remove('hidden'); }
@@ -252,7 +264,8 @@
       document.getElementById('pin-admin').value = '';
     }
     function verifikasiAdmin() {
-      if (document.getElementById('pin-admin').value === pinAdminAktif) {
+      const inputPin = document.getElementById('pin-admin').value;
+      if (inputPin === pinAdminAktif) {
         isAdmin = true;
         document.getElementById('banner-admin').classList.remove('hidden');
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
@@ -268,15 +281,24 @@
     }
     function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin() { document.getElementById('modal-ganti-pin').classList.add('hidden'); }
+    
     function simpanPinBaru() {
       const pinLama = document.getElementById('pin-lama').value;
       const pinBaru = document.getElementById('pin-baru').value;
+      
       if (pinLama !== pinAdminAktif) { alert('PIN Lama salah!'); return; }
       if (!pinBaru || pinBaru.length < 3) { alert('PIN Baru minimal 3 karakter.'); return; }
-      pinAdminAktif = pinBaru;
-      localStorage.setItem('rt_admin_pin', pinBaru);
-      alert('PIN berhasil diubah!');
-      tutupModalGantiPin();
+
+      // Simpan PIN baru ke Firebase agar terupdate di semua perangkat warga
+      pinRef.set(pinBaru).then(() => {
+        alert('PIN Admin berhasil diubah untuk seluruh sistem!');
+        pinAdminAktif = pinBaru;
+        tutupModalGantiPin();
+        document.getElementById('pin-lama').value = '';
+        document.getElementById('pin-baru').value = '';
+      }).catch((err) => {
+        alert('Gagal mengubah PIN: ' + err.message);
+      });
     }
 
     // --- FORM TAMBAH PRODUK KE FIREBASE ---
@@ -315,7 +337,6 @@
         tutupModalJual();
         document.getElementById('form-tambah').reset();
         
-        // Opsional: Buat draf pesan WhatsApp untuk dikirim ke grup warga
         if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
           kirimNotifikasiWA(barangBaru);
         }
