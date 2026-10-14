@@ -19,7 +19,7 @@
   <header class="bg-emerald-600 text-white p-4 sticky top-0 z-40 shadow-md">
     <div class="flex justify-between items-center max-w-md mx-auto">
       <div>
-        <h1 class="font-bold text-lg">Pasar RT. 36 Anduonohu Regency</h1>
+        <h1 class="font-bold text-lg">Pasar RT. 36 AR Regency</h1>
         <p class="text-xs text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
       </div>
       <div class="flex gap-2">
@@ -209,4 +209,159 @@
         const catatanHtml = item.catatan ? `<p class="text-[10px] text-gray-400 italic mt-1 line-clamp-2">📝 "${item.catatan}"</p>` : '';
         
         const tombolAdminHapus = isAdmin ? `
-          <button onclick="hapusProduk('${item.id}')" class="w-full mt-2 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-
+          <button onclick="hapusProduk('${item.id}')" class="w-full mt-2 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
+            <i class="ph ph-trash"></i> Hapus (Admin)
+          </button>
+        ` : '';
+
+        const card = `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
+            <img src="${item.foto || defaultFoto}" class="w-full h-32 object-cover" alt="${item.nama}">
+            <div class="p-3 flex-1 flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
+                <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${item.nama}</h3>
+                <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
+                <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
+                ${catatanHtml}
+              </div>
+              <div class="mt-2">
+                <button onclick='pesanWhatsApp("${item.wa}", "${item.nama}", ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
+                  class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
+                  <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
+                </button>
+                ${tombolAdminHapus}
+              </div>
+            </div>
+          </div>
+        `;
+        container.innerHTML += card;
+      });
+    }
+
+    function pesanWhatsApp(nomorWA, namaBarang, harga, catatanPenjual) {
+      const pesan = `Halo, saya tetangga perumahan RT. 36 AR Regency. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+      const url = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
+      window.open(url, '_blank');
+    }
+
+    function filterKategori(kat) {
+      if (kat === 'semua') {
+        renderProduk(produkData);
+      } else {
+        const filtered = produkData.filter(p => p.kategori === kat);
+        renderProduk(filtered);
+      }
+    }
+
+    // --- LOGIK ADMIN & PIN TERPUSAT ---
+    function toggleModeAdmin() {
+      if (isAdmin) { keluarAdmin(); } 
+      else { document.getElementById('modal-login-admin').classList.remove('hidden'); }
+    }
+    function tutupModalAdmin() {
+      document.getElementById('modal-login-admin').classList.add('hidden');
+      document.getElementById('pin-admin').value = '';
+    }
+    function verifikasiAdmin() {
+      const inputPin = document.getElementById('pin-admin').value;
+      if (inputPin === pinAdminAktif) {
+        isAdmin = true;
+        document.getElementById('banner-admin').classList.remove('hidden');
+        document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
+        tutupModalAdmin();
+        renderProduk(produkData);
+      } else { alert('PIN Admin Salah!'); }
+    }
+    function keluarAdmin() {
+      isAdmin = false;
+      document.getElementById('banner-admin').classList.add('hidden');
+      document.getElementById('label-admin').innerText = 'Admin';
+      renderProduk(produkData);
+    }
+    function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
+    function tutupModalGantiPin() { document.getElementById('modal-ganti-pin').classList.add('hidden'); }
+    
+    function simpanPinBaru() {
+      const pinLama = document.getElementById('pin-lama').value;
+      const pinBaru = document.getElementById('pin-baru').value;
+      
+      if (pinLama !== pinAdminAktif) { alert('PIN Lama salah!'); return; }
+      if (!pinBaru || pinBaru.length < 3) { alert('PIN Baru minimal 3 karakter.'); return; }
+
+      // Simpan PIN baru ke Firebase agar terupdate di semua perangkat warga
+      pinRef.set(pinBaru).then(() => {
+        alert('PIN Admin berhasil diubah untuk seluruh sistem!');
+        pinAdminAktif = pinBaru;
+        tutupModalGantiPin();
+        document.getElementById('pin-lama').value = '';
+        document.getElementById('pin-baru').value = '';
+      }).catch((err) => {
+        alert('Gagal mengubah PIN: ' + err.message);
+      });
+    }
+
+    // --- FORM TAMBAH PRODUK KE FIREBASE ---
+    function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
+    function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
+
+    function tambahProduk(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('input-file-foto');
+      
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          simpanKeFirebase(event.target.result);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        simpanKeFirebase('https://via.placeholder.com/200?text=Produk+RT');
+      }
+    }
+
+    function simpanKeFirebase(fotoUrl) {
+      const barangBaru = {
+        nama: document.getElementById('nama').value,
+        harga: parseInt(document.getElementById('harga').value),
+        kategori: document.getElementById('kategori').value,
+        penjual: document.getElementById('penjual').value,
+        lokasi: document.getElementById('lokasi').value,
+        wa: document.getElementById('whatsapp').value,
+        catatan: document.getElementById('catatan').value,
+        foto: fotoUrl,
+        timestamp: Date.now()
+      };
+      
+      dbRef.push(barangBaru).then(() => {
+        tutupModalJual();
+        document.getElementById('form-tambah').reset();
+        
+        if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
+          kirimNotifikasiWA(barangBaru);
+        }
+      }).catch(err => {
+        alert("Gagal menyimpan data: " + err.message);
+      });
+    }
+
+    function hapusProduk(id) {
+      if (confirm('Hapus postingan ini? Data akan terhapus untuk seluruh warga.')) {
+        dbRef.child(id).remove();
+      }
+    }
+
+    function kirimNotifikasiWA(item) {
+      const teksWA = `🛒 *DAGANGAN BARU DI PASAR RT. 36 AR REGENCY!*\n\n` +
+                     `* *Produk:* ${item.nama}\n` +
+                     `* *Harga:* Rp ${item.harga.toLocaleString('id-ID')}\n` +
+                     `* *Penjual:* ${item.penjual} (${item.lokasi})\n` +
+                     `* *Kategori:* ${item.kategori.toUpperCase()}\n\n` +
+                     `Yuk cek & beli langsung di aplikasi Pasar RT kita! 📱`;
+      
+      const url = `https://wa.me/?text=${encodeURIComponent(teksWA)}`;
+      window.open(url, '_blank');
+    }
+  </script>
+</body>
+</html>
