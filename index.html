@@ -169,7 +169,7 @@
     const pinRef = database.ref('pengaturan/admin_pin');
 
     let isAdmin = false;
-    let pinAdminAktif = "2940"; // Default awal diubah ke 2940
+    let pinAdminAktif = "1234"; // Default awal sebelum tersinkronisasi
     let produkData = [];
 
     // Sinkronisasi PIN Admin secara realtime dari Firebase
@@ -178,8 +178,8 @@
       if (pinDb) {
         pinAdminAktif = pinDb;
       } else {
-        // Jika di database belum ada, set default '2940' ke server
-        pinRef.set("2940");
+        // Jika di database belum ada, set default '1234' ke server
+        pinRef.set("1234");
       }
     });
 
@@ -359,7 +359,7 @@
                      `* *Kategori:* ${item.kategori.toUpperCase()}\n\n` +
                      `Yuk cek & beli langsung di aplikasi Pasar RT kita! 📱`;
       
-      const url = `https://wa.me/?text=${encodeURIComponent(teksWA)}`;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
       window.open(url, '_blank');
     }
   </script>
