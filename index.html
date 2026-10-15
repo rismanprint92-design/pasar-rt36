@@ -8,8 +8,14 @@
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
 <link id="pwa-manifest" rel="manifest" href="manifest.json">
 <script>
-  // Khusus HP lama vivo 1807 Android 8 biar tidak minta Instal dan tidak crash
+  // Blokir total Instal di HP lama vivo 1807 Android 8
   if (/Android [1-8]\./.test(navigator.userAgent)) {
+    // 1. Blokir pop-up Instal
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      return false;
+    });
+    // 2. Hapus manifest
     var m = document.getElementById('pwa-manifest');
     if (m) { m.remove(); }
   }
