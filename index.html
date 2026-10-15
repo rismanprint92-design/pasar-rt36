@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketplace RT. 36 AR & Metroland</title>
+  <title>Marketplace RT. 36 & Metroland</title>
 
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
   <link rel="manifest" href="manifest.json">
@@ -22,26 +22,26 @@
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
-  <!-- Header Utama -->
-  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-40 shadow-md">
+  <!-- Header Utama (Padding & Judul Diperkecil) -->
+  <header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
     <div class="flex justify-between items-center max-w-md mx-auto">
       <div>
-        <h1 class="font-bold text-lg">Pasar RT. 36 AR & Metroland</h1>
-        <p class="text-xs text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
+        <h1 class="font-bold text-sm sm:text-base">Pasar RT. 36 AR & Metroland</h1>
+        <p class="text-[10px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
       </div>
-      <div class="flex gap-2">
-        <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-xs font-bold px-3 py-2 rounded-lg shadow hover:bg-emerald-50">
+      <div class="flex gap-1.5">
+        <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
           + Jual
         </button>
-        <button onclick="toggleModeAdmin()" id="btn-admin" class="bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center gap-1">
-          <i class="ph ph-shield-check text-sm"></i> <span id="label-admin">Admin</span>
+        <button onclick="toggleModeAdmin()" id="btn-admin" class="bg-emerald-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center gap-1">
+          <i class="ph ph-shield-check text-xs"></i> <span id="label-admin">Admin</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Banner Pengumuman Admin -->
-  <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[60px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
+  <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
     <span>⚠️ Mode Admin RT Aktif</span>
     <div class="flex gap-2 items-center">
       <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">Ubah PIN</button>
@@ -59,7 +59,7 @@
         </span>
         <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
       </div>
-      <!-- Tombol Diperkecil Menjadi Ikon Saja -->
+      <!-- Tombol Ikon Bantuan -->
       <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
         <i class="ph ph-chat-circle-dots text-lg"></i>
       </button>
@@ -85,13 +85,13 @@
     <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl text-xs space-y-3 shadow-xl">
       <div class="flex justify-between items-center pb-2 border-b">
         <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
-          <i class="ph ph-chats text-emerald-600 text-base"></i> Masukan & Perbaikan Website RT.36 AR & Metroland
+          <i class="ph ph-chats text-emerald-600 text-base"></i> Masukan & Perbaikan Website RT.36 & Metroland
         </h3>
         <button onclick="tutupModalInfoAdmin()" class="text-gray-400 text-xl font-bold">&times;</button>
       </div>
 
       <p class="text-gray-500 text-[11px]">
-        Punya saran, masukan, atau menemukan kendala/bug pada perbaikan fitur website <b>Pasar RT.36 AR & Metroland</b>? Laporkan langsung kepada pengembang atau pengurus RT via WhatsApp di bawah ini.
+        Punya saran, masukan, atau menemukan kendala/bug pada perbaikan fitur website <b>Pasar RT.36 & Metroland</b>? Laporkan langsung kepada pengembang atau pengurus RT via WhatsApp di bawah ini.
       </p>
 
       <div>
@@ -512,7 +512,7 @@
         adminWaAktif = nomorAdmin;
       }
 
-      const teksWa = `Halo Pengurus / Pengembang RT.36 AR & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan / Perbaikan:* ${pesanWarga}\n\nTerima kasih!`;
+      const teksWa = `Halo Pengurus / Pengembang RT.36 & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan / Perbaikan:* ${pesanWarga}\n\nTerima kasih!`;
       
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
       tutupModalInfoAdmin();
@@ -551,7 +551,7 @@
     function bukaModalOpsiBeli(nomorWA, namaBarang, harga, catatanPenjual) {
       const modal = document.getElementById('modal-opsi-beli');
       document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`;
-      const pesan = `Halo, saya tetangga perumahan RT.36 AR & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+      const pesan = `Halo, saya tetangga perumahan RT.36 & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
       
       document.getElementById('btn-wa-otomatis').onclick = function() {
         window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
@@ -742,7 +742,7 @@
         tutupModalJual();
         document.getElementById('form-tambah').reset();
         if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
-          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli langsung di aplikasi Pasar RT kita! 📱`)}`, '_blank');
+          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli langsung di aplikasi Pasar RT kita! 📱`)}`, '_blank');
         }
       }).catch(err => alert("Gagal menyimpan: " + err.message));
     }
