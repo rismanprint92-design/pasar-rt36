@@ -42,7 +42,7 @@
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[60px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
-    <span>⚠️ Mode Admin RT Aktif (Bisa Hapus Semua Produk)</span>
+    <span>⚠️ Mode Admin RT Aktif</span>
     <div class="flex gap-2 items-center">
       <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">Ubah PIN</button>
       <button onclick="keluarAdmin()" class="underline text-[11px]">Keluar</button>
@@ -97,6 +97,28 @@
     </div>
   </div>
 
+  <!-- Modal Pilihan Opsi Pembelian (WA Otomatis / Salin Nomor) -->
+  <div id="modal-opsi-beli" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs text-center space-y-3">
+      <h3 class="font-bold text-gray-800 text-sm">Hubungi Penjual</h3>
+      <p class="text-gray-500 text-[11px]" id="info-produk-beli"></p>
+      
+      <div class="space-y-2 pt-2">
+        <!-- Opsi 1: Otomatis Kirim Pesan WA -->
+        <button id="btn-wa-otomatis" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-emerald-700">
+          <i class="ph ph-whatsapp-logo text-base"></i> Chat WhatsApp Otomatis
+        </button>
+        
+        <!-- Opsi 2: Salin / Lihat Nomor HP Manual -->
+        <button id="btn-salin-nomor" class="w-full bg-gray-100 text-gray-700 border border-gray-300 py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-200">
+          <i class="ph ph-phone text-base"></i> Salin / Lihat Nomor HP
+        </button>
+      </div>
+
+      <button onclick="tutupModalOpsiBeli()" class="w-full bg-gray-200 text-gray-600 py-2 rounded-lg font-medium mt-1">Batal</button>
+    </div>
+  </div>
+
   <!-- Modal Form Tambah Produk -->
   <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
     <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
@@ -141,9 +163,8 @@
             <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789">
           </div>
           <div>
-            <label class="block font-medium mb-1">PIN / Kode Rahasia Penjual</label>
-            <input type="password" id="pin-penjual" required class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="Contoh: 1234">
-            <p class="text-[9px] text-gray-400 mt-0.5">Digunakan jika nanti mau edit/ganti jualan.</p>
+            <label class="block font-medium mb-1">PIN Rahasia Penjual</label>
+            <input type="password" id="pin-penjual" required class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="1234">
           </div>
         </div>
         <div>
@@ -224,7 +245,7 @@
           <textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea>
         </div>
         <div>
-          <label class="block font-medium mb-1">Ganti Foto Baru (Opsional, biarkan kosong jika foto tetap)</label>
+          <label class="block font-medium mb-1">Ganti Foto Baru (Opsional)</label>
           <input type="file" id="edit-input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
         </div>
 
@@ -236,7 +257,7 @@
     </div>
   </div>
 
-  <!-- Modal Zoom / Perbesar Foto (Lightbox) -->
+  <!-- Modal Zoom / Perbesar Foto -->
   <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
     <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-3xl font-bold bg-black bg-opacity-50 px-3 py-1 rounded-full hover:bg-opacity-80">&times;</button>
     <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
@@ -244,9 +265,9 @@
     </div>
     <div class="mt-4 flex flex-col items-center gap-2">
       <div class="flex gap-3 bg-white bg-opacity-20 backdrop-blur px-4 py-2 rounded-full">
-        <button onclick="ubahSkalaZoom(0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔍 Perbesar (+)</button>
-        <button onclick="ubahSkalaZoom(-0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔍 Perkecil (-)</button>
-        <button onclick="resetZoom()" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔄 Reset</button>
+        <button onclick="ubahSkalaZoom(0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔍 (+)</button>
+        <button onclick="ubahSkalaZoom(-0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔍 (-)</button>
+        <button onclick="resetZoom()" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔄 Reset</button>
       </div>
       <div id="zoom-thumbnails" class="flex gap-2 overflow-x-auto max-w-xs p-1"></div>
     </div>
@@ -327,7 +348,6 @@
           miniThumbnails += `</div>`;
         }
 
-        // Tombol Edit untuk Penjual atau Admin
         const tombolEditPenjual = `
           <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
             <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
@@ -356,7 +376,7 @@
                 ${miniThumbnails}
               </div>
               <div class="mt-2">
-                <button onclick='pesanWhatsApp("${item.wa}", "${item.nama}", ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
+                <button onclick='bukaModalOpsiBeli("${item.wa}", "${item.nama}", ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
                   class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
                   <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
                 </button>
@@ -368,6 +388,39 @@
         `;
         container.innerHTML += card;
       });
+    }
+
+    // --- FITUR 2 OPSI PEMBELIAN (WA OTOMATIS & SALIN NOMOR HP) ---
+    function bukaModalOpsiBeli(nomorWA, namaBarang, harga, catatanPenjual) {
+      const modal = document.getElementById('modal-opsi-beli');
+      document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`;
+
+      const pesan = `Halo, saya tetangga perumahan RT. 36 AR Regency. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+      
+      // Tombol Opsi 1: WhatsApp Otomatis
+      const btnWa = document.getElementById('btn-wa-otomatis');
+      btnWa.onclick = function() {
+        window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+        tutupModalOpsiBeli();
+      };
+
+      // Tombol Opsi 2: Salin / Lihat Nomor HP Manual
+      const btnSalin = document.getElementById('btn-salin-nomor');
+      btnSalin.onclick = function() {
+        // Format nomor agar tampil rapi (misal +${nomorWA})
+        navigator.clipboard.writeText(nomorWA).then(() => {
+          alert(`Nomor HP penjual (${nomorWA}) berhasil disalin ke clipboard! Anda juga bisa mencatatnya manual.`);
+        }).catch(() => {
+          prompt("Nomor HP Penjual (bisa disalin manual):", nomorWA);
+        });
+        tutupModalOpsiBeli();
+      };
+
+      modal.classList.remove('hidden');
+    }
+
+    function tutupModalOpsiBeli() {
+      document.getElementById('modal-opsi-beli').classList.add('hidden');
     }
 
     // --- FITUR ZOOM / PERBESAR GAMBAR ---
@@ -426,11 +479,6 @@
       document.getElementById('modal-zoom').classList.add('hidden');
     }
 
-    function pesanWhatsApp(nomorWA, namaBarang, harga, catatanPenjual) {
-      const pesan = `Halo, saya tetangga perumahan RT. 36 AR Regency. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
-      window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
-    }
-
     function filterKategori(kat) {
       if (kat === 'semua') { renderProduk(produkData); } 
       else { renderProduk(produkData.filter(p => p.kategori === kat)); }
@@ -481,168 +529,3 @@
     // --- FORM TAMBAH PRODUK ---
     function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
     function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
-
-    function tambahProduk(e) {
-      e.preventDefault();
-      const fileInput = document.getElementById('input-file-foto');
-      
-      if (fileInput.files && fileInput.files.length > 0) {
-        let base64Photos = [];
-        let filesProcessed = 0;
-        Array.from(fileInput.files).forEach((file, index) => {
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            base64Photos[index] = event.target.result;
-            filesProcessed++;
-            if (filesProcessed === fileInput.files.length) {
-              simpanKeFirebase(base64Photos);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-      } else {
-        simpanKeFirebase(['https://via.placeholder.com/200?text=Produk+RT']);
-      }
-    }
-
-    function simpanKeFirebase(arrayFotoUrl) {
-      const barangBaru = {
-        nama: document.getElementById('nama').value,
-        harga: parseInt(document.getElementById('harga').value),
-        kategori: document.getElementById('kategori').value,
-        penjual: document.getElementById('penjual').value,
-        lokasi: document.getElementById('lokasi').value,
-        wa: document.getElementById('whatsapp').value,
-        pinPenjual: document.getElementById('pin-penjual').value,
-        catatan: document.getElementById('catatan').value,
-        foto: arrayFotoUrl,
-        timestamp: Date.now()
-      };
-      
-      dbRef.push(barangBaru).then(() => {
-        tutupModalJual();
-        document.getElementById('form-tambah').reset();
-        if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
-          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT. 36 AR REGENCY!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli langsung di aplikasi Pasar RT kita! 📱`)}`, '_blank');
-        }
-      }).catch(err => alert("Gagal menyimpan: " + err.message));
-    }
-
-    // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
-    function bukaVerifikasiPenjual(id) {
-      if (isAdmin) {
-        // Jika sedang login sebagai Admin RT, langsung buka form edit tanpa PIN penjual
-        muatDataKeFormEdit(id);
-        return;
-      }
-      document.getElementById('edit-product-id').value = id;
-      document.getElementById('input-pin-konfirmasi').value = '';
-      document.getElementById('modal-login-penjual').classList.remove('hidden');
-    }
-
-    function tutupModalLoginPenjual() {
-      document.getElementById('modal-login-penjual').classList.add('hidden');
-    }
-
-    function prosesVerifikasiPenjual() {
-      const id = document.getElementById('edit-product-id').value;
-      const inputPin = document.getElementById('input-pin-konfirmasi').value;
-      const produk = produkData.find(p => p.id === id);
-
-      if (!produk) { alert('Data produk tidak ditemukan.'); return; }
-
-      // Cek apakah PIN cocok (jika produk lama belum ada pinPenjual, default ke '1234')
-      const pinTarget = produk.pinPenjual || "1234";
-      if (inputPin === pinTarget) {
-        tutupModalLoginPenjual();
-        muatDataKeFormEdit(id);
-      } else {
-        alert('PIN Penjual salah! Masukkan PIN yang Anda buat saat memasang produk ini.');
-      }
-    }
-
-    function muatDataKeFormEdit(id) {
-      const produk = produkData.find(p => p.id === id);
-      if (!produk) return;
-
-      document.getElementById('edit-id').value = produk.id;
-      document.getElementById('edit-nama').value = produk.nama;
-      document.getElementById('edit-harga').value = produk.harga;
-      document.getElementById('edit-kategori').value = produk.kategori;
-      document.getElementById('edit-penjual').value = produk.penjual;
-      document.getElementById('edit-lokasi').value = produk.lokasi;
-      document.getElementById('edit-whatsapp').value = produk.wa;
-      document.getElementById('edit-catatan').value = produk.catatan || '';
-      document.getElementById('edit-input-file-foto').value = '';
-
-      document.getElementById('modal-edit').classList.remove('hidden');
-    }
-
-    function tutupModalEdit() {
-      document.getElementById('modal-edit').classList.add('hidden');
-    }
-
-    function simpanPerubahanProduk(e) {
-      e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const fileInput = document.getElementById('edit-input-file-foto');
-      const produkLama = produkData.find(p => p.id === id);
-
-      const updateData = {
-        nama: document.getElementById('edit-nama').value,
-        harga: parseInt(document.getElementById('edit-harga').value),
-        kategori: document.getElementById('edit-kategori').value,
-        penjual: document.getElementById('edit-penjual').value,
-        lokasi: document.getElementById('edit-lokasi').value,
-        wa: document.getElementById('edit-whatsapp').value,
-        catatan: document.getElementById('edit-catatan').value,
-        pinPenjual: produkLama.pinPenjual || "1234",
-        foto: produkLama.foto, // Default tetap foto lama
-        timestamp: produkLama.timestamp
-      };
-
-      if (fileInput.files && fileInput.files.length > 0) {
-        let base64Photos = [];
-        let filesProcessed = 0;
-        Array.from(fileInput.files).forEach((file, index) => {
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            base64Photos[index] = event.target.result;
-            filesProcessed++;
-            if (filesProcessed === fileInput.files.length) {
-              updateData.foto = base64Photos;
-              kirimUpdateKeFirebase(id, updateData);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-      } else {
-        kirimUpdateKeFirebase(id, updateData);
-      }
-    }
-
-    function kirimUpdateKeFirebase(id, dataBaru) {
-      dbRef.child(id).set(dataBaru).then(() => {
-        tutupModalEdit();
-        alert('Dagangan berhasil diperbarui!');
-      }).catch(err => alert('Gagal memperbarui: ' + err.message));
-    }
-
-    function hapusOlehPenjual() {
-      const id = document.getElementById('edit-id').value;
-      if (confirm('Hapus produk ini dari daftar jualan?')) {
-        dbRef.child(id).remove().then(() => {
-          tutupModalEdit();
-          alert('Produk berhasil dihapus.');
-        });
-      }
-    }
-
-    function hapusProdukAdmin(id) {
-      if (confirm('Hapus postingan ini sebagai Admin RT?')) {
-        dbRef.child(id).remove();
-      }
-    }
-  </script>
-</body>
-</html>
