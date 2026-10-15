@@ -20,7 +20,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body class="bg-gray-100 pb-20 font-sans">
+<body class="bg-gray-100 pb-24 font-sans">
 
   <!-- Header Utama -->
   <header class="bg-emerald-600 text-white p-4 sticky top-0 z-40 shadow-md">
@@ -68,11 +68,71 @@
       <button onclick="filterKategori('bekas')" id="btn-kat-bekas" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
     </div>
 
+    <!-- Tombol Informasi & Masukan / Chat Admin RT -->
+    <div class="mt-2 mb-4">
+      <button onclick="bukaModalInfoAdmin()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 rounded-xl shadow-md hover:from-emerald-700 hover:to-teal-700 flex items-center justify-between text-xs font-bold transition">
+        <div class="flex items-center gap-2.5">
+          <div class="bg-white/20 p-2 rounded-lg">
+            <i class="ph ph-chat-circle-dots text-lg"></i>
+          </div>
+          <div class="text-left">
+            <p class="text-sm">Pusat Informasi & Masukan RT. 36</p>
+            <p class="text-[10px] font-normal text-emerald-100">Hubungi pengurus untuk tanya info, iuran, atau kritik</p>
+          </div>
+        </div>
+        <i class="ph ph-caret-right text-base"></i>
+      </button>
+    </div>
+
     <!-- Grid Produk -->
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
       <!-- Card Produk dimuat secara realtime dari Firebase -->
     </div>
   </main>
+
+  <!-- Modal Informasi & Masukan ke Admin -->
+  <div id="modal-info-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl text-xs space-y-3 shadow-xl">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+          <i class="ph ph-chats text-emerald-600 text-base"></i> Layanan Pengurus RT. 36
+        </h3>
+        <button onclick="tutupModalInfoAdmin()" class="text-gray-400 text-xl font-bold">&times;</button>
+      </div>
+
+      <p class="text-gray-500 text-[11px]">
+        Punya pertanyaan seputar lingkungan, informasi iuran, pelaporan, atau saran masukan untuk kemajuan RT. 36 AR Regency? Kirimkan langsung ke Pengurus RT via WhatsApp di bawah ini.
+      </p>
+
+      <div>
+        <label class="block font-medium mb-1 text-gray-700">Nomor WhatsApp Pengurus / Admin RT</label>
+        <input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg bg-gray-50 font-bold text-gray-700" value="628123456789" placeholder="628123456789">
+        <p class="text-[10px] text-gray-400 mt-0.5">*(Nomor ini dapat diubah oleh Admin RT jika diperlukan)*</p>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1 text-gray-700">Pilih Topik Keperluan</label>
+        <select id="pilih-topik-admin" class="w-full border p-2.5 rounded-lg font-medium focus:outline-emerald-500">
+          <option value="Tanya Informasi / Kegiatan RT">📢 Tanya Informasi / Kegiatan RT</option>
+          <option value="Konfirmasi Iuran / Keuangan Warga">💰 Konfirmasi Iuran / Keuangan Warga</option>
+          <option value="Saran & Masukan untuk RT">💡 Saran & Masukan untuk RT</option>
+          <option value="Pengaduan / Laporan Masalah Lingkungan">⚠️ Pengaduan / Laporan Masalah Lingkungan</option>
+          <option value="Lainnya">💬 Keperluan Lainnya</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1 text-gray-700">Tulis Pesan / Masukan Anda</label>
+        <textarea id="pesan-masukan-warga" rows="3" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Ketik pesan atau masukan Anda di sini..."></textarea>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="kirimPesanKeAdminRT()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-md">
+          <i class="ph ph-whatsapp-logo text-base"></i> Kirim Pesan ke WhatsApp Admin RT
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Login Admin -->
   <div id="modal-login-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
@@ -297,18 +357,32 @@
     const database = firebase.database();
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
+    const adminWaRef = database.ref('pengaturan/admin_wa');
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
+    let adminWaAktif = "628123456789";
     let produkData = [];
     let kategoriAktif = 'semua';
     let currentZoomScale = 1;
     let activeZoomPhotos = [];
 
+    // Ambil PIN Admin & Nomor WA Admin dari Firebase Realtime Database
     pinRef.on('value', (snapshot) => {
       const pinDb = snapshot.val();
       if (pinDb) { pinAdminAktif = pinDb; }
       else { pinRef.set("1234"); }
+    });
+
+    adminWaRef.on('value', (snapshot) => {
+      const waDb = snapshot.val();
+      if (waDb) {
+        adminWaAktif = waDb;
+        const inputWa = document.getElementById('admin-whatsapp-nomor');
+        if(inputWa) inputWa.value = waDb;
+      } else {
+        adminWaRef.set("628123456789");
+      }
     });
 
     dbRef.on('value', (snapshot) => {
@@ -327,12 +401,10 @@
       
       let hasil = produkData;
 
-      // Filter berdasarkan kategori
       if (kategoriAktif !== 'semua') {
         hasil = hasil.filter(p => p.kategori === kategoriAktif);
       }
 
-      // Filter berdasarkan keyword pencarian (nama produk, penjual, atau lokasi)
       if (keyword !== '') {
         hasil = hasil.filter(p => 
           (p.nama && p.nama.toLowerCase().includes(keyword)) ||
@@ -419,6 +491,43 @@
         `;
         container.innerHTML += card;
       });
+    }
+
+    // --- FUNGSI MODAL INFO & MASUKAN ADMIN RT ---
+    function bukaModalInfoAdmin() {
+      document.getElementById('modal-info-admin').classList.remove('hidden');
+      document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
+    }
+
+    function tutupModalInfoAdmin() {
+      document.getElementById('modal-info-admin').classList.add('hidden');
+    }
+
+    function kirimPesanKeAdminRT() {
+      const nomorAdmin = document.getElementById('admin-whatsapp-nomor').value.trim();
+      const topik = document.getElementById('pilih-topik-admin').value;
+      const pesanWarga = document.getElementById('pesan-masukan-warga').value.trim();
+
+      if (!nomorAdmin) {
+        alert('Nomor WhatsApp Admin RT belum diatur.');
+        return;
+      }
+
+      if (!pesanWarga) {
+        alert('Silakan tulis pesan atau masukan Anda terlebih dahulu.');
+        return;
+      }
+
+      // Jika admin sedang aktif dan nomor berubah, simpan ke database
+      if (isAdmin && nomorAdmin !== adminWaAktif) {
+        adminWaRef.set(nomorAdmin);
+        adminWaAktif = nomorAdmin;
+      }
+
+      const teksWa = `Halo Pengurus RT. 36 AR Regency,\n\nSaya ingin menyampaikan pesan/masukan melalui Aplikasi Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan:* ${pesanWarga}\n\nTerima kasih!`;
+      
+      window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
+      tutupModalInfoAdmin();
     }
 
     // --- FUNGSI KOMPRESSOR GAMBAR OTOMATIS ---
@@ -536,7 +645,6 @@
     function filterKategori(kat) {
       kategoriAktif = kat;
       
-      // Update styling tombol kategori
       const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas'];
       listKat.forEach(k => {
         const btn = document.getElementById(`btn-kat-${k}`);
