@@ -144,14 +144,34 @@
           <textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi. COD di pos satpam."></textarea>
         </div>
         <div>
-          <label class="block font-medium mb-1">Foto Produk (Kamera / Galeri HP)</label>
-          <input type="file" id="input-file-foto" accept="image/*" class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+          <label class="block font-medium mb-1">Foto Produk (Bisa pilih lebih dari 1 foto)</label>
+          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+          <p class="text-[10px] text-gray-400 mt-1">*Tekan Ctrl (di PC) atau tahan (di HP) untuk memilih beberapa foto sekaligus.</p>
         </div>
 
         <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">
           Tayangkan Dagangan
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Zoom / Perbesar Foto (Lightbox) -->
+  <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
+    <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-3xl font-bold bg-black bg-opacity-50 px-3 py-1 rounded-full hover:bg-opacity-80">&times;</button>
+    <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
+      <img id="img-zoom-target" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg transition-transform duration-200" alt="Zoom Foto">
+    </div>
+    <!-- Kontrol Zoom & Navigasi Thumbnail -->
+    <div class="mt-4 flex flex-col items-center gap-2">
+      <div class="flex gap-3 bg-white bg-opacity-20 backdrop-blur px-4 py-2 rounded-full">
+        <button onclick="ubahSkalaZoom(0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔍 Perbesar (+)</button>
+        <button onclick="ubahSkalaZoom(-0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔍 Perkecil (-)</button>
+        <button onclick="resetZoom()" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded hover:bg-opacity-60">🔄 Reset</button>
+      </div>
+      <div id="zoom-thumbnails" class="flex gap-2 overflow-x-auto max-w-xs p-1">
+        <!-- Thumbnail kecil di bawah modal zoom -->
+      </div>
     </div>
   </div>
 
@@ -176,8 +196,10 @@
     const pinRef = database.ref('pengaturan/admin_pin');
 
     let isAdmin = false;
-    let pinAdminAktif = "1234"; // Default awal sebelum tersinkronisasi
+    let pinAdminAktif = "1234";
     let produkData = [];
+    let currentZoomScale = 1;
+    let activeZoomPhotos = [];
 
     // Sinkronisasi PIN Admin secara realtime dari Firebase
     pinRef.on('value', (snapshot) => {
@@ -185,7 +207,6 @@
       if (pinDb) {
         pinAdminAktif = pinDb;
       } else {
-        // Jika di database belum ada, set default '1234' ke server
         pinRef.set("1234");
       }
     });
@@ -213,8 +234,36 @@
 
       data.forEach(item => {
         const defaultFoto = 'https://via.placeholder.com/200?text=Produk+RT';
+        // Handle kompatibilitas foto lama (berupa string tunggal) atau baru (berupa array foto)
+        let listFoto = [defaultFoto];
+        if (item.foto) {
+          if (Array.isArray(item.foto)) {
+            listFoto = item.foto;
+          } else {
+            listFoto = [item.foto];
+          }
+        }
+
+        const fotoUtama = listFoto[0];
         const catatanHtml = item.catatan ? `<p class="text-[10px] text-gray-400 italic mt-1 line-clamp-2">📝 "${item.catatan}"</p>` : '';
         
+        // Buat badge jumlah foto jika lebih dari 1
+        const badgeFoto = listFoto.length > 1 ? `
+          <span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+            <i class="ph ph-images"></i> ${listFoto.length} Foto
+          </span>
+        ` : '';
+
+        // Render thumbnail kecil di dalam card jika ada lebih dari 1 foto
+        let miniThumbnails = '';
+        if (listFoto.length > 1) {
+          miniThumbnails = `<div class="flex gap-1 mt-2 overflow-x-auto pb-1">`;
+          listFoto.forEach((f, idx) => {
+            miniThumbnails += `<img src="${f}" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, ${idx})' class="w-10 h-10 object-cover rounded border hover:border-emerald-500 cursor-pointer flex-shrink-0" alt="thumb">`;
+          });
+          miniThumbnails += `</div>`;
+        }
+
         const tombolAdminHapus = isAdmin ? `
           <button onclick="hapusProduk('${item.id}')" class="w-full mt-2 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
             <i class="ph ph-trash"></i> Hapus (Admin)
@@ -223,7 +272,10 @@
 
         const card = `
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
-            <img src="${item.foto || defaultFoto}" class="w-full h-32 object-cover" alt="${item.nama}">
+            <div class="relative cursor-pointer" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, 0)'>
+              <img src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition" alt="${item.nama}">
+              ${badgeFoto}
+            </div>
             <div class="p-3 flex-1 flex flex-col justify-between">
               <div>
                 <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
@@ -231,6 +283,7 @@
                 <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
                 <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
                 ${catatanHtml}
+                ${miniThumbnails}
               </div>
               <div class="mt-2">
                 <button onclick='pesanWhatsApp("${item.wa}", "${item.nama}", ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
@@ -244,6 +297,67 @@
         `;
         container.innerHTML += card;
       });
+    }
+
+    // --- FITUR ZOOM / PERBESAR GAMBAR ---
+    function bukaModalZoom(arrayFoto, indexAktif) {
+      activeZoomPhotos = arrayFoto;
+      currentZoomScale = 1;
+      const modal = document.getElementById('modal-zoom');
+      const imgTarget = document.getElementById('img-zoom-target');
+      const thumbContainer = document.getElementById('zoom-thumbnails');
+
+      imgTarget.src = arrayFoto[indexAktif];
+      imgTarget.style.transform = `scale(${currentZoomScale})`;
+
+      // Render thumbnail di modal zoom
+      thumbContainer.innerHTML = '';
+      if (arrayFoto.length > 1) {
+        arrayFoto.forEach((f, idx) => {
+          thumbContainer.innerHTML += `
+            <img src="${f}" onclick="pilihFotoZoom(${idx})" class="w-12 h-12 object-cover rounded border-2 ${idx === indexAktif ? 'border-emerald-500' : 'border-transparent opacity-70'} cursor-pointer hover:opacity-100">
+          `;
+        });
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function pilihFotoZoom(index) {
+      const imgTarget = document.getElementById('img-zoom-target');
+      imgTarget.src = activeZoomPhotos[index];
+      currentZoomScale = 1;
+      imgTarget.style.transform = `scale(${currentZoomScale})`;
+
+      // Update border aktif thumbnail
+      const thumbs = document.getElementById('zoom-thumbnails').children;
+      for(let i=0; i<thumbs.length; i++) {
+        if(i === index) {
+          thumbs[i].classList.remove('border-transparent', 'opacity-70');
+          thumbs[i].classList.add('border-emerald-500', 'opacity-100');
+        } else {
+          thumbs[i].classList.add('border-transparent', 'opacity-70');
+          thumbs[i].classList.remove('border-emerald-500', 'opacity-100');
+        }
+      }
+    }
+
+    function ubahSkalaZoom(delta) {
+      currentZoomScale += delta;
+      if (currentZoomScale < 1) currentZoomScale = 1;
+      if (currentZoomScale > 3) currentZoomScale = 3; // Maksimal zoom 3x
+      const imgTarget = document.getElementById('img-zoom-target');
+      imgTarget.style.transform = `scale(${currentZoomScale})`;
+    }
+
+    function resetZoom() {
+      currentZoomScale = 1;
+      const imgTarget = document.getElementById('img-zoom-target');
+      imgTarget.style.transform = `scale(${currentZoomScale})`;
+    }
+
+    function tutupModalZoom() {
+      document.getElementById('modal-zoom').classList.add('hidden');
     }
 
     function pesanWhatsApp(nomorWA, namaBarang, harga, catatanPenjual) {
@@ -296,7 +410,6 @@
       if (pinLama !== pinAdminAktif) { alert('PIN Lama salah!'); return; }
       if (!pinBaru || pinBaru.length < 3) { alert('PIN Baru minimal 3 karakter.'); return; }
 
-      // Simpan PIN baru ke Firebase agar terupdate di semua perangkat warga
       pinRef.set(pinBaru).then(() => {
         alert('PIN Admin berhasil diubah untuk seluruh sistem!');
         pinAdminAktif = pinBaru;
@@ -308,7 +421,7 @@
       });
     }
 
-    // --- FORM TAMBAH PRODUK KE FIREBASE ---
+    // --- FORM TAMBAH PRODUK DENGAN MULTI-FOTO ---
     function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
     function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
 
@@ -316,18 +429,30 @@
       e.preventDefault();
       const fileInput = document.getElementById('input-file-foto');
       
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          simpanKeFirebase(event.target.result);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+      if (fileInput.files && fileInput.files.length > 0) {
+        let base64Photos = [];
+        let filesProcessed = 0;
+
+        // Loop untuk membaca semua file foto yang dipilih penjual
+        Array.from(fileInput.files).forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            base64Photos[index] = event.target.result;
+            filesProcessed++;
+
+            // Jika semua file sudah selesai dibaca, simpan ke Firebase
+            if (filesProcessed === fileInput.files.length) {
+              simpanKeFirebase(base64Photos);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
-        simpanKeFirebase('https://via.placeholder.com/200?text=Produk+RT');
+        simpanKeFirebase(['https://via.placeholder.com/200?text=Produk+RT']);
       }
     }
 
-    function simpanKeFirebase(fotoUrl) {
+    function simpanKeFirebase(arrayFotoUrl) {
       const barangBaru = {
         nama: document.getElementById('nama').value,
         harga: parseInt(document.getElementById('harga').value),
@@ -336,7 +461,7 @@
         lokasi: document.getElementById('lokasi').value,
         wa: document.getElementById('whatsapp').value,
         catatan: document.getElementById('catatan').value,
-        foto: fotoUrl,
+        foto: arrayFotoUrl, // Menyimpan array foto
         timestamp: Date.now()
       };
       
