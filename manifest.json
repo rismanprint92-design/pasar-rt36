@@ -3,7 +3,7 @@
   "short_name": "Pasar RT. 36",
   "start_url": "https://pasar-rt36.my.id/",
   "scope": "https://pasar-rt36.my.id/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#059669",
   "theme_color": "#059669",
   "icons": [
