@@ -49,14 +49,23 @@
     </div>
   </div>
 
-  <!-- Filter Kategori -->
+  <!-- Filter & Pencarian -->
   <main class="max-w-md mx-auto p-4">
+    <!-- Kotak Pencarian Produk -->
+    <div class="relative mb-3">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+        <i class="ph ph-magnifying-glass text-base"></i>
+      </span>
+      <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari nama produk, jajanan, atau penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
+    </div>
+
+    <!-- Filter Kategori -->
     <div class="flex gap-2 overflow-x-auto pb-3 text-xs font-medium no-scrollbar">
-      <button onclick="filterKategori('semua')" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
-      <button onclick="filterKategori('kuliner')" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
-      <button onclick="filterKategori('sembako')" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
-      <button onclick="filterKategori('jasa')" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Jasa</button>
-      <button onclick="filterKategori('bekas')" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
+      <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
+      <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
+      <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
+      <button onclick="filterKategori('jasa')" id="btn-kat-jasa" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Jasa</button>
+      <button onclick="filterKategori('bekas')" id="btn-kat-bekas" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
     </div>
 
     <!-- Grid Produk -->
@@ -292,6 +301,7 @@
     let isAdmin = false;
     let pinAdminAktif = "1234";
     let produkData = [];
+    let kategoriAktif = 'semua';
     let currentZoomScale = 1;
     let activeZoomPhotos = [];
 
@@ -309,15 +319,38 @@
           produkData.unshift({ id: key, ...data[key] });
         });
       }
-      renderProduk(produkData);
+      terapkanFilterDanPencarian();
     });
+
+    function terapkanFilterDanPencarian() {
+      const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
+      
+      let hasil = produkData;
+
+      // Filter berdasarkan kategori
+      if (kategoriAktif !== 'semua') {
+        hasil = hasil.filter(p => p.kategori === kategoriAktif);
+      }
+
+      // Filter berdasarkan keyword pencarian (nama produk, penjual, atau lokasi)
+      if (keyword !== '') {
+        hasil = hasil.filter(p => 
+          (p.nama && p.nama.toLowerCase().includes(keyword)) ||
+          (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
+          (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
+          (p.catatan && p.catatan.toLowerCase().includes(keyword))
+        );
+      }
+
+      renderProduk(hasil);
+    }
 
     function renderProduk(data) {
       const container = document.getElementById('daftar-produk');
       container.innerHTML = '';
 
       if(!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang di kategori ini.</div>`;
+        container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang yang cocok atau ditemukan.</div>`;
         return;
       }
 
@@ -499,9 +532,26 @@
       document.getElementById('modal-zoom').classList.add('hidden');
     }
 
+    // --- FILTER KATEGORI & PENCARIAN ---
     function filterKategori(kat) {
-      if (kat === 'semua') { renderProduk(produkData); } 
-      else { renderProduk(produkData.filter(p => p.kategori === kat)); }
+      kategoriAktif = kat;
+      
+      // Update styling tombol kategori
+      const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas'];
+      listKat.forEach(k => {
+        const btn = document.getElementById(`btn-kat-${k}`);
+        if(k === kat) {
+          btn.className = "px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm";
+        } else {
+          btn.className = "px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap";
+        }
+      });
+
+      terapkanFilterDanPencarian();
+    }
+
+    function jalankanPencarian() {
+      terapkanFilterDanPencarian();
     }
 
     // --- LOGIK ADMIN RT ---
@@ -519,14 +569,14 @@
         document.getElementById('banner-admin').classList.remove('hidden');
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
-        renderProduk(produkData);
+        terapkanFilterDanPencarian();
       } else { alert('PIN Admin RT Salah!'); }
     }
     function keluarAdmin() {
       isAdmin = false;
       document.getElementById('banner-admin').classList.add('hidden');
       document.getElementById('label-admin').innerText = 'Admin';
-      renderProduk(produkData);
+      terapkanFilterDanPencarian();
     }
     function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin() { document.getElementById('modal-ganti-pin').classList.add('hidden'); }
@@ -656,21 +706,30 @@
     function simpanPerubahanProduk(e) {
       e.preventDefault();
       const id = document.getElementById('edit-id').value;
-      const fileInput = document.getElementById('edit-input-file-foto');
       const produkLama = produkData.find(p => p.id === id);
+      if (!produkLama) return;
 
-      const updateData = {
-        nama: document.getElementById('edit-nama').value,
-        harga: parseInt(document.getElementById('edit-harga').value),
-        kategori: document.getElementById('edit-kategori').value,
-        penjual: document.getElementById('edit-penjual').value,
-        lokasi: document.getElementById('edit-lokasi').value,
-        wa: document.getElementById('edit-whatsapp').value,
-        catatan: document.getElementById('edit-catatan').value,
-        pinPenjual: produkLama.pinPenjual || "1234",
-        foto: produkLama.foto,
-        timestamp: produkLama.timestamp
-      };
+      const fileInput = document.getElementById('edit-input-file-foto');
+
+      function updateDB(fotoFinal) {
+        const updateData = {
+          nama: document.getElementById('edit-nama').value,
+          harga: parseInt(document.getElementById('edit-harga').value),
+          kategori: document.getElementById('edit-kategori').value,
+          penjual: document.getElementById('edit-penjual').value,
+          lokasi: document.getElementById('edit-lokasi').value,
+          wa: document.getElementById('edit-whatsapp').value,
+          catatan: document.getElementById('edit-catatan').value,
+          foto: fotoFinal,
+          pinPenjual: produkLama.pinPenjual,
+          timestamp: produkLama.timestamp
+        };
+
+        dbRef.child(id).set(updateData).then(() => {
+          tutupModalEdit();
+          alert('Dagangan berhasil diperbarui!');
+        }).catch(err => alert('Gagal memperbarui: ' + err.message));
+      }
 
       if (fileInput.files && fileInput.files.length > 0) {
         if (fileInput.files.length > 5) {
@@ -687,36 +746,30 @@
             compressedPhotos[index] = compressedDataUrl;
             filesProcessed++;
             if (filesProcessed === totalFiles) {
-              updateData.foto = compressedPhotos;
-              kirimUpdateKeFirebase(id, updateData);
+              updateDB(compressedPhotos);
             }
           });
         });
       } else {
-        kirimUpdateKeFirebase(id, updateData);
+        updateDB(produkLama.foto);
       }
-    }
-
-    function kirimUpdateKeFirebase(id, dataBaru) {
-      dbRef.child(id).set(dataBaru).then(() => {
-        tutupModalEdit();
-        alert('Dagangan berhasil diperbarui!');
-      }).catch(err => alert('Gagal: ' + err.message));
     }
 
     function hapusOlehPenjual() {
       const id = document.getElementById('edit-id').value;
-      if (confirm('Hapus produk ini dari daftar jualan?')) {
+      if (confirm("Apakah Anda yakin ingin menghapus dagangan ini?")) {
         dbRef.child(id).remove().then(() => {
           tutupModalEdit();
-          alert('Produk berhasil dihapus.');
-        });
+          alert('Dagangan berhasil dihapus.');
+        }).catch(err => alert('Gagal menghapus: ' + err.message));
       }
     }
 
     function hapusProdukAdmin(id) {
-      if (confirm('Hapus postingan ini sebagai Admin RT?')) {
-        dbRef.child(id).remove();
+      if (isAdmin && confirm("[Admin RT] Hapus produk ini secara paksa?")) {
+        dbRef.child(id).remove().then(() => {
+          alert('Produk berhasil dihapus oleh Admin RT.');
+        }).catch(err => alert('Gagal: ' + err.message));
       }
     }
   </script>
