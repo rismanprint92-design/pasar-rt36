@@ -96,6 +96,9 @@
         <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
         <button onclick="filterKategori('jasa')" id="btn-kat-jasa" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Jasa</button>
         <button onclick="filterKategori('bekas')" id="btn-kat-bekas" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
+        <button onclick="filterKategori('pakaian')" id="btn-kat-pakaian" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Pakaian</button>
+        <button onclick="filterKategori('aksesoris')" id="btn-kat-aksesoris" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Aksesoris</button>
+        <button onclick="filterKategori('elektronik')" id="btn-kat-elektronik" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Elektronik</button>
       </div>
     </div>
 
@@ -225,6 +228,9 @@
               <option value="sembako">Sembako</option>
               <option value="jasa">Jasa</option>
               <option value="bekas">Barang Bekas</option>
+              <option value="pakaian">Pakaian</option>
+              <option value="aksesoris">Aksesoris</option>
+              <option value="elektronik">Elektronik</option>
             </select>
           </div>
         </div>
@@ -305,6 +311,8 @@
               <option value="sembako">Sembako</option>
               <option value="jasa">Jasa</option>
               <option value="bekas">Barang Bekas</option>
+              <option value="pakaian">Pakaian</option>
+              <option value="aksesoris">Aksesoris</option>
             </select>
           </div>
         </div>
@@ -681,7 +689,7 @@
     function filterKategori(kat) {
       kategoriAktif = kat;
       
-      const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas'];
+      const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas', 'pakaian', 'aksesoris', 'elektronik'];
       listKat.forEach(k => {
         const btn = document.getElementById(`btn-kat-${k}`);
         if(k === kat) {
