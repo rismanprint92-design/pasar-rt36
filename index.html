@@ -19,6 +19,13 @@
   <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <style>
+    /* Transisi mulus untuk sembunyi/muncul bar pencarian */
+    #search-bar-container {
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
@@ -51,25 +58,29 @@
 
   <!-- Filter & Pencarian -->
   <main class="max-w-md mx-auto p-4">
-    <div class="flex gap-2 mb-3 items-center">
-      <div class="relative flex-1">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-          <i class="ph ph-magnifying-glass text-base"></i>
-        </span>
-        <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
+    <!-- Bar Pencarian & Tombol Bantuan Mini Berdampingan (Auto-Hide saat Scroll) -->
+    <div id="search-bar-container" class="sticky top-[56px] z-30 bg-gray-100 pt-1 pb-2">
+      <div class="flex gap-2 items-center">
+        <div class="relative flex-1">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <i class="ph ph-magnifying-glass text-base"></i>
+          </span>
+          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
+        </div>
+        <!-- Tombol Ikon Bantuan -->
+        <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
+          <i class="ph ph-chat-circle-dots text-lg"></i>
+        </button>
       </div>
-      <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
-        <i class="ph ph-chat-circle-dots text-lg"></i>
-      </button>
-    </div>
 
-    <!-- Filter Kategori -->
-    <div class="flex gap-2 overflow-x-auto pb-3 text-xs font-medium no-scrollbar">
-      <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
-      <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
-      <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
-      <button onclick="filterKategori('jasa')" id="btn-kat-jasa" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Jasa</button>
-      <button onclick="filterKategori('bekas')" id="btn-kat-bekas" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
+      <!-- Filter Kategori di dalam container agar ikut tersembunyi rapi -->
+      <div class="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs font-medium no-scrollbar">
+        <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
+        <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
+        <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
+        <button onclick="filterKategori('jasa')" id="btn-kat-jasa" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Jasa</button>
+        <button onclick="filterKategori('bekas')" id="btn-kat-bekas" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Barang Bekas</button>
+      </div>
     </div>
 
     <!-- Grid Produk -->
@@ -355,17 +366,34 @@
     let currentZoomScale = 1;
     let activeZoomPhotos = [];
 
+    // --- LOGIKA AUTO-HIDE SEARCH BAR SAAT SCROLL ---
+    let lastScrollTop = 0;
+    const searchBarContainer = document.getElementById('search-bar-container');
+
+    window.addEventListener('scroll', function() {
+      let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      if (scrollTop > lastScrollTop && scrollTop > 50) {
+        // Scroll ke Bawah -> Sembunyikan bar pencarian & filter
+        searchBarContainer.style.transform = 'translateY(-120%)';
+        searchBarContainer.style.opacity = '0';
+      } else {
+        // Scroll ke Atas -> Munculkan kembali bar pencarian & filter
+        searchBarContainer.style.transform = 'translateY(0)';
+        searchBarContainer.style.opacity = '1';
+      }
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
+
     pinRef.on('value', (snapshot) => {
       const pinDb = snapshot.val();
       if (pinDb) { pinAdminAktif = pinDb; }
       else { pinRef.set("1234"); }
     });
 
-    // Paksa update atau ambil nomor WhatsApp admin baru
     adminWaRef.on('value', (snapshot) => {
       const waDb = snapshot.val();
       if (waDb && waDb === "628123456789") {
-        // Jika di database masih tersimpan nomor lama, timpa otomatis ke nomor baru
         adminWaRef.set("6282299511782");
         adminWaAktif = "6282299511782";
       } else if (waDb) {
