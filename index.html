@@ -6,7 +6,14 @@
   <title>Marketplace RT. 36 AR & Metroland</title>
 
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
-  <link rel="manifest" href="manifest.json">
+<link id="pwa-manifest" rel="manifest" href="manifest.json">
+<script>
+  // Khusus HP lama vivo 1807 Android 8 biar tidak minta Instal dan tidak crash
+  if (/Android [1-8]\./.test(navigator.userAgent)) {
+    var m = document.getElementById('pwa-manifest');
+    if (m) { m.remove(); }
+  }
+</script>
   <meta name="theme-color" content="#059669">
   <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
