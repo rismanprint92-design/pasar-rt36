@@ -6,18 +6,21 @@
   <title>Marketplace RT. 36 AR & Metroland</title>
 
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
-<link id="pwa-manifest" rel="manifest" href="manifest.json">
 <script>
-  // Blokir total Instal di HP lama vivo 1807 Android 8
-  if (/Android [1-8]\./.test(navigator.userAgent)) {
-    // 1. Blokir pop-up Instal
+  var isOld = /Android [1-8]\./.test(navigator.userAgent);
+  // Hanya HP baru yang dikasih manifest, HP lama tidak dikasih sama sekali
+  if (!isOld) {
+    var link = document.createElement('link');
+    link.id = 'pwa-manifest';
+    link.rel = 'manifest';
+    link.href = 'manifest.json';
+    document.head.appendChild(link);
+  } else {
+    // Blokir total pop-up Instal di HP lama
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       return false;
     });
-    // 2. Hapus manifest
-    var m = document.getElementById('pwa-manifest');
-    if (m) { m.remove(); }
   }
 </script>
   <meta name="theme-color" content="#059669">
