@@ -529,3 +529,166 @@
     // --- FORM TAMBAH PRODUK ---
     function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
     function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
+
+    function tambahProduk(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('input-file-foto');
+      
+      if (fileInput.files && fileInput.files.length > 0) {
+        let base64Photos = [];
+        let filesProcessed = 0;
+        Array.from(fileInput.files).forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            base64Photos[index] = event.target.result;
+            filesProcessed++;
+            if (filesProcessed === fileInput.files.length) {
+              simpanKeFirebase(base64Photos);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        simpanKeFirebase(['https://via.placeholder.com/200?text=Produk+RT']);
+      }
+    }
+
+    function simpanKeFirebase(arrayFotoUrl) {
+      const barangBaru = {
+        nama: document.getElementById('nama').value,
+        harga: parseInt(document.getElementById('harga').value),
+        kategori: document.getElementById('kategori').value,
+        penjual: document.getElementById('penjual').value,
+        lokasi: document.getElementById('lokasi').value,
+        wa: document.getElementById('whatsapp').value,
+        pinPenjual: document.getElementById('pin-penjual').value,
+        catatan: document.getElementById('catatan').value,
+        foto: arrayFotoUrl,
+        timestamp: Date.now()
+      };
+      
+      dbRef.push(barangBaru).then(() => {
+        tutupModalJual();
+        document.getElementById('form-tambah').reset();
+        if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
+          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT. 36 AR REGENCY!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli langsung di aplikasi Pasar RT kita! 📱`)}`, '_blank');
+        }
+      }).catch(err => alert("Gagal menyimpan: " + err.message));
+    }
+
+    // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
+    function bukaVerifikasiPenjual(id) {
+      if (isAdmin) {
+        muatDataKeFormEdit(id);
+        return;
+      }
+      document.getElementById('edit-product-id').value = id;
+      document.getElementById('input-pin-konfirmasi').value = '';
+      document.getElementById('modal-login-penjual').classList.remove('hidden');
+    }
+
+    function tutupModalLoginPenjual() {
+      document.getElementById('modal-login-penjual').classList.add('hidden');
+    }
+
+    function prosesVerifikasiPenjual() {
+      const id = document.getElementById('edit-product-id').value;
+      const inputPin = document.getElementById('input-pin-konfirmasi').value;
+      const produk = produkData.find(p => p.id === id);
+
+      if (!produk) { alert('Data produk tidak ditemukan.'); return; }
+
+      const pinTarget = produk.pinPenjual || "1234";
+      if (inputPin === pinTarget) {
+        tutupModalLoginPenjual();
+        muatDataKeFormEdit(id);
+      } else {
+        alert('PIN Penjual salah!');
+      }
+    }
+
+    function muatDataKeFormEdit(id) {
+      const produk = produkData.find(p => p.id === id);
+      if (!produk) return;
+
+      document.getElementById('edit-id').value = produk.id;
+      document.getElementById('edit-nama').value = produk.nama;
+      document.getElementById('edit-harga').value = produk.harga;
+      document.getElementById('edit-kategori').value = produk.kategori;
+      document.getElementById('edit-penjual').value = produk.penjual;
+      document.getElementById('edit-lokasi').value = produk.lokasi;
+      document.getElementById('edit-whatsapp').value = produk.wa;
+      document.getElementById('edit-catatan').value = produk.catatan || '';
+      document.getElementById('edit-input-file-foto').value = '';
+
+      document.getElementById('modal-edit').classList.remove('hidden');
+    }
+
+    function tutupModalEdit() {
+      document.getElementById('modal-edit').classList.add('hidden');
+    }
+
+    function simpanPerubahanProduk(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const fileInput = document.getElementById('edit-input-file-foto');
+      const produkLama = produkData.find(p => p.id === id);
+
+      const updateData = {
+        nama: document.getElementById('edit-nama').value,
+        harga: parseInt(document.getElementById('edit-harga').value),
+        kategori: document.getElementById('edit-kategori').value,
+        penjual: document.getElementById('edit-penjual').value,
+        lokasi: document.getElementById('edit-lokasi').value,
+        wa: document.getElementById('edit-whatsapp').value,
+        catatan: document.getElementById('edit-catatan').value,
+        pinPenjual: produkLama.pinPenjual || "1234",
+        foto: produkLama.foto,
+        timestamp: produkLama.timestamp
+      };
+
+      if (fileInput.files && fileInput.files.length > 0) {
+        let base64Photos = [];
+        let filesProcessed = 0;
+        Array.from(fileInput.files).forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            base64Photos[index] = event.target.result;
+            filesProcessed++;
+            if (filesProcessed === fileInput.files.length) {
+              updateData.foto = base64Photos;
+              kirimUpdateKeFirebase(id, updateData);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        kirimUpdateKeFirebase(id, updateData);
+      }
+    }
+
+    function kirimUpdateKeFirebase(id, dataBaru) {
+      dbRef.child(id).set(dataBaru).then(() => {
+        tutupModalEdit();
+        alert('Dagangan berhasil diperbarui!');
+      }).catch(err => alert('Gagal: ' + err.message));
+    }
+
+    function hapusOlehPenjual() {
+      const id = document.getElementById('edit-id').value;
+      if (confirm('Hapus produk ini dari daftar jualan?')) {
+        dbRef.child(id).remove().then(() => {
+          tutupModalEdit();
+          alert('Produk berhasil dihapus.');
+        });
+      }
+    }
+
+    function hapusProdukAdmin(id) {
+      if (confirm('Hapus postingan ini sebagai Admin RT?')) {
+        dbRef.child(id).remove();
+      }
+    }
+  </script>
+</body>
+</html>
