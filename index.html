@@ -908,16 +908,21 @@
   </script>
   
   <script>
-  if ('serviceWorker' in navigator) {
+  // Cek apakah HP Android lama (8 ke bawah)
+  var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
+  
+  if ('serviceWorker' in navigator && !isOldAndroid) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('/sw.js')
         .then(function(reg) {
-          console.log('SW terdaftar!', reg.scope);
+          console.log('SW terdaftar untuk HP baru!', reg.scope);
         })
         .catch(function(err) {
           console.log('SW gagal', err);
         });
     });
+  } else {
+    console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
   }
 </script>
   
