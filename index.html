@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace RT. 36 AR & Metroland</title>
 
-  <script>
-  // MATIKAN CACHE DULU BIAR PRODUK MUNCUL LAGI BOS
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs){
-      for(let reg of regs) reg.unregister();
+  <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
+<script>
+  var isOld = /Android [1-8]\./.test(navigator.userAgent);
+  // Hanya HP baru yang dikasih manifest, HP lama tidak dikasih sama sekali
+  if (!isOld) {
+    var link = document.createElement('link');
+    link.id = 'pwa-manifest';
+    link.rel = 'manifest';
+    link.href = 'manifest.json';
+    document.head.appendChild(link);
+  } else {
+    // Blokir total pop-up Instal di HP lama
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      return false;
     });
   }
-  </script>
-  
+</script>
   <meta name="theme-color" content="#059669">
   <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
@@ -90,7 +99,6 @@
         <button onclick="filterKategori('pakaian')" id="btn-kat-pakaian" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Pakaian</button>
         <button onclick="filterKategori('aksesoris')" id="btn-kat-aksesoris" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Aksesoris</button>
         <button onclick="filterKategori('elektronik')" id="btn-kat-elektronik" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Elektronik</button>
-        <button onclick="filterKategori('dll')" id="btn-kat-dll" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">dll</button>
       </div>
     </div>
 
@@ -98,9 +106,6 @@
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
       <!-- Card Produk dimuat secara realtime dari Firebase -->
     </div>
-    <button id="btn-shopee" onclick="loadLebihBanyak()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">
-     Lihat Produk Lainnya ↓
-    </button>
   </main>
 
   <!-- Modal Informasi & Masukan Perbaikan Website -->
@@ -226,7 +231,6 @@
               <option value="pakaian">Pakaian</option>
               <option value="aksesoris">Aksesoris</option>
               <option value="elektronik">Elektronik</option>
-              <option value="dll">Dll</option>
             </select>
           </div>
         </div>
@@ -255,9 +259,9 @@
           <textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi."></textarea>
         </div>
         <div>
-          <label class="block font-medium mb-1">Foto Produk (Maksimal 3 Foto, Otomatis Kompres)</label>
+          <label class="block font-medium mb-1">Foto Produk (Maksimal 5 Foto, Otomatis Kompres)</label>
           <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-          <p class="text-[10px] text-emerald-700 mt-1">💡 Anda dapat memilih hingga 3 foto sekaligus.</p>
+          <p class="text-[10px] text-emerald-700 mt-1">💡 Anda dapat memilih hingga 5 foto sekaligus.</p>
         </div>
 
         <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">
@@ -309,7 +313,6 @@
               <option value="bekas">Barang Bekas</option>
               <option value="pakaian">Pakaian</option>
               <option value="aksesoris">Aksesoris</option>
-              <option value="dll">Dll</option>
             </select>
           </div>
         </div>
@@ -439,76 +442,38 @@
       if(inputWa) inputWa.value = adminWaAktif;
     });
 
-    // --- JURUS 2 SHOPEE: JANGAN LOAD 100 SEKALIGUS - HEMAT 90% ---
-   let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
-   let produkFilteredGlobal = []; // simpan hasil filter buat tombol
-
-  // --- JURUS HEMAT CLOUD: AUTO HAPUS 30 HARI PERMANEN ---
-dbRef.on('value', (snapshot) => {
-  const data = snapshot.val();
-  produkData = [];
-  
-  if (data) {
-    const sekarang = Date.now();
-    const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
-    Object.keys(data).forEach(key => {
-      const item = data[key];
-      if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
-        dbRef.child(key).remove();
-        return;
+    dbRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      produkData = [];
+      if (data) {
+        Object.keys(data).forEach(key => {
+          produkData.unshift({ id: key, ...data[key] });
+        });
       }
-      produkData.unshift({ id: key,...item });
+      terapkanFilterDanPencarian();
     });
-  }
-  BATAS_TAMPIL = 12; // reset ke 12 kali buka
-  terapkanFilterDanPencarian();
-});
-function terapkanFilterDanPencarian() {
-  const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
 
-  let hasil = produkData;
+    function terapkanFilterDanPencarian() {
+      const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
+      
+      let hasil = produkData;
 
-  if (kategoriAktif!== 'semua') {
-    hasil = hasil.filter(p => p.kategori === kategoriAktif);
-  }
+      if (kategoriAktif !== 'semua') {
+        hasil = hasil.filter(p => p.kategori === kategoriAktif);
+      }
 
-  if (keyword!== '') {
-    hasil = hasil.filter(p =>
-      (p.nama && p.nama.toLowerCase().includes(keyword)) ||
-      (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
-      (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
-      (p.catatan && p.catatan.toLowerCase().includes(keyword))
-    );
-  }
+      if (keyword !== '') {
+        hasil = hasil.filter(p => 
+          (p.nama && p.nama.toLowerCase().includes(keyword)) ||
+          (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
+          (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
+          (p.catatan && p.catatan.toLowerCase().includes(keyword))
+        );
+      }
 
-  // SIMPAN SEMUA HASIL FILTER
-  produkFilteredGlobal = hasil;
-
-  // POTONG CUMA 12 DULU - INI KUNCI SHOPEE NYA BOS!
-  const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
-
-  // TAMPILKAN YANG 12 SAJA (fungsi lama bos tetap dipanggil, tapi datanya sudah dipotong)
-  tampilkanProduk(yangDitampilkan); // kalau di kode bos namanya beda, sesuaikan ya bos
-
-  // ATUR TOMBOL SHOPEE
-  const btn = document.getElementById('btn-shopee');
-  if (btn) {
-    if (produkFilteredGlobal.length > BATAS_TAMPIL) {
-      btn.style.display = 'block';
-      let sisa = produkFilteredGlobal.length - BATAS_TAMPIL;
-      if (sisa > 12) sisa = 12;
-      btn.innerHTML = `Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`;
-    } else {
-      btn.style.display = 'none';
+      renderProduk(hasil);
     }
-  }
-}
 
-function loadLebihBanyak() {
-  BATAS_TAMPIL += 12;
-  terapkanFilterDanPencarian();
-}
-    
     function renderProduk(data) {
       const container = document.getElementById('daftar-produk');
       container.innerHTML = '';
@@ -536,13 +501,13 @@ function loadLebihBanyak() {
 
         let miniThumbnails = '';
         if (listFoto.length > 1) {
-          miniThumbnails = `<div class="flex gap-1 mt-2">`;
-          listFoto.forEach((f) => {
-           miniThumbnails += `<img loading="lazy" decoding="async" src="${f}" class="w-8 h-8 rounded object-cover border cursor-pointer">`;
+          miniThumbnails = `<div class="flex gap-1 mt-2 overflow-x-auto pb-1">`;
+          listFoto.forEach((f, idx) => {
+            miniThumbnails += `<img src="${f}" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, ${idx})' class="w-10 h-10 object-cover rounded border hover:border-emerald-500 cursor-pointer flex-shrink-0" alt="thumb">`;
           });
           miniThumbnails += `</div>`;
         }
-        
+
         const tombolEditPenjual = `
           <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
             <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
@@ -558,7 +523,7 @@ function loadLebihBanyak() {
         const card = `
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
             <div class="relative cursor-pointer" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, 0)'>
-              <img loading="lazy" decoding="async" src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition bg-gray-100" alt="${item.nama}">
+              <img src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition" alt="${item.nama}">
               ${badgeFoto}
             </div>
             <div class="p-3 flex-1 flex flex-col justify-between">
@@ -621,43 +586,35 @@ function loadLebihBanyak() {
       tutupModalInfoAdmin();
     }
 
-    // --- FUNGSI KOMPRESSOR HEMAT (VERSI NGEBUT 3x) ---
+    // --- FUNGSI KOMPRESSOR GAMBAR OTOMATIS ---
     function kompresGambar(file, callback) {
-    // Kalau file sudah kecil < 200KB, tidak usah kompres lagi
-    if (file.size < 200 * 1024) {
-    const reader = new FileReader();
-    reader.onload = e => callback(e.target.result);
-    reader.readAsDataURL(file);
-    return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          const MAX_WIDTH = 800;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          callback(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-    const img = new Image();
-    img.onload = function () {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-
-      const MAX_WIDTH = 600; // <-- saya kecilkan dari 800 jadi 600 (di HP sama jernihnya)
-      if (width > MAX_WIDTH) {
-        height = Math.round((height * MAX_WIDTH) / width);
-        width = MAX_WIDTH;
-      }
-
-      canvas.width = width;
-      canvas.height = height; 
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.5); // <-- dari 0.7 jadi 0.5 hemat 60%
-      callback(dataUrl);
-    };
-    img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-    }
-    
     // --- FITUR 2 OPSI PEMBELIAN ---
     function bukaModalOpsiBeli(nomorWA, namaBarang, harga, catatanPenjual) {
       const modal = document.getElementById('modal-opsi-beli');
@@ -801,21 +758,19 @@ function loadLebihBanyak() {
         document.getElementById('pin-lama').value = '';
         document.getElementById('pin-baru').value = '';
       }).catch(err => alert('Gagal: ' + err.message));
-    } 
+    }
 
-    // --- FORM TAMBAH PRODUK (MAKSIMAL 3 FOTO - VERSI HEMAT) ---
+    // --- FORM TAMBAH PRODUK (MAKSIMAL 5 FOTO) ---
     function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
     function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
 
     function tambahProduk(e) {
       e.preventDefault();
       const fileInput = document.getElementById('input-file-foto');
-
+      
       if (fileInput.files && fileInput.files.length > 0) {
-        // --- UBAH DARI 5 JADI 3 ---
-        if (fileInput.files.length > 3) {
-          alert('Maksimal 3 foto saja ya bos! Biar hemat storage & buka aplikasi ngebut. 3 foto sudah cukup kok untuk jualan.');
-          fileInput.value = ''; // reset input
+        if (fileInput.files.length > 5) {
+          alert('Maksimal foto yang dapat diunggah adalah 5 foto!');
           return;
         }
 
@@ -833,7 +788,7 @@ function loadLebihBanyak() {
           });
         });
       } else {
-        simpanKeFirebase(['https://via.placeholder.com/300?text=Produk+RT36']);
+        simpanKeFirebase(['https://via.placeholder.com/200?text=Produk+RT']);
       }
     }
 
@@ -850,16 +805,16 @@ function loadLebihBanyak() {
         foto: arrayFotoUrl,
         timestamp: Date.now()
       };
-
+      
       dbRef.push(barangBaru).then(() => {
         tutupModalJual();
         document.getElementById('form-tambah').reset();
-        if(confirm("Dagangan berhasil ditayangkan! 🚀\n\nMau bagikan ke Grup WhatsApp Warga RT?")) {
-          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli di pasar-rt36.my.id 📱`)}`, '_blank');
+        if(confirm("Dagangan berhasil ditayangkan secara online!\n\nBagikan pengumuman produk ini ke Grup WhatsApp Warga RT?")) {
+          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli langsung di aplikasi Pasar RT kita! 📱`)}`, '_blank');
         }
       }).catch(err => alert("Gagal menyimpan: " + err.message));
     }
-    
+
     // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
     function bukaVerifikasiPenjual(id) {
       if (isAdmin) {
