@@ -961,7 +961,8 @@
     console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
   }
 </script>
-<!-- ===== LIVE CHAT WARGA (FLOATING ICON + NOTIFIKASI SUARA) ===== -->
+  
+ <!-- ===== LIVE CHAT WARGA (FLOATING ICON + NOTIFIKASI SUARA) ===== -->
 
 <!-- 1. Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 group">
@@ -1005,40 +1006,65 @@
   </div>
 </div>
 
-<!-- 3. Skrip JavaScript Logika Chat & Notifikasi -->
+<!-- 3. Skrip JavaScript Logika Chat Serba Aman -->
 <script>
-  const chatRef = db.ref('pesan_warga');
+  function getChatRef() {
+    if (typeof db !== 'undefined' && db && typeof db.ref === 'function') {
+      return db.ref('pesan_warga');
+    }
+    if (typeof database !== 'undefined' && database && typeof database.ref === 'function') {
+      return database.ref('pesan_warga');
+    }
+    if (typeof firebase !== 'undefined' && firebase.database) {
+      return firebase.database().ref('pesan_warga');
+    }
+    return null;
+  }
 
-  // Fungsi Buka/Tutup Panel Chat saat ikon diklik
   function toggleBoxChat() {
     const panel = document.getElementById('panelChatWarga');
+    if (!panel) return;
+
     panel.classList.toggle('hidden');
     
-    // Hapus tanda notifikasi merah/kedip saat panel dibuka
     const btnChat = document.getElementById('btnBukaChat');
-    btnChat.classList.remove('ring-4', 'ring-red-400', 'animate-bounce');
+    if (btnChat) {
+      btnChat.classList.remove('ring-4', 'ring-red-400', 'animate-bounce');
+    }
 
     if (!panel.classList.contains('hidden')) {
       const boxChat = document.getElementById('boxChatWarga');
-      boxChat.scrollTop = boxChat.scrollHeight; // Auto scroll ke bawah saat dibuka
+      if (boxChat) boxChat.scrollTop = boxChat.scrollHeight;
     }
   }
 
-  // Fungsi Kirim Pesan
   function kirimPesanWarga() {
     const namaInput = document.getElementById('namaWarga');
     const pesanInput = document.getElementById('teksPesanWarga');
 
-    const nama = typeof bersihkanTeks === 'function' ? bersihkanTeks(namaInput.value.trim()) : namaInput.value.trim();
-    const pesan = typeof bersihkanTeks === 'function' ? bersihkanTeks(pesanInput.value.trim()) : pesanInput.value.trim();
-
-    if (!nama || !pesan) {
-      alert("Silakan isi nama dan pesan Anda terlebih dahulu!");
+    if (!namaInput || !pesanInput) {
+      alert("Elemen input chat tidak ditemukan!");
       return;
     }
 
-    if (pesan.length > 300) {
-      alert("Pesan terlalu panjang (maksimal 300 karakter).");
+    const nama = typeof bersihkanTeks === 'function' ? bersihkanTeks(namaInput.value.trim()) : namaInput.value.trim();
+    const pesan = typeof bersihkanTeks === 'function' ? bersihkanTeks(pesanInput.value.trim()) : pesanInput.value.trim();
+
+    if (!nama) {
+      alert("Silakan masukkan Nama/Panggilan Anda terlebih dahulu!");
+      namaInput.focus();
+      return;
+    }
+
+    if (!pesan) {
+      alert("Silakan ketik pesan sebelum mengirim!");
+      pesanInput.focus();
+      return;
+    }
+
+    const chatRef = getChatRef();
+    if (!chatRef) {
+      alert("Koneksi Firebase belum siap/ditemukan. Silakan segarkan halaman.");
       return;
     }
 
@@ -1049,8 +1075,10 @@
       pesan: pesan,
       waktu: jam,
       timestamp: Date.now()
-    }, (error) => {
-      if (!error) {
+    }, function(error) {
+      if (error) {
+        alert("Gagal mengirim ke Firebase: " + error.message);
+      } else {
         pesanInput.value = '';
       }
     });
@@ -1062,36 +1090,38 @@
     }
   }
 
-  // Realtime Listener dengan Notifikasi Suara & Visual
-  chatRef.limitToLast(50).on('child_added', (snapshot) => {
-    const data = snapshot.val();
-    const boxChat = document.getElementById('boxChatWarga');
+  window.addEventListener('load', function() {
+    const chatRef = getChatRef();
+    if (chatRef) {
+      chatRef.limitToLast(50).on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        const boxChat = document.getElementById('boxChatWarga');
+        if (!boxChat) return;
 
-    const elemenPesan = document.createElement('div');
-    elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-xs';
-    elemenPesan.innerHTML = `
-      <div class="flex justify-between items-center mb-1">
-        <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
-        <span class="text-gray-400 text-[9px]">${data.waktu}</span>
-      </div>
-      <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
-    `;
+        const elemenPesan = document.createElement('div');
+        elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-xs';
+        elemenPesan.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
+            <span class="text-gray-400 text-[9px]">${data.waktu}</span>
+          </div>
+          <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
+        `;
 
-    boxChat.appendChild(elemenPesan);
+        boxChat.appendChild(elemenPesan);
 
-    // Cek apakah panel chat sedang tertutup
-    const panel = document.getElementById('panelChatWarga');
-    if (panel.classList.contains('hidden')) {
-      // Bunyikan suara notifikasi & buat tombol ikon berkedip merah
-      playNotifSound();
-      const btnChat = document.getElementById('btnBukaChat');
-      btnChat.classList.add('ring-4', 'ring-red-400', 'animate-bounce');
-    } else {
-      boxChat.scrollTop = boxChat.scrollHeight;
+        const panel = document.getElementById('panelChatWarga');
+        if (panel && panel.classList.contains('hidden')) {
+          playNotifSound();
+          const btnChat = document.getElementById('btnBukaChat');
+          if (btnChat) btnChat.classList.add('ring-4', 'ring-red-400', 'animate-bounce');
+        } else {
+          boxChat.scrollTop = boxChat.scrollHeight;
+        }
+      });
     }
   });
 
-  // Pembuat Suara Notifikasi Otomatis (Web Audio API)
   function playNotifSound() {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1099,7 +1129,7 @@
       const gainNode = audioCtx.createGain();
       
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nada D5
+      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
       
       oscillator.connect(gainNode);
@@ -1107,9 +1137,7 @@
       
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.15);
-    } catch (e) {
-      // Abaikan jika diblokir browser sebelum ada interaksi
-    }
+    } catch (e) {}
   }
 
   function escapeHtml(text) {
@@ -1122,5 +1150,6 @@
       .replace(/'/g, "&#039;");
   }
 </script>
+  
 </body>
 </html>
