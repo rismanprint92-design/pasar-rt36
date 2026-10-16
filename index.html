@@ -961,7 +961,7 @@
     console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
   }
 </script>
-<!-- ===== LIVE CHAT WARGA (MODEL FLOATING ICON) ===== -->
+<!-- ===== LIVE CHAT WARGA (FLOATING ICON + NOTIFIKASI SUARA) ===== -->
 
 <!-- 1. Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 group">
@@ -1005,7 +1005,7 @@
   </div>
 </div>
 
-<!-- 3. Skrip JavaScript Logika Chat -->
+<!-- 3. Skrip JavaScript Logika Chat & Notifikasi -->
 <script>
   const chatRef = db.ref('pesan_warga');
 
@@ -1013,6 +1013,11 @@
   function toggleBoxChat() {
     const panel = document.getElementById('panelChatWarga');
     panel.classList.toggle('hidden');
+    
+    // Hapus tanda notifikasi merah/kedip saat panel dibuka
+    const btnChat = document.getElementById('btnBukaChat');
+    btnChat.classList.remove('ring-4', 'ring-red-400', 'animate-bounce');
+
     if (!panel.classList.contains('hidden')) {
       const boxChat = document.getElementById('boxChatWarga');
       boxChat.scrollTop = boxChat.scrollHeight; // Auto scroll ke bawah saat dibuka
@@ -1057,7 +1062,7 @@
     }
   }
 
-  // Realtime Listener
+  // Realtime Listener dengan Notifikasi Suara & Visual
   chatRef.limitToLast(50).on('child_added', (snapshot) => {
     const data = snapshot.val();
     const boxChat = document.getElementById('boxChatWarga');
@@ -1073,8 +1078,39 @@
     `;
 
     boxChat.appendChild(elemenPesan);
-    boxChat.scrollTop = boxChat.scrollHeight;
+
+    // Cek apakah panel chat sedang tertutup
+    const panel = document.getElementById('panelChatWarga');
+    if (panel.classList.contains('hidden')) {
+      // Bunyikan suara notifikasi & buat tombol ikon berkedip merah
+      playNotifSound();
+      const btnChat = document.getElementById('btnBukaChat');
+      btnChat.classList.add('ring-4', 'ring-red-400', 'animate-bounce');
+    } else {
+      boxChat.scrollTop = boxChat.scrollHeight;
+    }
   });
+
+  // Pembuat Suara Notifikasi Otomatis (Web Audio API)
+  function playNotifSound() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nada D5
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+      // Abaikan jika diblokir browser sebelum ada interaksi
+    }
+  }
 
   function escapeHtml(text) {
     if (!text) return '';
