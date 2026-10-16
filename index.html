@@ -961,35 +961,63 @@
     console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
   }
 </script>
-  <!-- ===== FITUR LIVE CHAT WARGA RT.36 ===== -->
-<div class="max-w-md mx-auto px-4 my-8">
-  <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
-    <h3 class="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
-      💬 Obrolan & Aspirasi Warga
-    </h3>
-    <p class="text-xs text-gray-500 mb-4">Gunakan wadah ini untuk ngobrol santai atau tanya info seputar warga.</p>
-    
-    <!-- Kotak Riwayat Chat -->
-    <div id="boxChatWarga" class="h-64 overflow-y-auto border border-gray-200 p-3 rounded-lg bg-gray-50 mb-3 flex flex-col gap-2">
-      <!-- Pesan akan masuk secara otomatis di sini -->
-    </div>
+<!-- ===== LIVE CHAT WARGA (MODEL FLOATING ICON) ===== -->
 
-    <!-- Form Kirim Pesan -->
-    <div class="flex flex-col gap-2">
-      <input type="text" id="namaWarga" placeholder="Nama / Panggilan (cth: Pak RT / Warga)" class="border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-      <div class="flex gap-2">
-        <input type="text" id="teksPesanWarga" placeholder="Tulis pesan..." class="border border-gray-300 p-2 rounded-lg text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="handleEnterChat(event)">
-        <button onclick="kirimPesanWarga()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center">
-          Kirim 🚀
-        </button>
+<!-- 1. Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
+<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 group">
+  <span class="text-2xl">💬</span>
+  <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-sm font-semibold">
+    Live Chat Warga
+  </span>
+</button>
+
+<!-- 2. Kotak Panel Chat (Sembunyikan dulu dengan class 'hidden') -->
+<div id="panelChatWarga" class="hidden fixed bottom-20 right-5 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300">
+  
+  <!-- Header Kotak Chat -->
+  <div class="bg-emerald-600 text-white p-3.5 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">💬</span>
+      <div>
+        <h4 class="font-bold text-sm">Obrolan Warga RT.36</h4>
+        <p class="text-[10px] text-emerald-100">Ngobrol santai & info seputar warga</p>
       </div>
+    </div>
+    <button onclick="toggleBoxChat()" class="text-white hover:text-gray-200 font-bold text-lg px-2">
+      ✕
+    </button>
+  </div>
+
+  <!-- Riwayat Pesan -->
+  <div id="boxChatWarga" class="h-72 overflow-y-auto p-3 bg-gray-50 flex flex-col gap-2 text-sm">
+    <!-- Pesan real-time masuk di sini -->
+  </div>
+
+  <!-- Form Input Pesan -->
+  <div class="p-3 bg-white border-t border-gray-200 flex flex-col gap-2">
+    <input type="text" id="namaWarga" placeholder="Nama / Panggilan (cth: Pak RT)" class="border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+    <div class="flex gap-1.5">
+      <input type="text" id="teksPesanWarga" placeholder="Tulis pesan..." class="border border-gray-300 p-2 rounded-lg text-xs flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="handleEnterChat(event)">
+      <button onclick="kirimPesanWarga()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors">
+        Kirim
+      </button>
     </div>
   </div>
 </div>
 
+<!-- 3. Skrip JavaScript Logika Chat -->
 <script>
-  // Hubungkan ke node chat di Firebase Realtime Database
   const chatRef = db.ref('pesan_warga');
+
+  // Fungsi Buka/Tutup Panel Chat saat ikon diklik
+  function toggleBoxChat() {
+    const panel = document.getElementById('panelChatWarga');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) {
+      const boxChat = document.getElementById('boxChatWarga');
+      boxChat.scrollTop = boxChat.scrollHeight; // Auto scroll ke bawah saat dibuka
+    }
+  }
 
   // Fungsi Kirim Pesan
   function kirimPesanWarga() {
@@ -1017,9 +1045,7 @@
       waktu: jam,
       timestamp: Date.now()
     }, (error) => {
-      if (error) {
-        alert("Gagal mengirim pesan. Silakan coba lagi.");
-      } else {
+      if (!error) {
         pesanInput.value = '';
       }
     });
@@ -1031,17 +1057,17 @@
     }
   }
 
-  // Pendengar Realtime
+  // Realtime Listener
   chatRef.limitToLast(50).on('child_added', (snapshot) => {
     const data = snapshot.val();
     const boxChat = document.getElementById('boxChatWarga');
 
     const elemenPesan = document.createElement('div');
-    elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-sm';
+    elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-xs';
     elemenPesan.innerHTML = `
-      <div class="flex justify-between items-center text-xs mb-1">
+      <div class="flex justify-between items-center mb-1">
         <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
-        <span class="text-gray-400 text-[10px]">${data.waktu}</span>
+        <span class="text-gray-400 text-[9px]">${data.waktu}</span>
       </div>
       <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
     `;
