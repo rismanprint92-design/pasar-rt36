@@ -589,35 +589,43 @@
       tutupModalInfoAdmin();
     }
 
-    // --- FUNGSI KOMPRESSOR GAMBAR OTOMATIS ---
+    // --- FUNGSI KOMPRESSOR HEMAT (VERSI NGEBUT 3x) ---
     function kompresGambar(file, callback) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          const MAX_WIDTH = 800;
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          callback(dataUrl);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+    // Kalau file sudah kecil < 200KB, tidak usah kompres lagi
+    if (file.size < 200 * 1024) {
+    const reader = new FileReader();
+    reader.onload = e => callback(e.target.result);
+    reader.readAsDataURL(file);
+    return;
     }
 
+    const reader = new FileReader();
+    reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      const MAX_WIDTH = 600; // <-- saya kecilkan dari 800 jadi 600 (di HP sama jernihnya)
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+
+      canvas.width = width;
+      canvas.height = height; 
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.5); // <-- dari 0.7 jadi 0.5 hemat 60%
+      callback(dataUrl);
+    };
+    img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    }
+    
     // --- FITUR 2 OPSI PEMBELIAN ---
     function bukaModalOpsiBeli(nomorWA, namaBarang, harga, catatanPenjual) {
       const modal = document.getElementById('modal-opsi-beli');
