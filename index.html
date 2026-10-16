@@ -125,6 +125,9 @@
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
       <!-- Card Produk dimuat secara realtime dari Firebase -->
     </div>
+    <button id="btn-shopee" onclick="loadLebihBanyak()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">
+     Lihat Produk Lainnya ↓
+    </button>
   </main>
 
   <!-- Modal Informasi & Masukan Perbaikan Website -->
@@ -463,38 +466,68 @@
       if(inputWa) inputWa.value = adminWaAktif;
     });
 
-    dbRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      produkData = [];
-      if (data) {
-        Object.keys(data).forEach(key => {
-          produkData.unshift({ id: key, ...data[key] });
-        });
-      }
-      terapkanFilterDanPencarian();
+    // --- JURUS 2 SHOPEE: JANGAN LOAD 100 SEKALIGUS - HEMAT 90% ---
+   let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
+   let produkFilteredGlobal = []; // simpan hasil filter buat tombol
+
+dbRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  produkData = [];
+  if (data) {
+    Object.keys(data).forEach(key => {
+      produkData.unshift({ id: key,...data[key] });
     });
+  }
+  BATAS_TAMPIL = 12; // reset ke 12 kalau ada barang baru
+  terapkanFilterDanPencarian();
+});
 
-    function terapkanFilterDanPencarian() {
-      const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
-      
-      let hasil = produkData;
+function terapkanFilterDanPencarian() {
+  const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
 
-      if (kategoriAktif !== 'semua') {
-        hasil = hasil.filter(p => p.kategori === kategoriAktif);
-      }
+  let hasil = produkData;
 
-      if (keyword !== '') {
-        hasil = hasil.filter(p => 
-          (p.nama && p.nama.toLowerCase().includes(keyword)) ||
-          (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
-          (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
-          (p.catatan && p.catatan.toLowerCase().includes(keyword))
-        );
-      }
+  if (kategoriAktif!== 'semua') {
+    hasil = hasil.filter(p => p.kategori === kategoriAktif);
+  }
 
-      renderProduk(hasil);
+  if (keyword!== '') {
+    hasil = hasil.filter(p =>
+      (p.nama && p.nama.toLowerCase().includes(keyword)) ||
+      (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
+      (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
+      (p.catatan && p.catatan.toLowerCase().includes(keyword))
+    );
+  }
+
+  // SIMPAN SEMUA HASIL FILTER
+  produkFilteredGlobal = hasil;
+
+  // POTONG CUMA 12 DULU - INI KUNCI SHOPEE NYA BOS!
+  const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
+
+  // TAMPILKAN YANG 12 SAJA (fungsi lama bos tetap dipanggil, tapi datanya sudah dipotong)
+  tampilkanProduk(yangDitampilkan); // kalau di kode bos namanya beda, sesuaikan ya bos
+
+  // ATUR TOMBOL SHOPEE
+  const btn = document.getElementById('btn-shopee');
+  if (btn) {
+    if (produkFilteredGlobal.length > BATAS_TAMPIL) {
+      btn.style.display = 'block';
+      let sisa = produkFilteredGlobal.length - BATAS_TAMPIL;
+      if (sisa > 12) sisa = 12;
+      btn.innerHTML = `Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`;
+    } else {
+      btn.style.display = 'none';
     }
+  }
+}
 
+function loadLebihBanyak() {
+  BATAS_TAMPIL += 12;
+  terapkanFilterDanPencarian();
+}
+    
     function renderProduk(data) {
       const container = document.getElementById('daftar-produk');
       container.innerHTML = '';
