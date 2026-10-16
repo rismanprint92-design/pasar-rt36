@@ -5,42 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace RT. 36 AR & Metroland</title>
 
-  <!-- 1. CACHE BIAR NGEBUT 1 DETIK - WAJIB TAMBAH INI BOS -->
-  <meta http-equiv="Cache-Control" content="max-age=86400">
-  <meta name="theme-color" content="#10b981">
-  <link rel="manifest" href="manifest.json">
-
-  <!-- 2. PWA + CACHE SERVICE WORKER -->
   <script>
-  // Deteksi HP jadul biar tidak error
-  var isOld = /Android [1-8]\./.test(navigator.userAgent);
-  if (!isOld && 'serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js')
-        .then(function(){ console.log('Cache RT36 AKTIF!'); })
-        .catch(function(){ console.log('Cache gagal'); });
+  // MATIKAN CACHE DULU BIAR PRODUK MUNCUL LAGI BOS
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      for(let reg of regs) reg.unregister();
     });
   }
   </script>
   
-  <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
-<script>
-  var isOld = /Android [1-8]\./.test(navigator.userAgent);
-  // Hanya HP baru yang dikasih manifest, HP lama tidak dikasih sama sekali
-  if (!isOld) {
-    var link = document.createElement('link');
-    link.id = 'pwa-manifest';
-    link.rel = 'manifest';
-    link.href = 'manifest.json';
-    document.head.appendChild(link);
-  } else {
-    // Blokir total pop-up Instal di HP lama
-    window.addEventListener('beforeinstallprompt', function(e) {
-      e.preventDefault();
-      return false;
-    });
-  }
-</script>
   <meta name="theme-color" content="#059669">
   <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
