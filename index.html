@@ -504,13 +504,13 @@
 
         let miniThumbnails = '';
         if (listFoto.length > 1) {
-          miniThumbnails = `<div class="flex gap-1 mt-2 overflow-x-auto pb-1">`;
-          listFoto.forEach((f, idx) => {
-            miniThumbnails += `<img src="${f}" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, ${idx})' class="w-10 h-10 object-cover rounded border hover:border-emerald-500 cursor-pointer flex-shrink-0" alt="thumb">`;
+          miniThumbnails = `<div class="flex gap-1 mt-2">`;
+          listFoto.forEach((f) => {
+           miniThumbnails += `<img loading="lazy" decoding="async" src="${f}" class="w-8 h-8 rounded object-cover border cursor-pointer">`;
           });
           miniThumbnails += `</div>`;
         }
-
+        
         const tombolEditPenjual = `
           <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
             <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
@@ -526,7 +526,7 @@
         const card = `
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
             <div class="relative cursor-pointer" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, 0)'>
-              <img src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition" alt="${item.nama}">
+              <img loading="lazy" decoding="async" src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition bg-gray-100" alt="${item.nama}">
               ${badgeFoto}
             </div>
             <div class="p-3 flex-1 flex flex-col justify-between">
