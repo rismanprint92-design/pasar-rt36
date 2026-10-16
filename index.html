@@ -470,18 +470,26 @@
    let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
    let produkFilteredGlobal = []; // simpan hasil filter buat tombol
 
+  // --- JURUS HEMAT CLOUD: AUTO HAPUS 30 HARI PERMANEN ---
 dbRef.on('value', (snapshot) => {
   const data = snapshot.val();
   produkData = [];
+  
   if (data) {
+    const sekarang = Date.now();
+    const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
     Object.keys(data).forEach(key => {
-      produkData.unshift({ id: key,...data[key] });
+      const item = data[key];
+      if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
+        dbRef.child(key).remove();
+        return;
+      }
+      produkData.unshift({ id: key,...item });
     });
   }
-  BATAS_TAMPIL = 12; // reset ke 12 kalau ada barang baru
+  BATAS_TAMPIL = 12; // reset ke 12 kali buka
   terapkanFilterDanPencarian();
 });
-
 function terapkanFilterDanPencarian() {
   const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
 
