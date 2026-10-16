@@ -385,6 +385,18 @@
     let isAdmin = false;
     let pinAdminAktif = "1234";
     let adminWaAktif = "6282299511782";
+    
+    // 👉 SIMPAN DI SINI
+    function bersihkanTeks(teks) {
+      if (!teks) return '';
+      return String(teks)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    
     let produkData = [];
     let kategoriAktif = 'semua';
     let currentZoomScale = 1;
@@ -782,14 +794,14 @@
 
     function simpanKeFirebase(arrayFotoUrl) {
       const barangBaru = {
-        nama: document.getElementById('nama').value,
+        nama: bersihkanTeks(document.getElementById('nama').value),
         harga: parseInt(document.getElementById('harga').value),
         kategori: document.getElementById('kategori').value,
-        penjual: document.getElementById('penjual').value,
-        lokasi: document.getElementById('lokasi').value,
+        penjual: bersihkanTeks(document.getElementById('penjual').value),
+        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
         wa: document.getElementById('whatsapp').value,
         pinPenjual: document.getElementById('pin-penjual').value,
-        catatan: document.getElementById('catatan').value,
+        catatan: bersihkanTeks(document.getElementById('catatan').value),
         foto: arrayFotoUrl,
         timestamp: Date.now()
       };
@@ -868,17 +880,17 @@
 
       function updateDB(fotoFinal) {
         const updateData = {
-          nama: document.getElementById('edit-nama').value,
-          harga: parseInt(document.getElementById('edit-harga').value),
-          kategori: document.getElementById('edit-kategori').value,
-          penjual: document.getElementById('edit-penjual').value,
-          lokasi: document.getElementById('edit-lokasi').value,
-          wa: document.getElementById('edit-whatsapp').value,
-          catatan: document.getElementById('edit-catatan').value,
-          foto: fotoFinal,
-          pinPenjual: produkLama.pinPenjual || "1234",
-          timestamp: produkLama.timestamp || Date.now()
-        };
+        nama: bersihkanTeks(document.getElementById('edit-nama').value),
+        harga: parseInt(document.getElementById('edit-harga').value),
+        kategori: document.getElementById('edit-kategori').value,
+        penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
+        lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
+        wa: document.getElementById('edit-whatsapp').value,
+        catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
+        foto: fotoFinal,
+        pinPenjual: produkLama.pinPenjual || "1234",
+        timestamp: produkLama.timestamp || Date.now()
+      };
 
         dbRef.child(id).set(updateData).then(() => {
           tutupModalEdit();
