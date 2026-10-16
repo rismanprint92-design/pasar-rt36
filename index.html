@@ -1034,25 +1034,128 @@ function loadLebihBanyak() {
   }
 </script>
 
-<!-- ===== LIVE CHAT WARGA V4 - FIX TRANSPARAN + GESER + HAPUS PEMILIK/ADMIN + 24JAM ===== -->
-<button id="btnBukaChat" class="fixed bottom-5 right-5 z-[9999] bg-emerald-600 text-white p-4 rounded-full shadow-2xl flex items-center justify-center gap-2 opacity-60 hover:opacity-100 cursor-move select-none touch-none">
+<!-- ===== LIVE CHAT WARGA V3 - HAPUS SESUAI PEMILIK + ADMIN + AUTO 24 JAM ===== -->
+
+<button id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 text-white p-4 rounded-full shadow-2xl flex items-center justify-center gap-2 group opacity-70 hover:opacity-100 transition-opacity cursor-move select-none touch-none">
   <span class="text-2xl">💬</span>
-  <span class="text-sm font-semibold hidden sm:inline">Live Chat Warga</span>
+  <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 text-sm font-semibold">Live Chat Warga</span>
 </button>
-<div id="panelChatWarga" class="hidden fixed bottom-20 right-5 z-[9999] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border overflow-hidden flex flex-col">
-  <div class="bg-emerald-600 text-white p-3.5 flex justify-between items-center"><div><h4 class="font-bold text-sm">Obrolan Warga RT.36 V4</h4><p class="text-[10px]">Auto hapus 24 jam - Geser icon</p></div><button onclick="toggleBoxChat()" class="text-lg px-2">✕</button></div>
+
+<div id="panelChatWarga" class="hidden fixed bottom-20 right-5 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border overflow-hidden flex flex-col">
+  <div class="bg-emerald-600 text-white p-3.5 flex justify-between items-center">
+    <div class="flex items-center gap-2"><span>💬</span><div><h4 class="font-bold text-sm">Obrolan Warga RT.36</h4><p class="text-[10px] text-emerald-100">Auto hapus 24 jam</p></div></div>
+    <button onclick="toggleBoxChat()" class="font-bold text-lg px-2">✕</button>
+  </div>
   <div id="boxChatWarga" class="h-72 overflow-y-auto p-3 bg-gray-50 flex flex-col gap-2 text-sm"></div>
-  <div class="p-3 bg-white border-t flex flex-col gap-2"><input type="text" id="namaWarga" placeholder="Nama harus sama untuk hapus" class="border p-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500"><div class="flex gap-1.5"><input type="text" id="teksPesanWarga" placeholder="Tulis pesan..." class="border p-2 rounded-lg text-xs flex-1 outline-none" onkeypress="if(event.key==='Enter')kirimPesanWarga()"><button onclick="kirimPesanWarga()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs">Kirim</button></div></div>
+  <div class="p-3 bg-white border-t flex flex-col gap-2">
+    <input type="text" id="namaWarga" placeholder="Nama / Panggilan (harus sama untuk hapus)" class="border p-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+    <div class="flex gap-1.5">
+      <input type="text" id="teksPesanWarga" placeholder="Tulis pesan..." class="border p-2 rounded-lg text-xs flex-1 outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="handleEnterChat(event)">
+      <button onclick="kirimPesanWarga()" class="bg-emerald-600 text-white px-3.5 py-2 rounded-lg text-xs font-semibold">Kirim</button>
+    </div>
+  </div>
 </div>
+
 <script>
-const ADMIN_LIST=['admin','pak rt','rt36','risman']; const BATAS_24JAM=24*60*60*1000;
-function getChatRef(){ if(typeof db!=='undefined'&&db.ref) return db.ref('pesan_warga'); if(typeof firebase!=='undefined'&&firebase.database) return firebase.database().ref('pesan_warga'); return null; }
-function toggleBoxChat(){ document.getElementById('panelChatWarga').classList.toggle('hidden'); document.getElementById('btnBukaChat').classList.remove('ring-4','ring-red-400','animate-bounce'); }
-function kirimPesanWarga(){ const n=document.getElementById('namaWarga').value.trim(); const p=document.getElementById('teksPesanWarga').value.trim(); if(!n||!p){alert('Isi nama & pesan');return;} getChatRef().push({nama:n,pesan:p,waktu:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()},e=>{if(!e)document.getElementById('teksPesanWarga').value='';});}
-function hapusPesanWarga(k,namaPemilik){ const saya=(document.getElementById('namaWarga').value.trim().toLowerCase()); const pemilik=(namaPemilik||'').toLowerCase(); const isAdmin=ADMIN_LIST.includes(saya); const isPemilik=saya===pemilik; if(!saya){alert('Isi Nama Anda dulu di kotak atas untuk verifikasi!');return;} if(!isPemilik&&!isAdmin){alert('Hanya '+namaPemilik+' dan Admin bisa hapus!');return;} if(confirm('Hapus pesan ini?')) getChatRef().child(k).remove(); }
-window.addEventListener('load',()=>{ const ref=getChatRef(); if(!ref) return; ref.limitToLast(50).on('child_added',s=>{ const d=s.val(); const k=s.key; if(d.timestamp&&Date.now()-d.timestamp>BATAS_24JAM){ ref.child(k).remove(); return; } const box=document.getElementById('boxChatWarga'); const el=document.createElement('div'); el.id='chat-'+k; el.className='bg-white p-2.5 rounded-lg border text-xs'; el.innerHTML=`<div class="flex justify-between"><b class="text-emerald-700">${d.nama}</b><div class="flex gap-2"><span class="text-[9px] text-gray-400">${d.waktu}</span><button onclick="hapusPesanWarga('${k}','${d.nama}')" class="text-red-500">🗑️</button></div></div><div class="mt-1 break-words">${d.pesan}</div>`; box.appendChild(el); if(document.getElementById('panelChatWarga').classList.contains('hidden')){document.getElementById('btnBukaChat').classList.add('ring-4','ring-red-400','animate-bounce');} else box.scrollTop=box.scrollHeight; }); ref.on('child_removed',s=>{document.getElementById('chat-'+s.key)?.remove();}); setInterval(()=>{ref.once('value',snap=>{const v=snap.val(); if(!v) return; Object.keys(v).forEach(k=>{if(v[k].timestamp&&Date.now()-v[k].timestamp>BATAS_24JAM) ref.child(k).remove();});});},300000); });
-function escapeHtml(t){return t||'';}
-(function(){ const b=document.getElementById('btnBukaChat'); let drag=false,sx,sy,il,it; const gp=e=>e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY}; b.addEventListener('mousedown',e=>{const p=gp(e);drag=true;sx=p.x;sy=p.y;const r=b.getBoundingClientRect();il=r.left;it=r.top;b.style.bottom='auto';b.style.right='auto';b.style.transition='none';}); window.addEventListener('mousemove',e=>{if(!drag)return;const p=gp(e);b.style.left=(il+p.x-sx)+'px';b.style.top=(it+p.y-sy)+'px';}); window.addEventListener('mouseup',()=>{drag=false;b.style.transition='';}); b.addEventListener('touchstart',e=>{const p=gp(e);drag=true;sx=p.x;sy=p.y;const r=b.getBoundingClientRect();il=r.left;it=r.top;b.style.bottom='auto';b.style.right='auto';},{passive:false}); window.addEventListener('touchmove',e=>{if(!drag)return;const p=gp(e.changedTouches?e.changedTouches[0]:e);b.style.left=(il+p.x-sx)+'px';b.style.top=(it+p.y-sy)+'px';},{passive:false}); window.addEventListener('touchend',()=>{drag=false;}); })();
+  const ADMIN_LIST = ['admin', 'pak rt', 'rt36', 'pak rt 36', 'bu rt']; // <-- Tambah nama admin bos, huruf kecil semua
+  const BATAS_CHAT_24_JAM = 24 * 60 * 60 * 1000; // 24 jam
+
+  function getChatRef() {
+    if (typeof db!== 'undefined' && db && typeof db.ref === 'function') return db.ref('pesan_warga');
+    if (typeof database!== 'undefined' && database && typeof database.ref === 'function') return database.ref('pesan_warga');
+    if (typeof firebase!== 'undefined' && firebase.database) return firebase.database().ref('pesan_warga');
+    return null;
+  }
+  function toggleBoxChat(){
+    const panel=document.getElementById('panelChatWarga');
+    panel.classList.toggle('hidden');
+    document.getElementById('btnBukaChat')?.classList.remove('ring-4','ring-red-400','animate-bounce');
+    if(!panel.classList.contains('hidden')) document.getElementById('boxChatWarga').scrollTop=document.getElementById('boxChatWarga').scrollHeight;
+  }
+  function kirimPesanWarga(){
+    const nama=document.getElementById('namaWarga').value.trim();
+    const pesan=document.getElementById('teksPesanWarga').value.trim();
+    if(!nama){ alert("Isi Nama dulu bos!"); return; }
+    if(!pesan){ alert("Ketik pesan!"); return; }
+    const chatRef=getChatRef();
+    if(!chatRef){ alert("Firebase belum siap"); return; }
+    const jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    chatRef.push({nama,pesan,waktu:jam,timestamp:Date.now()},(e)=>{ if(e) alert(e.message); else document.getElementById('teksPesanWarga').value=''; });
+  }
+  function handleEnterChat(e){ if(e.key==='Enter') kirimPesanWarga(); }
+
+  // --- HAPUS DENGAN CEK PEMILIK + ADMIN ---
+  function hapusPesanWarga(key, namaPemilik){
+    const namaSaya = document.getElementById('namaWarga').value.trim().toLowerCase();
+    const pemilik = (namaPemilik||'').trim().toLowerCase();
+    const isAdmin = ADMIN_LIST.includes(namaSaya);
+    const isPemilik = namaSaya && namaSaya === pemilik;
+
+    if(!namaSaya){ alert("Isi Nama Anda dulu di atas bos, untuk verifikasi hapus!"); document.getElementById('namaWarga').focus(); return; }
+    if(!isPemilik &&!isAdmin){
+      alert("Maaf bos, hanya pemilik pesan ("+namaPemilik+") dan Admin yang bisa hapus!");
+      return;
+    }
+    if(!confirm("Hapus pesan dari "+namaPemilik+" ini bos?")) return;
+    getChatRef()?.child(key).remove();
+  }
+
+  window.addEventListener('load', function() {
+    const chatRef=getChatRef();
+    if(!chatRef) return;
+
+    chatRef.limitToLast(50).on('child_added', function(snap){
+      const data=snap.val(); const key=snap.key;
+      // --- AUTO HAPUS 24 JAM ---
+      if(data.timestamp && (Date.now() - data.timestamp) > BATAS_CHAT_24_JAM){
+        chatRef.child(key).remove();
+        return;
+      }
+
+      const boxChat=document.getElementById('boxChatWarga');
+      const el=document.createElement('div');
+      el.id='chat-'+key;
+      el.className='bg-white p-2.5 rounded-lg border text-xs relative';
+      el.innerHTML=`
+        <div class="flex justify-between items-center mb-1">
+          <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-400 text-[9px]">${data.waktu||''}</span>
+            <button onclick="hapusPesanWarga('${key}','${escapeHtml(data.nama).replace(/'/g,"&#039;")}')" class="text-red-500 hover:text-red-700 opacity-70">🗑️</button>
+          </div>
+        </div>
+        <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
+      `;
+      boxChat.appendChild(el);
+      const panel=document.getElementById('panelChatWarga');
+      if(panel && panel.classList.contains('hidden')){
+        try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.setValueAtTime(587.33,ctx.currentTime); g.gain.setValueAtTime(0.1,ctx.currentTime); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.15);}catch(e){}
+        document.getElementById('btnBukaChat')?.classList.add('ring-4','ring-red-400','animate-bounce');
+      } else { boxChat.scrollTop=boxChat.scrollHeight; }
+    });
+
+    chatRef.on('child_removed', function(snap){
+      const el=document.getElementById('chat-'+snap.key);
+      if(el) el.remove();
+    });
+
+    // Pembersih extra tiap 5 menit
+    setInterval(()=>{ chatRef.once('value', s=>{ const val=s.val(); if(!val) return; Object.keys(val).forEach(k=>{ const it=val[k]; if(it.timestamp && Date.now()-it.timestamp > BATAS_CHAT_24_JAM) chatRef.child(k).remove(); }); }); }, 5*60*1000);
+  });
+
+  function escapeHtml(t){ if(!t) return ''; return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+
+  // Icon bisa digeser
+  (function(){
+    const btn=document.getElementById('btnBukaChat'); if(!btn) return;
+    let drag=false,sx,sy,il,it;
+    const getP=e=>e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};
+    function s(e){ const p=getP(e); drag=true; sx=p.x; sy=p.y; const r=btn.getBoundingClientRect(); il=r.left; it=r.top; btn.style.bottom='auto'; btn.style.right='auto'; btn.style.transition='none'; e.preventDefault(); }
+    function m(e){ if(!drag) return; const p=getP(e); btn.style.left=(il+p.x-sx)+'px'; btn.style.top=(it+p.y-sy)+'px'; }
+    function e(){ drag=false; btn.style.transition=''; }
+    btn.addEventListener('mousedown',s); window.addEventListener('mousemove',m); window.addEventListener('mouseup',e);
+    btn.addEventListener('touchstart',s,{passive:false}); window.addEventListener('touchmove',m,{passive:false}); window.addEventListener('touchend',e);
+  })();
 </script>
   
 </body>
