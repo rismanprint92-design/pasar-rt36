@@ -1056,6 +1056,7 @@ function tutupModalOpsiBeli() {
     }
   }
 
+  // --- KIRIM PESAN DENGAN SISTEM PIN / SANDI WARGA ---
   function kirimPesanWarga() {
     const namaInput = document.getElementById('namaWarga');
     const pesanInput = document.getElementById('teksPesanWarga');
@@ -1065,32 +1066,42 @@ function tutupModalOpsiBeli() {
     const nama = typeof bersihkanTeks === 'function' ? bersihkanTeks(namaInput.value.trim()) : namaInput.value.trim();
     const pesan = typeof bersihkanTeks === 'function' ? bersihkanTeks(pesanInput.value.trim()) : pesanInput.value.trim();
 
-    if (!nama) {
-      alert("Silakan masukkan Nama/Panggilan Anda terlebih dahulu!");
-      namaInput.focus();
-      return;
+    if (!nama) { 
+      alert("Silakan masukkan Nama/Panggilan Anda terlebih dahulu!"); 
+      namaInput.focus(); 
+      return; 
+    }
+    if (!pesan) { 
+      alert("Silakan ketik pesan sebelum mengirim!"); 
+      pesanInput.focus(); 
+      return; 
     }
 
-    if (!pesan) {
-      alert("Silakan ketik pesan sebelum mengirim!");
-      pesanInput.focus();
-      return;
+    // Cek apakah warga sudah punya PIN tersimpan di perangkat ini
+    let pinWarga = localStorage.getItem('pin_warga_rt36');
+    
+    if (!pinWarga) {
+      // Jika belum ada PIN, minta warga membuat PIN 4 digit sederhana untuk keamanan identitas mereka
+      pinWarga = prompt("Buat 4 digit PIN sandi Anda (untuk mengingat nama Anda agar tidak ke-reset saat ganti/refresh browser):", "1234");
+      if (!pinWarga || pinWarga.length < 3) {
+        alert("PIN dibatalkan atau terlalu pendek. Pesan tidak dikirim.");
+        return;
+      }
+      localStorage.setItem('pin_warga_rt36', pinWarga);
     }
 
     const chatRef = getChatRef();
-    if (!chatRef) {
-      alert("Koneksi Firebase belum siap. Silakan segarkan halaman.");
-      return;
-    }
+    if (!chatRef) { alert("Koneksi Firebase belum siap."); return; }
 
+    // Gunakan PIN sebagai ID unik perangkat agar nama tetap sinkron
     let myChatId = localStorage.getItem('my_chat_id');
     if (!myChatId) {
-      myChatId = 'user_' + Math.random().toString(36).substr(2, 9);
+      myChatId = 'warga_' + pinWarga + '_' + Math.random().toString(36).substr(2, 5);
       localStorage.setItem('my_chat_id', myChatId);
     }
 
+    // Simpan nama dan PIN ke memori lokal
     localStorage.setItem('nama_warga_rt36', nama);
-
     const jam = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     chatRef.push({
@@ -1098,29 +1109,28 @@ function tutupModalOpsiBeli() {
       pesan: pesan,
       waktu: jam,
       userId: myChatId,
+      pin: pinWarga,
       timestamp: Date.now()
     }, function(error) {
-      if (error) {
-        alert("Gagal mengirim: " + error.message);
+      if (!error) { 
+        pesanInput.value = ''; 
       } else {
-        pesanInput.value = '';
+        alert("Gagal mengirim: " + error.message);
       }
     });
   }
 
-  function handleEnterChat(e) {
-    if (e.key === 'Enter') {
-      kirimPesanWarga();
-    }
-  }
-
+  // Auto-muat nama yang tersimpan saat halaman dibuka
   window.addEventListener('load', function() {
     const savedNama = localStorage.getItem('nama_warga_rt36');
     if (savedNama) {
       const inputNama = document.getElementById('namaWarga');
-      if (inputNama) inputNama.value = savedNama;
+      if (inputNama) {
+        inputNama.value = savedNama;
+        // Opsional: Kunci/buat readonly agar tidak sengaja terganti, atau biarkan tetap bisa diedit
+      }
     }
-
+  
     const chatRef = getChatRef();
     if (chatRef) {
       const BATAS_24_JAM = 24 * 60 * 60 * 1000;
