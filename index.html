@@ -635,8 +635,8 @@ function loadLebihBanyak() {
     ` : '';
 
     const card = `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
-          <div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos, 0)" data-fotos='${JSON.stringify(listFoto)}'>
+        <div id="produk-${item.id}" class="bg-white rounded-xl shadow-sm border-2 border-transparent transition-all duration-500 overflow-hidden flex flex-col justify-between">
+          <div class="relative cursor-pointer"
             <img loading="lazy" decoding="async" src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition bg-gray-100" alt="${item.nama}">
             ${badgeFoto}
           </div>
@@ -1114,6 +1114,39 @@ function tutupModalOpsiBeli() {
       tutupModalShare();
     }  
 
+    // --- FITUR DEEP LINK SHARE: KLIK LINK LANGSUNG KE PRODUK ---
+    function cekDeepLinkProduk() {
+      const params = new URLSearchParams(window.location.search);
+      const idProduk = params.get('id');
+      if (!idProduk) return;
+      const interval = setInterval(() => {
+        const target = document.getElementById(`produk-${idProduk}`);
+        if (target) {
+          clearInterval(interval);
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.remove('border-transparent');
+          target.classList.add('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
+          setTimeout(() => {
+            const fotoData = target.querySelector('[data-fotos]');
+            if(fotoData) bukaModalZoom(fotoData.dataset.fotos, 0);
+          }, 800);
+          setTimeout(() => {
+            target.classList.add('border-transparent');
+            target.classList.remove('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
+          }, 3500);
+        }
+      }, 500);
+      setTimeout(() => clearInterval(interval), 10000);
+    }
+    const asliTerapkan = terapkanFilterDanPencarian;
+    terapkanFilterDanPencarian = function() {
+      asliTerapkan();
+      setTimeout(cekDeepLinkProduk, 600);
+    }
+    window.addEventListener('load', () => {
+      setTimeout(cekDeepLinkProduk, 1500);
+    });
+    
     // Pendaftaran Service Worker untuk PWA
     var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
     if ('serviceWorker' in navigator && !isOldAndroid) {
