@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketplace RT. 36 AR & Metroland</title>
+  <title>Mark<etplace RT. 36 AR & Metroland</title>
   
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
 <script>
@@ -56,22 +56,37 @@
 .catatan-teks.buka {
   -webkit-line-clamp: unset;
   display: block;
-  white-space: pre-wrap;
-  text-overflow: clip;
-}
-.btn-lihat {
-  font-size: 10px;
-  color: #059669;
-  font-weight: bold;
-  background: none;
-  border: none;
-  padding: 2px 0 0 0;
-  cursor: pointer;
-  text-decoration: underline;
-  display: block;
-}
-    
-</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace RT. 36 AR & Metroland</title>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <script>
+    var isOld = /Android [1-8]\./.test(navigator.userAgent);
+    if (!isOld) {
+      var link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = 'manifest.json';
+      document.head.appendChild(link);
+    }
+  </script>
+  <meta name="theme-color" content="#059669">
+  <link rel="icon" type="image/png" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <style>
+    #search-bar-container{transition:transform .3s,opacity .3s}
+    #daftar-produk{content-visibility:auto}
+    .catatan-teks{font-size:11px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#6b7280;font-style:italic;margin-top:4px}
+    .catatan-teks.buka{-webkit-line-clamp:unset;display:block;white-space:pre-wrap;text-overflow:clip}
+    .btn-lihat{font-size:10px;color:#059669;font-weight:bold;background:none;border:none;padding:2px 0 0 0;cursor:pointer;text-decoration:underline;display:block}
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/bold/style.css">
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
@@ -432,115 +447,71 @@
 
   <!-- Script Firebase & Logika Aplikasi -->
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
-      authDomain: "pasar-rt36.firebaseapp.com",
-      databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "pasar-rt36",
-      storageBucket: "pasar-rt36.firebasestorage.app",
-      messagingSenderId: "217440554731",
-      appId: "1:217440554731:web:876717f8204cf40deeb8ae",
-      measurementId: "G-G5HXM56NWX"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const dbRef = database.ref('produk_pasar');
-    const pinRef = database.ref('pengaturan/admin_pin');
-    const adminWaRef = database.ref('pengaturan/admin_wa');
-
-    let isAdmin = false;
-    let pinAdminAktif = "1234";
-    let adminWaAktif = "6282299511782";
     
-    // 👉 SIMPAN DI SINI
-    function bersihkanTeks(teks) {
-      if (!teks) return '';
-      return String(teks)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
 
-    function bukaTutupCatatan(id, btn) {
-  const teks = document.getElementById(id);
-  teks.classList.toggle('buka');
-  if (teks.classList.contains('buka')) {
-    btn.innerText = 'Sembunyikan ▲';
-  } else {
-    btn.innerText = 'Lihat selengkapnya ▼';
-  }
-}
     let produkData = [];
-    let kategoriAktif = 'semua';
-    let currentZoomScale = 1;
-    let activeZoomPhotos = [];
-
-    // --- LOGIKA AUTO-HIDE SEARCH BAR SAAT SCROLL ---
-    let lastScrollTop = 0;
-    const searchBarContainer = document.getElementById('search-bar-container');
-
-    window.addEventListener('scroll', function() {
-      let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-      if (scrollTop > lastScrollTop && scrollTop > 50) {
-        // Scroll ke Bawah -> Sembunyikan bar pencarian & filter
-        searchBarContainer.style.transform = 'translateY(-120%)';
-        searchBarContainer.style.opacity = '0';
-      } else {
-        // Scroll ke Atas -> Munculkan kembali bar pencarian & filter
-        searchBarContainer.style.transform = 'translateY(0)';
-        searchBarContainer.style.opacity = '1';
-      }
-      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-    }, false);
-
-    pinRef.on('value', (snapshot) => {
-      const pinDb = snapshot.val();
-      if (pinDb) { pinAdminAktif = pinDb; }
-      else { pinRef.set("1234"); }
-    });
-
-    adminWaRef.on('value', (snapshot) => {
-      const waDb = snapshot.val();
-      if (waDb && waDb === "628123456789") {
-        adminWaRef.set("6282299511782");
-        adminWaAktif = "6282299511782";
-      } else if (waDb) {
-        adminWaAktif = waDb;
-      } else {
-        adminWaRef.set("6282299511782");
-        adminWaAktif = "6282299511782";
-      }
-      const inputWa = document.getElementById('admin-whatsapp-nomor');
-      if(inputWa) inputWa.value = adminWaAktif;
-    });
+    
 
    // --- JURUS 2 SHOPEE: JANGAN LOAD 100 SEKALIGUS - HEMAT 90% ---
 let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
 let produkFilteredGlobal = []; // simpan hasil filter buat tombol
 
-// --- JURUS HEMAT CLOUD: AUTO HAPUS 30 HARI PERMANEN ---
-dbRef.on('value', (snapshot) => {
-  const data = snapshot.val();
-  produkData = [];
-  
-  if (data) {
-    const sekarang = Date.now();
-    const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
-    Object.keys(data).forEach(key => {
-      const item = data[key];
-      if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
-        dbRef.child(key).remove();
-        return;
-      }
-      produkData.unshift({ id: key, ...item });
-    });
-  }
-  BATAS_TAMPIL = 12; // reset ke 12 kali buka
-  terapkanFilterDanPencarian();
+// CONFIG
+const firebaseConfig = { apiKey:"AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY", authDomain:"pasar-rt36.firebaseapp.com", databaseURL:"https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app", projectId:"pasar-rt36", storageBucket:"pasar-rt36.firebasestorage.app", messagingSenderId:"217440554731", appId:"1:217440554731:web:876717f8204cf40deeb8ae" };
+function initFirebase(){
+  if(typeof firebase==='undefined'){ setTimeout(initFirebase,100); return; }
+  firebase.initializeApp(firebaseConfig);
+  window.database = firebase.database();
+  window.dbRef = database.ref('produk_pasar');
+  window.pinRef = database.ref('pengaturan/admin_pin');
+  window.adminWaRef = database.ref('pengaturan/admin_wa');
+  startApp();
+}
+setTimeout(initFirebase,0);
+
+let isAdmin=false, pinAdminAktif="1234", adminWaAktif="6282299511782";
+function bersihkanTeks(teks){ if(!teks) return ''; return String(teks).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function bukaTutupCatatan(id,btn){ const teks=document.getElementById(id); teks.classList.toggle('buka'); btn.innerText= teks.classList.contains('buka') ? 'Sembunyikan ▲' : 'Lihat selengkapnya ▼'; }
+
+let produkData=[]; let kategoriAktif='semua'; let BATAS_TAMPIL=12; let produkFilteredGlobal=[];
+let lastScrollTop=0; const searchBarContainer=document.getElementById('search-bar-container');
+window.addEventListener('scroll',function(){ let st=window.pageYOffset||document.documentElement.scrollTop; if(st>lastScrollTop && st>50){ searchBarContainer.style.transform='translateY(-120%)'; searchBarContainer.style.opacity='0'; } else { searchBarContainer.style.transform='translateY(0)'; searchBarContainer.style.opacity='1'; } lastScrollTop= st<=0?0:st; },false);
+
+function startApp(){
+  // CACHE: TAMPIL INSTAN DARI CACHE DULU (CUMA 12 PRODUK PERTAMA BIAR GAK JEBOL)
+  try{
+    let cacheLokal=localStorage.getItem('cache_produk_rt36_v2');
+    if(cacheLokal){
+      produkData=JSON.parse(cacheLokal);
+      terapkanFilterDanPencarian();
+    }
+  }catch(e){}
+
+  pinRef.on('value',s=>{ let v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
+  adminWaRef.on('value',s=>{ let v=s.val(); if(v && v!=="628123456789"){ adminWaAktif=v; let inp=document.getElementById('admin-whatsapp-nomor'); if(inp) inp.value=adminWaAktif; } else if(!v){ adminWaRef.set("6282299511782"); } });
+
+  // JURUS NGEBUT: CUMA 50 TERBARU, BUKAN SEMUA!
+  const dbRefLimited = database.ref('produk_pasar').limitToLast(50);
+  dbRefLimited.on('value', (snapshot)=>{
+    const data=snapshot.val(); let temp=[];
+    if(data){
+      const sekarang=Date.now(); const BATAS_30_HARI=30*24*60*60*1000;
+      Object.keys(data).forEach(key=>{
+        const item=data[key];
+        if(item.timestamp && (sekarang-item.timestamp)>BATAS_30_HARI){ dbRef.child(key).remove(); return; }
+        temp.unshift({id:key, ...item});
+      });
+    }
+    BATAS_TAMPIL=12;
+    terapkanFilterDanPencarian();
+    try{
+      let untukCache = temp.slice(0,12).map(p=>{
+        return {...p, foto: [p.foto ? p.foto[0] : '']};
+      });
+      localStorage.setItem('cache_produk_rt36_v2', JSON.stringify(untukCache));
+    }catch(e){ console.log('cache penuh, skip'); }
+  });
+}
 });
 
 function terapkanFilterDanPencarian() {
