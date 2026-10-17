@@ -612,10 +612,9 @@ function loadLebihBanyak() {
     const catatanTeks = item.catatan || '';
     const catatanHtml = catatanTeks ? `
       <div style="background:#f0fdf4; padding:6px 8px; border-radius:8px; border-left:3px solid #059669; margin-top:6px;">
-      <div id="${catatanId}" class="catatan-teks">📝 "${bersihkanTeks(catatanTeks)}"</div>
-      ${catatanTeks.length > 60 ? `<button class="btn-lihat" onclick="bukaTutupCatatan('${catatanId}', this)">Lihat selengkapnya ▼</button>` : ''}
-      </div>
-    ` : '';
+      <div id="${catatanId}" class="catatan-teks">📝 ${bersihkanTeks(catatanTeks)}</div>
+      <button class="btn-lihat" onclick="bukaTutupCatatan('${catatanId}', this)">Lihat selengkapnya ▼</button>
+    </div>` : '';
     
     const badgeFoto = listFoto.length > 1 ? `
       <span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
