@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace RT. 36 AR & Metroland</title>
-
+  
   <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
 <script>
   var isOld = /Android [1-8]\./.test(navigator.userAgent);
@@ -107,6 +107,9 @@
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
       <!-- Card Produk dimuat secara realtime dari Firebase -->
     </div>
+    <button id="btn-shopee" onclick="muatLebihBanyakProduk()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">
+  Lihat Produk Lainnya ↓
+</button>
   </main>
 
   <!-- Modal Informasi & Masukan Perbaikan Website -->
@@ -287,68 +290,69 @@
     </div>
   </div>
 
-  <!-- Modal Edit / Ganti Jualan -->
-  <div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
-    <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3>
-        <button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button>
+  <!-- Modal Edit / Ganti Jualan (Versi Sudah Diperbaiki) -->
+<div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3>
+      <button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button>
+    </div>
+
+    <form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs">
+      <input type="hidden" id="edit-id">
+      <div>
+        <label class="block font-medium mb-1">Nama Produk / Jasa</label>
+        <input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-medium mb-1">Harga (Rp)</label>
+          <input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Kategori</label>
+          <select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+            <option value="kuliner">Kuliner</option>
+            <option value="sembako">Sembako</option>
+            <option value="jasa">Jasa</option>
+            <option value="bekas">Barang Bekas</option>
+            <option value="pakaian">Pakaian</option>
+            <option value="aksesoris">Aksesoris</option>
+            <option value="elektronik">Elektronik</option>
+            <option value="dll">Dll</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-medium mb-1">Nama Penjual</label>
+          <input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Blok / No. Rumah</label>
+          <input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">No. WhatsApp</label>
+        <input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Catatan / Keterangan</label>
+        <textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Ganti Foto Baru (Maksimal 3 Foto, Otomatis Kompres)</label>
+        <input type="file" id="edit-input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
       </div>
 
-      <form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="edit-id">
-        <div>
-          <label class="block font-medium mb-1">Nama Produk / Jasa</label>
-          <input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Harga (Rp)</label>
-            <input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Kategori</label>
-            <select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-              <option value="kuliner">Kuliner</option>
-              <option value="sembako">Sembako</option>
-              <option value="jasa">Jasa</option>
-              <option value="bekas">Barang Bekas</option>
-              <option value="pakaian">Pakaian</option>
-              <option value="aksesoris">Aksesoris</option>
-              <option value="dll">Dll</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Nama Penjual</label>
-            <input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Blok / No. Rumah</label>
-            <input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">No. WhatsApp</label>
-          <input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Catatan / Keterangan</label>
-          <textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Ganti Foto Baru (Maksimal 5 Foto)</label>
-          <input type="file" id="edit-input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-        </div>
-
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="hapusOlehPenjual()" class="w-1/3 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200">Hapus Produk</button>
-          <button type="submit" class="w-2/3 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Simpan Perubahan</button>
-        </div>
-      </form>
-    </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="hapusOlehPenjual()" class="w-1/3 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200">Hapus Produk</button>
+        <button type="submit" class="w-2/3 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Simpan Perubahan</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- Modal Zoom / Perbesar Foto -->
   <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
@@ -445,149 +449,194 @@
       if(inputWa) inputWa.value = adminWaAktif;
     });
 
-    dbRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      produkData = [];
-      if (data) {
-        Object.keys(data).forEach(key => {
-          produkData.unshift({ id: key, ...data[key] });
-        });
+   // --- JURUS 2 SHOPEE: JANGAN LOAD 100 SEKALIGUS - HEMAT 90% ---
+let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
+let produkFilteredGlobal = []; // simpan hasil filter buat tombol
+
+// --- JURUS HEMAT CLOUD: AUTO HAPUS 30 HARI PERMANEN ---
+dbRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  produkData = [];
+  
+  if (data) {
+    const sekarang = Date.now();
+    const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
+    Object.keys(data).forEach(key => {
+      const item = data[key];
+      if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
+        dbRef.child(key).remove();
+        return;
       }
-      terapkanFilterDanPencarian();
+      produkData.unshift({ id: key, ...item });
     });
+  }
+  BATAS_TAMPIL = 12; // reset ke 12 kali buka
+  terapkanFilterDanPencarian();
+});
 
-    function terapkanFilterDanPencarian() {
-      const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
-      
-      let hasil = produkData;
+function terapkanFilterDanPencarian() {
+  const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
 
-      if (kategoriAktif !== 'semua') {
-        hasil = hasil.filter(p => p.kategori === kategoriAktif);
-      }
+  let hasil = produkData;
 
-      if (keyword !== '') {
-        hasil = hasil.filter(p => 
-          (p.nama && p.nama.toLowerCase().includes(keyword)) ||
-          (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
-          (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
-          (p.catatan && p.catatan.toLowerCase().includes(keyword))
-        );
-      }
+  if (kategoriAktif !== 'semua') {
+    hasil = hasil.filter(p => p.kategori === kategoriAktif);
+  }
 
-      renderProduk(hasil);
+  if (keyword !== '') {
+    hasil = hasil.filter(p =>
+      (p.nama && p.nama.toLowerCase().includes(keyword)) ||
+      (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
+      (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
+      (p.catatan && p.catatan.toLowerCase().includes(keyword))
+    );
+  }
+
+  // SIMPAN SEMUA HASIL FILTER
+  produkFilteredGlobal = hasil;
+
+  // POTONG CUMA 12 DULU
+  const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
+
+  // TAMPILKAN YANG 12 SAJA
+  tampilkanProduk(yangDitampilkan); 
+
+  // ATUR TOMBOL SHOPEE
+  const btn = document.getElementById('btn-shopee');
+  if (btn) {
+    if (produkFilteredGlobal.length > BATAS_TAMPIL) {
+      btn.style.display = 'block';
+      let sisa = produkFilteredGlobal.length - BATAS_TAMPIL;
+      if (sisa > 12) sisa = 12;
+      btn.innerHTML = `Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`;
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+}
+
+function loadLebihBanyak() {
+  BATAS_TAMPIL += 12;
+  terapkanFilterDanPencarian();
+}
+    
+     function renderProduk(data) {
+  const container = document.getElementById('daftar-produk');
+  container.innerHTML = '';
+
+  if(!data || data.length === 0) {
+    container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang yang cocok atau ditemukan.</div>`;
+    return;
+  }
+
+  data.forEach(item => {
+    const defaultFoto = 'https://via.placeholder.com/200?text=Produk+RT';
+    let listFoto = [defaultFoto];
+    if (item.foto) {
+      listFoto = Array.isArray(item.foto) ? item.foto : [item.foto];
     }
 
-    function renderProduk(data) {
-      const container = document.getElementById('daftar-produk');
-      container.innerHTML = '';
+    const fotoUtama = listFoto[0];
+    const catatanHtml = item.catatan ? `<p class="text-[10px] text-gray-400 italic mt-1 line-clamp-2">📝 "${item.catatan}"</p>` : '';
+    
+    const badgeFoto = listFoto.length > 1 ? `
+      <span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+        <i class="ph ph-images"></i> ${listFoto.length} Foto
+      </span>
+    ` : '';
 
-      if(!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang yang cocok atau ditemukan.</div>`;
-        return;
-      }
-
-      data.forEach(item => {
-        const defaultFoto = 'https://via.placeholder.com/200?text=Produk+RT';
-        let listFoto = [defaultFoto];
-        if (item.foto) {
-          listFoto = Array.isArray(item.foto) ? item.foto : [item.foto];
-        }
-
-        const fotoUtama = listFoto[0];
-        const catatanHtml = item.catatan ? `<p class="text-[10px] text-gray-400 italic mt-1 line-clamp-2">📝 "${item.catatan}"</p>` : '';
-        
-        const badgeFoto = listFoto.length > 1 ? `
-          <span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-            <i class="ph ph-images"></i> ${listFoto.length} Foto
-          </span>
-        ` : '';
-
-        let miniThumbnails = '';
-        if (listFoto.length > 1) {
-          miniThumbnails = `<div class="flex gap-1 mt-2">`;
-          listFoto.forEach((f) => {
-           miniThumbnails += `<img loading="lazy" decoding="async" src="${f}" class="w-8 h-8 rounded object-cover border cursor-pointer">`;
-          });
-          miniThumbnails += `</div>`;
-        }
-        
-        const tombolEditPenjual = `
-          <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
-            <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
-          </button>
-        `;
-
-        const tombolAdminHapus = isAdmin ? `
-          <button onclick="hapusProdukAdmin('${item.id}')" class="w-full mt-1 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
-            <i class="ph ph-trash"></i> Hapus (Admin RT)
-          </button>
-        ` : '';
-
-        const card = `
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
-            <div class="relative cursor-pointer" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, 0)'>
-              <img loading="lazy" decoding="async" src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition bg-gray-100" alt="${item.nama}">
-              ${badgeFoto}
-            </div>
-            <div class="p-3 flex-1 flex flex-col justify-between">
-              <div>
-                <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
-                <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${item.nama}</h3>
-                <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
-                <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
-                ${catatanHtml}
-                ${miniThumbnails}
-              </div>
-              <div class="mt-2">
-                <button onclick='bukaModalOpsiBeli("${item.wa}", "${item.nama}", ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
-                  class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
-                  <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
-                </button>
-                ${tombolEditPenjual}
-                ${tombolAdminHapus}
-              </div>
-            </div>
-          </div>
-        `;
-        container.innerHTML += card;
+    let miniThumbnails = '';
+    if (listFoto.length > 1) {
+      miniThumbnails = `<div class="flex gap-1 mt-2">`;
+      listFoto.forEach((f) => {
+       miniThumbnails += `<img loading="lazy" decoding="async" src="${f}" class="w-8 h-8 rounded object-cover border cursor-pointer">`;
       });
+      miniThumbnails += `</div>`;
     }
+    
+    const tombolEditPenjual = `
+      <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
+        <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
+      </button>
+    `;
 
-    // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
-    function bukaModalInfoAdmin() {
-      document.getElementById('modal-info-admin').classList.remove('hidden');
-      document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
-    }
+    const tombolAdminHapus = isAdmin ? `
+      <button onclick="hapusProdukAdmin('${item.id}')" class="w-full mt-1 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
+        <i class="ph ph-trash"></i> Hapus (Admin RT)
+      </button>
+    ` : '';
 
-    function tutupModalInfoAdmin() {
-      document.getElementById('modal-info-admin').classList.add('hidden');
-    }
+    const card = `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
+        <div class="relative cursor-pointer" onclick='bukaModalZoom(${JSON.stringify(listFoto)}, 0)'>
+          <img loading="lazy" decoding="async" src="${fotoUtama}" class="w-full h-32 object-cover hover:opacity-95 transition bg-gray-100" alt="${item.nama}">
+          ${badgeFoto}
+        </div>
+        <div class="p-3 flex-1 flex flex-col justify-between">
+          <div>
+            <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
+            <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${item.nama}</h3>
+            <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
+            <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
+            ${catatanHtml}
+            ${miniThumbnails}
+          </div>
+          <div class="mt-2">
+            <button onclick='bukaModalOpsiBeli(${JSON.stringify(item.wa)}, ${JSON.stringify(item.nama)}, ${item.harga}, ${JSON.stringify(item.catatan || "-")})' 
+              class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
+              <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
+            </button>
+            ${tombolEditPenjual}
+            ${tombolAdminHapus}
+          </div>
+        </div>
+      </div>
+    `;
+    container.innerHTML += card;
+  });
+}
+    
+   // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
+function bukaModalInfoAdmin() {
+  document.getElementById('modal-info-admin').classList.remove('hidden');
+  document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
+}
 
-    function kirimPesanKeAdminRT() {
-      const nomorAdmin = document.getElementById('admin-whatsapp-nomor').value.trim();
-      const topik = document.getElementById('pilih-topik-admin').value;
-      const pesanWarga = document.getElementById('pesan-masukan-warga').value.trim();
+function tutupModalInfoAdmin() {
+  document.getElementById('modal-info-admin').classList.add('hidden');
+}
 
-      if (!nomorAdmin) {
-        alert('Nomor WhatsApp Admin RT belum diatur.');
-        return;
-      }
+function kirimPesanKeAdminRT() {
+  const inputNomor = document.getElementById('admin-whatsapp-nomor').value.trim();
+  const topik = document.getElementById('pilih-topik-admin').value;
+  const pesanWarga = document.getElementById('pesan-masukan-warga').value.trim();
 
-      if (!pesanWarga) {
-        alert('Silakan tulis pesan atau masukan Anda terlebih dahulu.');
-        return;
-      }
+  if (!inputNomor) {
+    alert('Nomor WhatsApp Admin RT belum diatur.');
+    return;
+  }
 
-      if (isAdmin && nomorAdmin !== adminWaAktif) {
-        adminWaRef.set(nomorAdmin);
-        adminWaAktif = nomorAdmin;
-      }
+  if (!pesanWarga) {
+    alert('Silakan tulis pesan atau masukan Anda terlebih dahulu.');
+    return;
+  }
 
-      const teksWa = `Halo Pengurus / Pengembang RT.36 AR & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan / Perbaikan:* ${pesanWarga}\n\nTerima kasih!`;
-      
-      window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
-      tutupModalInfoAdmin();
-    }
+  // Bersihkan format nomor agar aman digunakan di wa.me
+  let nomorAdmin = inputNomor.replace(/\D/g, '');
+  if (nomorAdmin.startsWith('0')) {
+    nomorAdmin = '62' + nomorAdmin.slice(1);
+  }
+
+  if (isAdmin && inputNomor !== adminWaAktif) {
+    adminWaRef.set(inputNomor);
+    adminWaAktif = inputNomor;
+  }
+
+  const teksWa = `Halo Pengurus / Pengembang RT.36 AR & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan / Perbaikan:* ${pesanWarga}\n\nTerima kasih!`;
+  
+  window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
+  tutupModalInfoAdmin();
+}
 
     // --- FUNGSI KOMPRESSOR HEMAT (VERSI NGEBUT 3x) ---
     function kompresGambar(file, callback) {
@@ -626,88 +675,39 @@
     reader.readAsDataURL(file);
     }
     
-    // --- FITUR 2 OPSI PEMBELIAN ---
-    function bukaModalOpsiBeli(nomorWA, namaBarang, harga, catatanPenjual) {
-      const modal = document.getElementById('modal-opsi-beli');
-      document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`;
-      const pesan = `Halo, saya tetangga perumahan RT.36 AR & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
-      
-      document.getElementById('btn-wa-otomatis').onclick = function() {
-        window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
-        tutupModalOpsiBeli();
-      };
+   // --- FITUR 2 OPSI PEMBELIAN (Disempurnakan) ---
+function bukaModalOpsiBeli(nomorInput, namaBarang, harga, catatanPenjual) {
+  const modal = document.getElementById('modal-opsi-beli');
+  document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`;
+  
+  // Bersihkan format nomor WhatsApp agar aman (ubah 08... jadi 628...)
+  let nomorWA = nomorInput.replace(/\D/g, '');
+  if (nomorWA.startsWith('0')) {
+    nomorWA = '62' + nomorWA.slice(1);
+  }
 
-      document.getElementById('btn-salin-nomor').onclick = function() {
-        navigator.clipboard.writeText(nomorWA).then(() => {
-          alert(`Nomor HP penjual (${nomorWA}) berhasil disalin ke clipboard!`);
-        }).catch(() => {
-          prompt("Nomor HP Penjual:", nomorWA);
-        });
-        tutupModalOpsiBeli();
-      };
-      modal.classList.remove('hidden');
-    }
+  const pesan = `Halo, saya tetangga perumahan RT.36 AR & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+  
+  document.getElementById('btn-wa-otomatis').onclick = function() {
+    window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+    tutupModalOpsiBeli();
+  };
 
-    function tutupModalOpsiBeli() {
-      document.getElementById('modal-opsi-beli').classList.add('hidden');
-    }
+  document.getElementById('btn-salin-nomor').onclick = function() {
+    navigator.clipboard.writeText(nomorInput).then(() => {
+      alert(`Nomor HP penjual (${nomorInput}) berhasil disalin ke clipboard!`);
+    }).catch(() => {
+      prompt("Nomor HP Penjual:", nomorInput);
+    });
+    tutupModalOpsiBeli();
+  };
+  modal.classList.remove('hidden');
+}
 
-    // --- FITUR ZOOM / PERBESAR GAMBAR ---
-    function bukaModalZoom(arrayFoto, indexAktif) {
-      activeZoomPhotos = arrayFoto;
-      currentZoomScale = 1;
-      const modal = document.getElementById('modal-zoom');
-      const imgTarget = document.getElementById('img-zoom-target');
-      const thumbContainer = document.getElementById('zoom-thumbnails');
-
-      imgTarget.src = arrayFoto[indexAktif];
-      imgTarget.style.transform = `scale(${currentZoomScale})`;
-
-      thumbContainer.innerHTML = '';
-      if (arrayFoto.length > 1) {
-        arrayFoto.forEach((f, idx) => {
-          thumbContainer.innerHTML += `
-            <img src="${f}" onclick="pilihFotoZoom(${idx})" class="w-12 h-12 object-cover rounded border-2 ${idx === indexAktif ? 'border-emerald-500' : 'border-transparent opacity-70'} cursor-pointer hover:opacity-100">
-          `;
-        });
-      }
-      modal.classList.remove('hidden');
-    }
-
-    function pilihFotoZoom(index) {
-      const imgTarget = document.getElementById('img-zoom-target');
-      imgTarget.src = activeZoomPhotos[index];
-      currentZoomScale = 1;
-      imgTarget.style.transform = `scale(${currentZoomScale})`;
-
-      const thumbs = document.getElementById('zoom-thumbnails').children;
-      for(let i=0; i<thumbs.length; i++) {
-        if(i === index) {
-          thumbs[i].classList.remove('border-transparent', 'opacity-70');
-          thumbs[i].classList.add('border-emerald-500', 'opacity-100');
-        } else {
-          thumbs[i].classList.add('border-transparent', 'opacity-70');
-          thumbs[i].classList.remove('border-emerald-500', 'opacity-100');
-        }
-      }
-    }
-
-    function ubahSkalaZoom(delta) {
-      currentZoomScale += delta;
-      if (currentZoomScale < 1) currentZoomScale = 1;
-      if (currentZoomScale > 3) currentZoomScale = 3;
-      document.getElementById('img-zoom-target').style.transform = `scale(${currentZoomScale})`;
-    }
-
-    function resetZoom() {
-      currentZoomScale = 1;
-      document.getElementById('img-zoom-target').style.transform = `scale(${currentZoomScale})`;
-    }
-
-    function tutupModalZoom() {
-      document.getElementById('modal-zoom').classList.add('hidden');
-    }
-
+function tutupModalOpsiBeli() {
+  document.getElementById('modal-opsi-beli').classList.add('hidden');
+}
+    
     // --- FILTER KATEGORI & PENCARIAN ---
     function filterKategori(kat) {
       kategoriAktif = kat;
@@ -914,8 +914,8 @@
       }
 
       if (fileInput.files && fileInput.files.length > 0) {
-        if (fileInput.files.length > 5) {
-          alert('Maksimal foto yang dapat diunggah adalah 5 foto!');
+        if (fileInput.files.length > 3) {
+          alert('Maksimal foto yang dapat diunggah adalah 3 foto!');
           return;
         }
 
@@ -973,11 +973,13 @@
   } else {
     console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
   }
-</script>
-  
- <!-- ===== LIVE CHAT WARGA (FLOATING ICON + NOTIFIKASI SUARA) ===== -->
+  </script>
 
-<!-- 1. Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
+<!-- ================================================= -->
+<!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
+<!-- ================================================= -->
+
+<!-- Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 group">
   <span class="text-2xl">💬</span>
   <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-sm font-semibold">
@@ -985,7 +987,7 @@
   </span>
 </button>
 
-<!-- 2. Kotak Panel Chat -->
+<!-- Kotak Panel Chat -->
 <div id="panelChatWarga" class="hidden fixed bottom-20 right-5 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300">
   
   <!-- Header Kotak Chat -->
@@ -994,7 +996,7 @@
       <span class="text-lg">💬</span>
       <div>
         <h4 class="font-bold text-sm">Obrolan Warga RT.36</h4>
-        <p class="text-[10px] text-emerald-100">Ngobrol santai & info seputar warga</p>
+        <p class="text-[10px] text-emerald-100">Pesan otomatis terhapus dalam 24 jam</p>
       </div>
     </div>
     <button onclick="toggleBoxChat()" class="text-white hover:text-gray-200 font-bold text-lg px-2">
@@ -1019,7 +1021,10 @@
   </div>
 </div>
 
-<!-- 3. Skrip JavaScript Logika Chat -->
+
+<!-- ================================================= -->
+<!-- 2. BAGIAN LOGIKA & FUNGSI CHAT (JAVASCRIPT)       -->
+<!-- ================================================= -->
 <script>
   function getChatRef() {
     if (typeof db !== 'undefined' && db && typeof db.ref === 'function') {
@@ -1055,10 +1060,7 @@
     const namaInput = document.getElementById('namaWarga');
     const pesanInput = document.getElementById('teksPesanWarga');
 
-    if (!namaInput || !pesanInput) {
-      alert("Elemen input chat tidak ditemukan!");
-      return;
-    }
+    if (!namaInput || !pesanInput) return;
 
     const nama = typeof bersihkanTeks === 'function' ? bersihkanTeks(namaInput.value.trim()) : namaInput.value.trim();
     const pesan = typeof bersihkanTeks === 'function' ? bersihkanTeks(pesanInput.value.trim()) : pesanInput.value.trim();
@@ -1077,9 +1079,17 @@
 
     const chatRef = getChatRef();
     if (!chatRef) {
-      alert("Koneksi Firebase belum siap/ditemukan. Silakan segarkan halaman.");
+      alert("Koneksi Firebase belum siap. Silakan segarkan halaman.");
       return;
     }
+
+    let myChatId = localStorage.getItem('my_chat_id');
+    if (!myChatId) {
+      myChatId = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('my_chat_id', myChatId);
+    }
+
+    localStorage.setItem('nama_warga_rt36', nama);
 
     const jam = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -1087,10 +1097,11 @@
       nama: nama,
       pesan: pesan,
       waktu: jam,
+      userId: myChatId,
       timestamp: Date.now()
     }, function(error) {
       if (error) {
-        alert("Gagal mengirim ke Firebase: " + error.message);
+        alert("Gagal mengirim: " + error.message);
       } else {
         pesanInput.value = '';
       }
@@ -1104,19 +1115,46 @@
   }
 
   window.addEventListener('load', function() {
+    const savedNama = localStorage.getItem('nama_warga_rt36');
+    if (savedNama) {
+      const inputNama = document.getElementById('namaWarga');
+      if (inputNama) inputNama.value = savedNama;
+    }
+
     const chatRef = getChatRef();
     if (chatRef) {
+      const BATAS_24_JAM = 24 * 60 * 60 * 1000;
+
       chatRef.limitToLast(50).on('child_added', function(snapshot) {
         const data = snapshot.val();
+        const messageKey = snapshot.key;
+        const sekarang = Date.now();
+
+        if (data.timestamp && (sekarang - data.timestamp) > BATAS_24_JAM) {
+          chatRef.child(messageKey).remove();
+          return;
+        }
+
         const boxChat = document.getElementById('boxChatWarga');
         if (!boxChat) return;
 
+        let myChatId = localStorage.getItem('my_chat_id');
+
+        let tombolHapusHtml = '';
+        if ((data.userId && data.userId === myChatId) || (typeof isAdmin !== 'undefined' && isAdmin)) {
+          tombolHapusHtml = `<button onclick="hapusPesanChat('${messageKey}')" class="text-gray-400 hover:text-red-500 text-[10px] ml-2 px-1 font-bold" title="Hapus pesan">🗑️ Hapus</button>`;
+        }
+
         const elemenPesan = document.createElement('div');
+        elemenPesan.id = `chat-item-${messageKey}`;
         elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-xs';
         elemenPesan.innerHTML = `
           <div class="flex justify-between items-center mb-1">
             <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
-            <span class="text-gray-400 text-[9px]">${data.waktu}</span>
+            <div class="flex items-center">
+              <span class="text-gray-400 text-[9px]">${data.waktu}</span>
+              ${tombolHapusHtml}
+            </div>
           </div>
           <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
         `;
@@ -1132,8 +1170,27 @@
           boxChat.scrollTop = boxChat.scrollHeight;
         }
       });
+
+      chatRef.on('child_removed', function(snapshot) {
+        const deletedKey = snapshot.key;
+        const elemen = document.getElementById(`chat-item-${deletedKey}`);
+        if (elemen) {
+          elemen.remove();
+        }
+      });
     }
   });
+
+  function hapusPesanChat(messageKey) {
+    if (confirm("Yakin ingin menghapus pesan ini?")) {
+      const chatRef = getChatRef();
+      if (chatRef) {
+        chatRef.child(messageKey).remove().catch(err => {
+          alert("Gagal menghapus: " + err.message);
+        });
+      }
+    }
+  }
 
   function playNotifSound() {
     try {
@@ -1163,6 +1220,5 @@
       .replace(/'/g, "&#039;");
   }
 </script>
-  
 </body>
 </html>
