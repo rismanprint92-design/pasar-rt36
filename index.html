@@ -498,8 +498,8 @@ function terapkanFilterDanPencarian() {
   // POTONG CUMA 12 DULU
   const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
 
-  // TAMPILKAN YANG 12 SAJA
-  tampilkanProduk(yangDitampilkan); 
+  // --- PERBAIKAN DI SINI (UBAH DARI tampilkanProduk MENJADI renderProduk) ---
+  renderProduk(yangDitampilkan);  
 
   // ATUR TOMBOL SHOPEE
   const btn = document.getElementById('btn-shopee');
