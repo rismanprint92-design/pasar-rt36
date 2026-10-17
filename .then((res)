@@ -353,7 +353,36 @@
     </form>
   </div>
 </div>
+  
+<!-- Modal Konfirmasi Share Produk -->
+<div id="modal-share-produk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+    <div class="text-4xl mb-2">🎉</div>
+    <h3 class="font-bold text-lg text-gray-800">Produk Berhasil Diunggah!</h3>
+    <p class="text-xs text-gray-500 mt-1 mb-4">Bagikan dagangan Anda sekarang agar cepat laku diserbu pembeli!</p>
+    
+    <!-- Pilihan Tombol Share -->
+    <div class="space-y-2">
+      <button onclick="shareProdukKe('wa_status')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>🟢</span> Buat Status WhatsApp
+      </button>
+      
+      <button onclick="shareProdukKe('wa_group')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>👥</span> Bagikan ke Grup WhatsApp
+      </button>
+      
+      <button onclick="shareProdukKe('facebook')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>📘</span> Bagikan ke Facebook
+      </button>
+    </div>
 
+    <!-- Tombol Batal / Nanti Saja -->
+    <button onclick="tutupModalShare()" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium py-2 rounded-xl">
+      Nanti Saja / Tidak
+    </button>
+  </div>
+</div>
+  
  <!-- Modal Zoom / Perbesar Foto -->
 <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
   <!-- Tombol Tutup -->
@@ -820,16 +849,13 @@ function tutupModalOpsiBeli() {
         timestamp: Date.now()
       };
 
-      dbRef.push(barangBaru).then(() => {
+     dbRef.push(barangBaru).then((res) => {
         tutupModalJual();
         document.getElementById('form-tambah').reset();
         
-        // NON AKTIFKAN PENJUAL MENGARAH KE WHATSABB
-        // if(confirm("Dagangan berhasil ditayangkan! 🚀\n\nMau bagikan ke Grup WhatsApp Warga RT?")) {
-         // window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli di pasar-rt36.my.id 📱`)}`, '_blank');
-       // }
+        // Memanggil pop-up pilihan share ke Sosmed & WA
+        tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
       }).catch(err => alert("Gagal menyimpan: " + err.message));
-    }
     
     // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
     function bukaVerifikasiPenjual(id) {
@@ -996,6 +1022,47 @@ function tutupModalOpsiBeli() {
     }
   }
     
+  // --- FUNGSI SHARE PRODUK KE SOSMED & WA ---
+  let dataProdukBaru = null;
+
+  function tanyakanShareProduk(nama, harga, deskripsi, idProduk) {
+    dataProdukBaru = {
+      nama: nama,
+      harga: harga,
+      deskripsi: deskripsi || '',
+      link: window.location.origin + window.location.pathname + '?id=' + idProduk
+    };
+    
+    const modal = document.getElementById('modal-share-produk');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function tutupModalShare() {
+    const modal = document.getElementById('modal-share-produk');
+    if (modal) modal.classList.add('hidden');
+    dataProdukBaru = null;
+  }
+
+  function shareProdukKe(platform) {
+    if (!dataProdukBaru) return;
+
+    const teksPesan = `🛒 *${dataProdukBaru.nama}*\n` +
+                      `💰 *Harga:* Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n` +
+                      `${dataProdukBaru.deskripsi ? '📝 ' + dataProdukBaru.deskripsi + '\n' : ''}\n` +
+                      `Yuk cek dan beli di Pasar RT lewat link ini:\n` +
+                      `${dataProdukBaru.link}`;
+
+    const teksEncoded = encodeURIComponent(teksPesan);
+    const linkEncoded = encodeURIComponent(dataProdukBaru.link);
+
+    if (platform === 'wa_status' || platform === 'wa_group') {
+      window.open(`https://api.whatsapp.com/send?text=${teksEncoded}`, '_blank');
+    } else if (platform === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${linkEncoded}&quote=${teksEncoded}`, '_blank');
+    }
+
+    tutupModalShare();
+  }  
   </script>
   
   <script>
