@@ -636,8 +636,8 @@ function loadLebihBanyak() {
 
     const card = `
         <div id="produk-${item.id}" class="bg-white rounded-xl shadow-sm border-2 border-transparent transition-all duration-500 overflow-hidden flex flex-col justify-between">
-          <div class="relative cursor-pointer" data-fotos='${JSON.stringify(item.foto)}'>
-            <img loading="lazy" decoding="async" src="${item.foto[0]}" alt="${item.nama}" class="w-full h-36 object-cover">
+          <div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos, 0)" data-fotos='${JSON.stringify(listFoto)}'>
+            <img loading="lazy" decoding="async" src="${fotoUtama}" alt="${bersihkanTeks(item.nama)}" class="w-full h-36 object-cover bg-gray-100" onerror="this.src='${defaultFoto}'">
             ${badgeFoto}
           </div>
           <div class="p-3 flex-1 flex flex-col justify-between">
