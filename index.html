@@ -354,21 +354,22 @@
   </div>
 </div>
 
-  <!-- Modal Zoom / Perbesar Foto -->
-  <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
-    <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-3xl font-bold bg-black bg-opacity-50 px-3 py-1 rounded-full hover:bg-opacity-80">&times;</button>
-    <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
-      <img id="img-zoom-target" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg transition-transform duration-200" alt="Zoom Foto">
-    </div>
-    <div class="mt-4 flex flex-col items-center gap-2">
-      <div class="flex gap-3 bg-white bg-opacity-20 backdrop-blur px-4 py-2 rounded-full">
-        <button onclick="ubahSkalaZoom(0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔍 (+)</button>
-        <button onclick="ubahSkalaZoom(-0.2)" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔍 (-)</button>
-        <button onclick="resetZoom()" class="text-white text-sm font-bold bg-black bg-opacity-40 px-3 py-1 rounded">🔄 Reset</button>
-      </div>
-      <div id="zoom-thumbnails" class="flex gap-2 overflow-x-auto max-w-xs p-1"></div>
-    </div>
+ <!-- Modal Zoom / Perbesar Foto -->
+<div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
+  <!-- Tombol Tutup -->
+  <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 px-3 py-1 rounded-full hover:bg-black z-10">✕</button>
+  
+  <!-- Tombol Geser Kiri -->
+  <button onclick="geserFotoZoom(-1)" class="absolute left-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❮</button>
+  
+  <!-- Gambar Target Zoom -->
+  <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
+    <img id="img-zoom-target" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl transition-all duration-200" alt="Zoom Foto">
   </div>
+
+  <!-- Tombol Geser Kanan -->
+  <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
+</div>
 
   <!-- Script Firebase & Logika Aplikasi -->
   <script>
