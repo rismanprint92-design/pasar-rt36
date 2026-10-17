@@ -251,7 +251,7 @@
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block font-medium mb-1">No. WhatsApp 08 ganti 628</label>
+            <label class="block font-medium mb-1">No. WhatsApp</label>
             <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789 ">
           </div>
           <div>
@@ -822,9 +822,11 @@ function tutupModalOpsiBeli() {
       dbRef.push(barangBaru).then(() => {
         tutupModalJual();
         document.getElementById('form-tambah').reset();
-        if(confirm("Dagangan berhasil ditayangkan! 🚀\n\nMau bagikan ke Grup WhatsApp Warga RT?")) {
-          window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli di pasar-rt36.my.id 📱`)}`, '_blank');
-        }
+        
+        // NON AKTIFKAN PENJUAL MENGARAH KE WHATSABB
+        // if(confirm("Dagangan berhasil ditayangkan! 🚀\n\nMau bagikan ke Grup WhatsApp Warga RT?")) {
+         // window.open(`https://wa.me/?text=${encodeURIComponent(`🛒 *DAGANGAN BARU DI PASAR RT.36 AR & METROLAND!*\n\n* *Produk:* ${barangBaru.nama}\n* *Harga:* Rp${barangBaru.harga.toLocaleString('id-ID')}\n* *Penjual:* ${barangBaru.penjual} (${barangBaru.lokasi})\n\nYuk cek & beli di pasar-rt36.my.id 📱`)}`, '_blank');
+       // }
       }).catch(err => alert("Gagal menyimpan: " + err.message));
     }
     
