@@ -41,32 +41,36 @@
       transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
     }
     .catatan-teks {
-      font-size: 11px;
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #6b7280;
-      font-style: italic;
-      margin-top: 4px;
-    }
-    .catatan-teks.buka {
-      -webkit-line-clamp: unset;
-      display: block;
-    }
-    .btn-lihat {
-      font-size: 10px;
-      color: #059669;
-      font-weight: bold;
-      background: none;
-      border: none;
-      padding: 2px 0 0 0;
-      cursor: pointer;
-      text-decoration: underline;
-    }
+  font-size: 11px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 4px;
+}
+.catatan-teks.buka {
+  -webkit-line-clamp: unset;
+  display: block;
+  white-space: pre-wrap;
+  text-overflow: clip;
+}
+.btn-lihat {
+  font-size: 10px;
+  color: #059669;
+  font-weight: bold;
+  background: none;
+  border: none;
+  padding: 2px 0 0 0;
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+}
+    
 </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
