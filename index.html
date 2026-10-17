@@ -847,14 +847,15 @@ function tutupModalOpsiBeli() {
         timestamp: Date.now()
       };
 
-     dbRef.push(barangBaru).then((res) => {
+      dbRef.push(barangBaru).then((res) => {
         tutupModalJual();
         document.getElementById('form-tambah').reset();
         
         // Memanggil pop-up pilihan share ke Sosmed & WA
         tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
       }).catch(err => alert("Gagal menyimpan: " + err.message));
-    
+    }
+
     // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
     function bukaVerifikasiPenjual(id) {
       if (isAdmin) {
@@ -920,17 +921,17 @@ function tutupModalOpsiBeli() {
 
       function updateDB(fotoFinal) {
         const updateData = {
-        nama: bersihkanTeks(document.getElementById('edit-nama').value),
-        harga: parseInt(document.getElementById('edit-harga').value),
-        kategori: document.getElementById('edit-kategori').value,
-        penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
-        lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
-        wa: document.getElementById('edit-whatsapp').value,
-        catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
-        foto: fotoFinal,
-        pinPenjual: produkLama.pinPenjual || "1234",
-        timestamp: produkLama.timestamp || Date.now()
-      };
+          nama: bersihkanTeks(document.getElementById('edit-nama').value),
+          harga: parseInt(document.getElementById('edit-harga').value),
+          kategori: document.getElementById('edit-kategori').value,
+          penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
+          lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
+          wa: document.getElementById('edit-whatsapp').value,
+          catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
+          foto: fotoFinal,
+          pinPenjual: produkLama.pinPenjual || "1234",
+          timestamp: produkLama.timestamp || Date.now()
+        };
 
         dbRef.child(id).set(updateData).then(() => {
           tutupModalEdit();
@@ -982,104 +983,111 @@ function tutupModalOpsiBeli() {
       }
     }
 
-    // --- KUMPULAN FUNGSI ZOOM & GESER FOTO ---
-  let currentZoomPhotos = [];
-  let currentZoomIndex = 0;
+    // --- KUMPULAN FUNGSI ZOOM & GESER FOTO (AMAN UNTUK ARRAY & STRING) ---
+    let currentZoomPhotos = [];
+    let currentZoomIndex = 0;
 
-  function bukaModalZoom(arrayFoto, indexAwal) {
-    currentZoomPhotos = Array.isArray(arrayFoto) ? arrayFoto : [arrayFoto];
-    currentZoomIndex = indexAwal || 0;
-    
-    const modal = document.getElementById('modal-zoom');
-    const imgTarget = document.getElementById('img-zoom-target');
-    
-    if (modal && imgTarget) {
-      imgTarget.src = currentZoomPhotos[currentZoomIndex];
-      modal.classList.remove('hidden');
-    }
-  }
-
-  function tutupModalZoom() {
-    const modal = document.getElementById('modal-zoom');
-    if (modal) {
-      modal.classList.add('hidden');
-    }
-  }
-
-  function geserFotoZoom(arah) {
-    currentZoomIndex += arah;
-    if (currentZoomIndex < 0) {
-      currentZoomIndex = currentZoomPhotos.length - 1;
-    } else if (currentZoomIndex >= currentZoomPhotos.length) {
-      currentZoomIndex = 0;
-    }
-    
-    const imgTarget = document.getElementById('img-zoom-target');
-    if (imgTarget) {
-      imgTarget.src = currentZoomPhotos[currentZoomIndex];
-    }
-  }
-    
-  // --- FUNGSI SHARE PRODUK KE SOSMED & WA ---
-  let dataProdukBaru = null;
-
-  function tanyakanShareProduk(nama, harga, deskripsi, idProduk) {
-    dataProdukBaru = {
-      nama: nama,
-      harga: harga,
-      deskripsi: deskripsi || '',
-      link: window.location.origin + window.location.pathname + '?id=' + idProduk
-    };
-    
-    const modal = document.getElementById('modal-share-produk');
-    if (modal) modal.classList.remove('hidden');
-  }
-
-  function tutupModalShare() {
-    const modal = document.getElementById('modal-share-produk');
-    if (modal) modal.classList.add('hidden');
-    dataProdukBaru = null;
-  }
-
-  function shareProdukKe(platform) {
-    if (!dataProdukBaru) return;
-
-    const teksPesan = `🛒 *${dataProdukBaru.nama}*\n` +
-                      `💰 *Harga:* Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n` +
-                      `${dataProdukBaru.deskripsi ? '📝 ' + dataProdukBaru.deskripsi + '\n' : ''}\n` +
-                      `Yuk cek dan beli di Pasar RT lewat link ini:\n` +
-                      `${dataProdukBaru.link}`;
-
-    const teksEncoded = encodeURIComponent(teksPesan);
-    const linkEncoded = encodeURIComponent(dataProdukBaru.link);
-
-    if (platform === 'wa_status' || platform === 'wa_group') {
-      window.open(`https://api.whatsapp.com/send?text=${teksEncoded}`, '_blank');
-    } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${linkEncoded}&quote=${teksEncoded}`, '_blank');
+    function bukaModalZoom(arrayFoto, indexAwal) {
+      if (typeof arrayFoto === 'string') {
+        try {
+          currentZoomPhotos = JSON.parse(arrayFoto);
+        } catch (e) {
+          currentZoomPhotos = [arrayFoto];
+        }
+      } else {
+        currentZoomPhotos = Array.isArray(arrayFoto) ? arrayFoto : [arrayFoto];
+      }
+      
+      currentZoomIndex = indexAwal || 0;
+      
+      const modal = document.getElementById('modal-zoom');
+      const imgTarget = document.getElementById('img-zoom-target');
+      
+      if (modal && imgTarget && currentZoomPhotos.length > 0) {
+        imgTarget.src = currentZoomPhotos[currentZoomIndex];
+        modal.classList.remove('hidden');
+      }
     }
 
-    tutupModalShare();
-  }  
-  </script>
-  
-  <script>
-  // Cek apakah HP Android lama (8 ke bawah)
-  var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
-  
-  if ('serviceWorker' in navigator && !isOldAndroid) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js')
-        .then(function(reg) {
-          console.log('SW terdaftar untuk HP baru!', reg.scope);
-        })
-        .catch(function(err) {
-          console.log('SW gagal', err);
-        });
-    });
-  } else {
-    console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
-  }
+    function tutupModalZoom() {
+      const modal = document.getElementById('modal-zoom');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function geserFotoZoom(arah) {
+      if (!currentZoomPhotos || currentZoomPhotos.length === 0) return;
+      currentZoomIndex += arah;
+      if (currentZoomIndex < 0) {
+        currentZoomIndex = currentZoomPhotos.length - 1;
+      } else if (currentZoomIndex >= currentZoomPhotos.length) {
+        currentZoomIndex = 0;
+      }
+      
+      const imgTarget = document.getElementById('img-zoom-target');
+      if (imgTarget) {
+        imgTarget.src = currentZoomPhotos[currentZoomIndex];
+      }
+    }
+      
+    // --- FUNGSI SHARE PRODUK KE SOSMED & WA ---
+    let dataProdukBaru = null;
+
+    function tanyakanShareProduk(nama, harga, deskripsi, idProduk) {
+      dataProdukBaru = {
+        nama: nama,
+        harga: harga,
+        deskripsi: deskripsi || '',
+        link: window.location.origin + window.location.pathname + '?id=' + idProduk
+      };
+      
+      const modal = document.getElementById('modal-share-produk');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function tutupModalShare() {
+      const modal = document.getElementById('modal-share-produk');
+      if (modal) modal.classList.add('hidden');
+      dataProdukBaru = null;
+    }
+
+    function shareProdukKe(platform) {
+      if (!dataProdukBaru) return;
+
+      const teksPesan = `🛒 *${dataProdukBaru.nama}*\n` +
+                        `💰 *Harga:* Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n` +
+                        `${dataProdukBaru.deskripsi ? '📝 ' + dataProdukBaru.deskripsi + '\n' : ''}\n` +
+                        `Yuk cek dan beli di Pasar RT lewat link ini:\n` +
+                        `${dataProdukBaru.link}`;
+
+      const teksEncoded = encodeURIComponent(teksPesan);
+      const linkEncoded = encodeURIComponent(dataProdukBaru.link);
+
+      if (platform === 'wa_status' || platform === 'wa_group') {
+        window.open(`https://api.whatsapp.com/send?text=${teksEncoded}`, '_blank');
+      } else if (platform === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${linkEncoded}&quote=${teksEncoded}`, '_blank');
+      }
+
+      tutupModalShare();
+    }  
+
+    // Pendaftaran Service Worker untuk PWA
+    var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
+    if ('serviceWorker' in navigator && !isOldAndroid) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(reg) {
+            console.log('SW terdaftar untuk HP baru!', reg.scope);
+          })
+          .catch(function(err) {
+            console.log('SW gagal', err);
+          });
+      });
+    } else {
+      console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
+    }
   </script>
 
 <!-- ================================================= -->
