@@ -1056,7 +1056,7 @@ function tutupModalOpsiBeli() {
     }
   }
 
-  // --- KIRIM PESAN DENGAN SISTEM PIN / SANDI WARGA ---
+  // --- KIRIM PESAN DENGAN KONFIRMASI PIN / SANDI ANTAR PERANGKAT ---
   function kirimPesanWarga() {
     const namaInput = document.getElementById('namaWarga');
     const pesanInput = document.getElementById('teksPesanWarga');
@@ -1077,30 +1077,41 @@ function tutupModalOpsiBeli() {
       return; 
     }
 
-    // Cek apakah warga sudah punya PIN tersimpan di perangkat ini
     let pinWarga = localStorage.getItem('pin_warga_rt36');
-    
+    let myChatId = localStorage.getItem('my_chat_id');
+
+    // Jika di perangkat ini belum ada PIN tersimpan (Artinya baru pertama kali di perangkat ini, tapi mungkin sudah punya akun di HP lama)
     if (!pinWarga) {
-      // Jika belum ada PIN, minta warga membuat PIN 4 digit sederhana untuk keamanan identitas mereka
-      pinWarga = prompt("Buat 4 digit PIN sandi Anda (untuk mengingat nama Anda agar tidak ke-reset saat ganti/refresh browser):", "1234");
-      if (!pinWarga || pinWarga.length < 3) {
-        alert("PIN dibatalkan atau terlalu pendek. Pesan tidak dikirim.");
-        return;
+      let pilihan = confirm(`Halo ${nama},\nApakah Anda sudah pernah membuat PIN sandi di perangkat/browser sebelumnya?\n\n- Klik [OK] jika punya (untuk memasukkan PIN lama)\n- Klik [Cancel] jika ingin membuat PIN baru`);
+      
+      if (pilihan) {
+        let inputPinLama = prompt("Masukkan 4 digit PIN sandi lama Anda:");
+        if (inputPinLama) {
+          // Validasi atau gunakan PIN lama tersebut untuk menyambungkan akun
+          pinWarga = inputPinLama;
+          myChatId = 'warga_' + pinWarga + '_sync';
+          localStorage.setItem('pin_warga_rt36', pinWarga);
+          localStorage.setItem('my_chat_id', myChatId);
+        } else {
+          return;
+        }
+      } else {
+        // Buat PIN baru jika belum punya sama sekali
+        pinWarga = prompt("Buat 4 digit PIN sandi baru Anda:", "1234");
+        if (!pinWarga || pinWarga.length < 3) {
+          alert("PIN dibatalkan atau terlalu pendek. Pesan tidak dikirim.");
+          return;
+        }
+        myChatId = 'warga_' + pinWarga + '_' + Math.random().toString(36).substr(2, 5);
+        localStorage.setItem('pin_warga_rt36', pinWarga);
+        localStorage.setItem('my_chat_id', myChatId);
       }
-      localStorage.setItem('pin_warga_rt36', pinWarga);
     }
 
     const chatRef = getChatRef();
     if (!chatRef) { alert("Koneksi Firebase belum siap."); return; }
 
-    // Gunakan PIN sebagai ID unik perangkat agar nama tetap sinkron
-    let myChatId = localStorage.getItem('my_chat_id');
-    if (!myChatId) {
-      myChatId = 'warga_' + pinWarga + '_' + Math.random().toString(36).substr(2, 5);
-      localStorage.setItem('my_chat_id', myChatId);
-    }
-
-    // Simpan nama dan PIN ke memori lokal
+    // Simpan nama dan PIN ke memori lokal perangkat ini
     localStorage.setItem('nama_warga_rt36', nama);
     const jam = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
