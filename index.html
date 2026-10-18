@@ -1250,8 +1250,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
-  
-<!-- ========== FINAL FIX: ONLINE ANGKA SAJA + PILIHAN SUARA + KELUAR JELAS BOSKU ========== -->
+  <!-- ========== FINAL FIX LENGKAP: ONLINE FIX + KELUAR + AUTO 24JAM + MIC KEREN BOSKU ========== -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
   <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
   <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -1280,24 +1279,20 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
   <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
     <div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div><div><h4 class="font-bold text-[14px]">Obrolan Warga RT.36</h4>
-    <!-- ONLINE CUMA ANGKA + KATA ONLINE SAJA BOSKU -->
     <div class="flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span><p id="statusOnline" class="text-[11px] font-bold">0 Online</p><span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1"></span></div>
     </div></div>
     <div class="flex gap-1 items-center">
-      <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]" title="On/Off Bunyi">🔔</button>
-      <!-- ICON KELUAR DIPERJELAS PAKAI HURUF BOSKU -->
-      <button onclick="toggleBoxChat()" class="bg-white/20 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide">KELUAR</button>
+      <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]">🔔</button>
+      <button onclick="toggleBoxChat()" class="bg-[#FF3B30] px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide text-white">KELUAR</button>
     </div>
   </div>
 
-  <!-- MENU PILIHAN SUARA BOSKU -->
   <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
-    <p class="text-[11px] font-bold text-[#075E54] mb-2">PILIH SUARA NOTIFIKASI BOSKU:</p>
+    <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
     <div class="flex flex-col gap-2">
-      <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting (Default)</span><span class="check">✔️</span></button>
+      <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
       <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
       <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
-      <p class="text-[10px] text-gray-400 mt-1">Klik untuk test bunyi bosku! Pilihan tersimpan otomatis bosku!</p>
     </div>
   </div>
 
@@ -1307,7 +1302,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
       <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
       <div class="flex-1 relative min-h-[32px] flex items-center">
         <div id="areaKetikNormal" class="w-full flex items-center"><input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="w-full bg-transparent border-0 text-[15px] px-2 py-2 focus:outline-none" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}"></div>
-        <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
+        <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span><span class="flex gap-1"><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce"></span><span class="w-1 h-5 bg-red-500 rounded-full animate-bounce" style="animation-delay:0.1s"></span><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span></span></div>
       </div>
       <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
         <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
@@ -1316,10 +1311,14 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
         <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
       </div>
     </div>
-    <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all">
-      <span id="iconMic"><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"></path></svg></span>
+    <!-- ICON MIC BARU LEBIH MENARIK BOSKU -->
+    <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden">
+      <span id="iconMic" class="relative">
+        <span class="absolute inset-0 bg-white/20 rounded-full animate-ping"></span>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg>
+      </span>
       <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
-      <span id="iconStop" class="hidden text-white font-bold text-[10px]">■</span>
+      <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
     </button>
   </div>
   <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
@@ -1367,9 +1366,6 @@ function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); i
 function setSuaraAktif(){
   let audio=document.getElementById('notifSound');
   audio.src=suaraList[suaraIndex].url;
-  document.querySelectorAll('#menuPilihanSuara .check').forEach((el,i)=>{ 
-    // reset
-  });
   [0,1,2].forEach(i=>{
     let el=document.getElementById('suara'+i);
     if(el){
@@ -1387,27 +1383,16 @@ function gantiSuara(idx){
   setTimeout(()=>{ bunyikanNotifikasi(); },100);
 }
 function toggleNotifikasi(){
-  // Kalau notif aktif, klik pertama buka pilihan suara bosku, klik lagi baru off bosku
   let menu=document.getElementById('menuPilihanSuara');
   if(notifAktif && menu.classList.contains('hidden')){
     menu.classList.remove('hidden');
     return;
   }
   if(!notifAktif){
-    // aktifkan
-    notifAktif=true;
-    localStorage.setItem('notif_suara_rt36','on');
-    updateIconNotif();
-    menu.classList.remove('hidden');
-    unlockAudio();
-    setTimeout(()=>{ bunyikanNotifikasi(); },200);
+    notifAktif=true; localStorage.setItem('notif_suara_rt36','on'); updateIconNotif(); menu.classList.remove('hidden'); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },200);
   } else {
-    // matikan + tutup menu
-    notifAktif=false;
-    localStorage.setItem('notif_suara_rt36','off');
-    updateIconNotif();
-    menu.classList.add('hidden');
-    alert('🔕 Bunyi NONAKTIF bosku!');
+    if(!menu.classList.contains('hidden')){ menu.classList.add('hidden'); return; }
+    notifAktif=false; localStorage.setItem('notif_suara_rt36','off'); updateIconNotif(); alert('🔕 Bunyi NONAKTIF bosku!');
   }
 }
 function unlockAudio(){
@@ -1430,15 +1415,10 @@ function beepFallback(){
 function bunyikanNotifikasi(){
   if(!notifAktif) return;
   let audio=document.getElementById('notifSound');
-  try{
-    audio.currentTime=0; audio.volume=1;
-    let p=audio.play();
-    if(p!==undefined){ p.catch(()=>{ beepFallback(); }); }
-  }catch(e){ beepFallback(); }
+  try{ audio.currentTime=0; audio.volume=1; let p=audio.play(); if(p!==undefined){ p.catch(()=>{ beepFallback(); }); } }catch(e){ beepFallback(); }
 }
 function kedipkanIconChat(){
-  let btn=document.getElementById('btnBukaChat');
-  let badge=document.getElementById('badgeBaru');
+  let btn=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
   if(!btn) return;
   if(document.getElementById('panelChatWarga').classList.contains('hidden')){
     btn.classList.add('icon-berkedip');
@@ -1455,8 +1435,6 @@ function toggleBoxChat(){
   if(isHidden){
     b.classList.remove('icon-berkedip');
     if(badge){ badge.classList.add('hidden'); badge.classList.remove('flex'); }
-  } else {
-    document.getElementById('menuPilihanSuara').classList.add('hidden');
   }
 }
 function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; let mic=document.getElementById('iconMic'), send=document.getElementById('iconSend'); if(isRekam) return; mic.classList.toggle('hidden',ada); send.classList.toggle('hidden',!ada); }
@@ -1498,19 +1476,49 @@ function hapusChat(key, pemilikId){
   if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
   getChatRef().child(key).remove();
 }
+// FUNGSI AUTO HAPUS 24 JAM BOSKU
+function autoHapus24Jam(){
+  let ref=getChatRef();
+  let batas=Date.now() - (24*60*60*1000);
+  ref.once('value').then(snap=>{
+    snap.forEach(child=>{
+      let data=child.val();
+      if(data && data.timestamp && data.timestamp < batas){
+        ref.child(child.key).remove();
+      }
+    });
+  });
+}
 
 window.addEventListener('load', function(){
   let isVerif=cekVerifikasi(); if(!isVerif) return;
   let ref=getChatRef(); let root=getRootRef(); let box=document.getElementById('boxChatWarga');
   let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-  try{ root.ref('online_warga').child(myId).set({nama:verifiedNama, time:Date.now()}); root.ref('online_warga').child(myId).onDisconnect().remove(); }catch(e){}
+  
+  // FIX ONLINE BOSKU - PAKAI HEARTBEAT BOSKU
+  try{ 
+    let onlineRef=root.ref('online_warga').child(myId);
+    onlineRef.set({nama:verifiedNama, time:Date.now()});
+    onlineRef.onDisconnect().remove();
+    setInterval(()=>{ onlineRef.update({time:Date.now()}); }, 30000);
+  }catch(e){}
+  
+  // FIX ANGKA ONLINE BOSKU - HANYA 1 TEMPAT BOSKU
   root.ref('online_warga').on('value', snap=>{ 
     let c=snap.numChildren(); 
-    document.getElementById('statusOnline').innerText=c+' Online'; 
+    let el=document.getElementById('statusOnline');
+    if(el) el.innerText=c+' Online'; 
   });
+
+  // JALANKAN AUTO HAPUS 24 JAM BOSKU
+  autoHapus24Jam();
+  setInterval(autoHapus24Jam, 60*60*1000); // CEK TIAP JAM BOSKU
   
   ref.limitToLast(80).on('child_added', snap=>{
-    let data=snap.val(), key=snap.key; if(!data) return; if(document.getElementById(`chat-item-${key}`)) return;
+    let data=snap.val(), key=snap.key; if(!data) return; 
+    // CEK JIKA CHAT SUDAH LEWAT 24 JAM LANGSUNG HAPUS BOSKU
+    if(data.timestamp && (Date.now() - data.timestamp > 24*60*60*1000)){ ref.child(key).remove(); return; }
+    if(document.getElementById(`chat-item-${key}`)) return;
     let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
     let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
     let content=''; 
@@ -1534,6 +1542,8 @@ window.addEventListener('load', function(){
   document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
 });
 </script>
+
+  
 <!-- ========== SELESAI BOSKU ========== -->
 <!-- ========== AKHIR CHAT LENGKAP BOSKU ========== -->
   </body>
