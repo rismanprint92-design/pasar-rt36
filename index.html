@@ -1250,12 +1250,34 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
-
-  <!-- ========== CHAT RT.36 FINAL LENGKAP ADA HAPUS BOSKU ========== -->
+<!-- ========== CHAT RT.36 FINAL VERIFIKASI WA 1X PERANGKAT BOSKU ========== -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
   <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
-  <span id="notif-dot" class="hidden absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full text-[10px] flex items-center justify-center text-white font-bold">!</span>
 </button>
+
+<!-- MODAL VERIFIKASI WA PERTAMA KALI BOSKU -->
+<div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-black/70 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+    <div class="text-center">
+      <div class="w-16 h-16 bg-[#25D366] rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">📱</div>
+      <h2 class="font-bold text-[18px] text-[#075E54]">Verifikasi Warga RT.36</h2>
+      <p class="text-[12px] text-gray-500 mt-1">Hanya 1x saja di HP ini untuk keamanan. Nomor WA tidak akan disebar bosku!</p>
+    </div>
+    <div id="step1Verif" class="mt-5">
+      <label class="text-[11px] font-bold text-gray-600">NOMOR WHATSAPP ANDA</label>
+      <input type="tel" id="inputNoWA" placeholder="0852xxxx xxxx" class="w-full border-2 border-gray-200 p-3 rounded-xl text-[15px] mt-1 focus:border-[#25D366] focus:outline-none">
+      <button onclick="kirimKodeWA()" class="w-full bg-[#25D366] text-white font-bold py-3 rounded-xl mt-3">Kirim Kode via WhatsApp</button>
+      <p class="text-[10px] text-gray-400 mt-2 text-center">Akan membuka chat WA ke Admin RT untuk dapat kode OTP bosku</p>
+    </div>
+    <div id="step2Verif" class="hidden mt-5">
+      <label class="text-[11px] font-bold text-gray-600">MASUKKAN KODE OTP 4 DIGIT</label>
+      <p class="text-[11px] text-gray-500">Kode sudah dikirim ke WA Admin RT. Minta kodenya bosku! (Demo: <span id="kodeDemo" class="font-bold text-red-500"></span>)</p>
+      <input type="text" id="inputOTP" maxlength="4" placeholder="0000" class="w-full border-2 border-[#25D366] p-3 rounded-xl text-[20px] tracking-[8px] text-center font-bold mt-2 focus:outline-none">
+      <button onclick="cekOTP()" class="w-full bg-[#075E54] text-white font-bold py-3 rounded-xl mt-3">Verifikasi & Masuk Chat</button>
+      <button onclick="kembaliStep1()" class="w-full text-[12px] text-gray-500 mt-2">Ganti Nomor</button>
+    </div>
+  </div>
+</div>
 
 <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-black/10">
   <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
@@ -1266,116 +1288,112 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
         <div class="flex items-center gap-1.5 leading-none mt-0.5">
           <span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span>
           <p id="statusOnline" class="text-[11px] text-emerald-100">0 warga online</p>
+          <span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-2"></span>
         </div>
-        <p id="statusKetik" class="text-[10px] text-yellow-300 hidden italic leading-none mt-0.5"></p>
       </div>
     </div>
     <div class="flex gap-2 items-center">
-      <div class="bg-white/20 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span id="onlineCount">0</span> ONLINE</div>
+      <div class="bg-white/20 px-2 py-1 rounded-full text-[10px] font-bold"><span id="onlineCount">0</span> ONLINE</div>
       <button onclick="toggleBoxChat()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">✕</button>
     </div>
   </div>
-  <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-color:#E5DDD5; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
-
-  <div class="p-2 pr-3 bg-[#F0F0F0] flex flex-col gap-2 w-full box-border">
-    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap mx-1"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span></div>
-    <input type="text" id="namaWarga" placeholder="Nama Anda..." class="border-0 p-2.5 rounded-full text-[13px] w-full focus:outline-none shadow-sm mx-1 box-border" style="width:calc(100% - 8px)">
-    <div class="flex items-end gap-2 w-full px-1 box-border" style="width:calc(100% - 4px)">
+  <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
+  <div class="p-2 pr-3 bg-[#F0F0F0] flex flex-col gap-2">
+    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap mx-1"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('👍')">👍</span></div>
+    <div class="flex items-end gap-2 w-full px-1">
       <div class="bg-white flex-1 rounded-[24px] flex items-end px-2 py-1.5 shadow-sm min-h-[44px] max-w-[calc(100%-110px)]">
-        <button type="button" onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F] flex-shrink-0">😊</button>
+        <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center">😊</button>
         <input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="flex-1 bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none min-w-0" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}">
         <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
-        <button type="button" onclick="document.getElementById('inputFoto').click()" class="w-7 h-8 flex items-center justify-center text-[#54656F] flex-shrink-0">📷</button>
+        <button onclick="document.getElementById('inputFoto').click()" class="w-7 h-8 flex items-center justify-center">📷</button>
       </div>
-      <button type="button" id="btnAksi" onclick="handleAksi()" class="bg-[#25D366] h-[46px] rounded-full flex items-center justify-center shadow-md flex-shrink-0 mr-1 px-3 transition-all" style="min-width:46px; min-height:46px;">
-        <span id="iconMic" class="flex items-center"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"></path></svg></span>
+      <button id="btnAksi" onclick="handleAksi()" class="bg-[#25D366] h-[46px] rounded-full flex items-center justify-center shadow-md px-3" style="min-width:46px">
+        <span id="iconMic"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"></path></svg></span>
         <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
         <span id="iconRekam" class="hidden items-center gap-1 text-white font-bold text-[11px]"><span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> REKAM <span id="timerRekam">00:00</span></span>
         <span id="iconStop" class="hidden items-center gap-1 text-white font-bold text-[11px]">⏹️ BERHENTI</span>
       </button>
     </div>
-    <div id="rekamInfo" class="hidden bg-red-50 border border-red-200 text-red-600 text-[11px] p-2 rounded-full text-center mx-1 font-bold">🔴 Tap BERHENTI untuk mengirim</div>
-    <div id="preview-balas" class="hidden bg-[#FFF8C4] border-l-4 border-[#25D366] p-2 rounded text-xs flex justify-between mx-1"><div><b id="balas-nama" class="text-[#075E54]"></b><div id="balas-pesan" class="text-gray-500 truncate max-w-[200px]"></div></div><button onclick="batalBalas()" class="font-bold">✕</button></div>
+    <div id="rekamInfo" class="hidden bg-red-50 text-red-600 text-[11px] p-2 rounded-full text-center font-bold">🔴 Tap BERHENTI untuk mengirim</div>
   </div>
 </div>
 
-<style>
-.bubble-wa{max-width:80%; padding:7px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px; position:relative} 
-.bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} 
-.bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
-.btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px; cursor:pointer}
-.btn-hapus:hover{background:rgba(255,0,0,0.2)}
-@keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}}
-.mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important; min-width:130px !important;}
-</style>
+<style>.bubble-wa{max-width:80%; padding:7px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px} @keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}} .mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important; min-width:130px !important;}</style>
 
 <script>
-let balasData=null, mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0;
+let balasData=null, mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, otpKode='', verifiedPhone='';
 function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
 function getRootRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
-function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
-function balasPesan(n,p){ balasData={nama:n,pesan:p}; document.getElementById('preview-balas').classList.remove('hidden'); document.getElementById('balas-nama').innerText='Balas '+n; document.getElementById('balas-pesan').innerText=p; }
-function batalBalas(){ balasData=null; document.getElementById('preview-balas').classList.add('hidden'); }
-function toggleBoxChat(){ let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); document.getElementById('notif-dot').classList.add('hidden'); if(!p.classList.contains('hidden')){ setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100); } }
-function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; document.getElementById('iconMic').classList.toggle('hidden',ada || isRekam); document.getElementById('iconSend').classList.toggle('hidden',!ada || isRekam); if(!ada && !isRekam){ document.getElementById('iconRekam').classList.add('hidden'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconMic').classList.remove('hidden'); } }
-function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
-function kirimPesanWarga(){ let nama=document.getElementById('namaWarga').value.trim(); let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!nama){ alert('Isi nama dulu bosku!'); return; } if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); } localStorage.setItem('nama_warga_rt36',nama); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply:balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); cekKetik(); }); }
-function kirimFoto(input){ if(!input.files[0]) return; let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
-async function mulaiRekam(){ isRekam=true; detikRekam=0; document.getElementById('rekamInfo').classList.remove('hidden'); document.getElementById('iconMic').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden'); document.getElementById('iconRekam').classList.remove('hidden'); document.getElementById('iconRekam').classList.add('flex'); document.getElementById('iconStop').classList.add('hidden'); let btn=document.getElementById('btnAksi'); btn.classList.add('mic-recording'); if(navigator.vibrate) navigator.vibrate(50); timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekam').innerText=m+':'+s; if(detikRekam==1){ document.getElementById('iconRekam').classList.add('hidden'); document.getElementById('iconStop').classList.remove('hidden'); document.getElementById('iconStop').classList.add('flex'); } },1000); try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic dulu bosku!'); resetMicUI(); } }
-function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); resetMicUI(); if(navigator.vibrate) navigator.vibrate([30,50,30]); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } else { if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } } }
-function resetMicUI(){ let btn=document.getElementById('btnAksi'); btn.classList.remove('mic-recording'); document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconSend').classList.add('hidden'); document.getElementById('iconRekam').classList.add('hidden'); document.getElementById('iconRekam').classList.remove('flex'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconStop').classList.remove('flex'); document.getElementById('timerRekam').innerText='00:00'; clearInterval(timerInterval); detikRekam=0; }
 
-// FUNGSI HAPUS CHAT BOSKU - SUDAH BALIK BOSKU!
-function hapusChat(key, namaPengirim){
-  let myId=localStorage.getItem('my_chat_id');
-  let namaSaya=document.getElementById('namaWarga').value.trim().toLowerCase();
-  let isAdmin=namaSaya.includes('rt') || namaSaya.includes('admin') || namaSaya.includes('ketua');
-  // Cek apakah chat sendiri atau admin
-  let item=document.getElementById(`chat-item-${key}`);
-  let isMe = item && item.classList.contains('bubble-me');
-  
-  if(!isMe && !isAdmin){
-    alert('Hanya bisa hapus chat sendiri bosku! Kecuali admin RT bisa hapus semua bosku!');
-    return;
+// ===== VERIFIKASI WA 1X PERANGKAT BOSKU =====
+function cekVerifikasi(){
+  verifiedPhone = localStorage.getItem('verified_wa_rt36');
+  let myId = localStorage.getItem('my_chat_id');
+  if(!verifiedPhone){
+    document.getElementById('modalVerifWA').classList.remove('hidden');
+    document.getElementById('panelChatWarga').classList.add('hidden');
+    document.getElementById('btnBukaChat').classList.add('hidden');
+    return false;
   }
-  if(confirm('Yakin mau hapus chat "'+namaPengirim+'" ini bosku?')){
-    getChatRef().child(key).remove().then(()=>{
-      let el=document.getElementById(`chat-item-${key}`);
-      if(el) el.remove();
-    });
-  }
+  document.getElementById('myWALabel').innerText = '✓ ' + verifiedPhone.slice(-4);
+  if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
+  return true;
 }
+function kirimKodeWA(){
+  let no=document.getElementById('inputNoWA').value.trim().replace(/[^0-9]/g,'');
+  if(no.length<10){ alert('Nomor WA tidak valid bosku! Contoh: 085212345678'); return; }
+  if(no.startsWith('0')) no='62'+no.substring(1);
+  otpKode = String(Math.floor(1000+Math.random()*9000));
+  verifiedPhone = no;
+  document.getElementById('kodeDemo').innerText=otpKode;
+  document.getElementById('step1Verif').classList.add('hidden');
+  document.getElementById('step2Verif').classList.remove('hidden');
+  // Buka WA ke Admin RT dengan kode OTP bosku - GANTI NOMOR ADMIN RT DISINI BOSKU!
+  let adminWA = '6285241149000'; // GANTI NOMOR WA KETUA RT BOSKU DISINI!
+  let pesanWA = `Halo Admin RT.36, saya mau verifikasi chat. Kode saya: ${otpKode} Nomor saya: ${no}`;
+  window.open(`https://wa.me/${adminWA}?text=${encodeURIComponent(pesanWA)}`, '_blank');
+}
+function cekOTP(){
+  let input=document.getElementById('inputOTP').value.trim();
+  if(input!==otpKode){ alert('Kode salah bosku! Cek WA Admin RT atau lihat demo kode: '+otpKode); return; }
+  localStorage.setItem('verified_wa_rt36', verifiedPhone);
+  localStorage.setItem('nama_warga_rt36', 'Warga '+verifiedPhone.slice(-4));
+  document.getElementById('modalVerifWA').classList.add('hidden');
+  document.getElementById('btnBukaChat').classList.remove('hidden');
+  toggleBoxChat();
+  location.reload();
+}
+function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
+
+function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
+function toggleBoxChat(){ if(!cekVerifikasi()) return; let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); }
+function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; document.getElementById('iconMic').classList.toggle('hidden',ada || isRekam); document.getElementById('iconSend').classList.toggle('hidden',!ada || isRekam); }
+function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
+function kirimPesanWarga(){ let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!pesan) return; let phone=localStorage.getItem('verified_wa_rt36')||'0852'; let nama='Warga '+phone.slice(-4); let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), phone:phone, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; cekKetik(); }); }
+function kirimFoto(input){ if(!input.files[0]) return; let phone=localStorage.getItem('verified_wa_rt36')||'0852'; let nama='Warga '+phone.slice(-4); let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
+async function mulaiRekam(){ isRekam=true; detikRekam=0; document.getElementById('rekamInfo').classList.remove('hidden'); document.getElementById('iconMic').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden'); document.getElementById('iconRekam').classList.remove('hidden'); document.getElementById('iconRekam').classList.add('flex'); let btn=document.getElementById('btnAksi'); btn.classList.add('mic-recording'); timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekam').innerText=m+':'+s; if(detikRekam==1){ document.getElementById('iconRekam').classList.add('hidden'); document.getElementById('iconStop').classList.remove('hidden'); document.getElementById('iconStop').classList.add('flex'); } },1000); try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let phone=localStorage.getItem('verified_wa_rt36'); let nama='Warga '+phone.slice(-4); let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic dulu bosku!'); resetMicUI(); } }
+function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); resetMicUI(); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } else { if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } } }
+function resetMicUI(){ let btn=document.getElementById('btnAksi'); btn.classList.remove('mic-recording'); document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconSend').classList.add('hidden'); document.getElementById('iconRekam').classList.add('hidden'); document.getElementById('iconRekam').classList.remove('flex'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconStop').classList.remove('flex'); }
+function hapusChat(key){ if(!confirm('Yakin hapus chat ini bosku?')) return; getChatRef().child(key).remove(); }
 
 window.addEventListener('load', function(){
-  let saved=localStorage.getItem('nama_warga_rt36'); if(saved) document.getElementById('namaWarga').value=saved;
+  cekVerifikasi();
   let ref=getChatRef(); let root=getRootRef(); let box=document.getElementById('boxChatWarga');
-  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-  try{ root.ref('online_warga').child(myId).set({nama:saved||'Warga', time:Date.now()}); root.ref('online_warga').child(myId).onDisconnect().remove(); }catch(e){}
-  root.ref('online_warga').on('value', snap=>{ let count=snap.numChildren(); document.getElementById('statusOnline').innerText=count+' warga online'; document.getElementById('onlineCount').innerText=count; });
-  
+  let myId=localStorage.getItem('my_chat_id'); if(!myId && verifiedPhone){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
+  try{ if(myId){ root.ref('online_warga').child(myId).set({nama:localStorage.getItem('nama_warga_rt36')||'Warga', time:Date.now()}); root.ref('online_warga').child(myId).onDisconnect().remove(); } }catch(e){}
+  root.ref('online_warga').on('value', snap=>{ let c=snap.numChildren(); document.getElementById('statusOnline').innerText=c+' warga online'; document.getElementById('onlineCount').innerText=c; });
   ref.limitToLast(80).on('child_added', snap=>{
-    let data=snap.val(), key=snap.key; if(!data) return; if(Date.now()-data.timestamp>86400000){ ref.child(key).remove(); return; } if(document.getElementById(`chat-item-${key}`)) return;
-    let isMe=data.userId===myId; 
-    let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
+    let data=snap.val(), key=snap.key; if(!data) return; if(document.getElementById(`chat-item-${key}`)) return;
+    let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
     let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
-    let replyHtml=data.reply?`<div class="bg-black/10 border-l-2 border-[#25D366] pl-2 mb-1 text-[11px] rounded"><b class="text-[#075E54]">${esc(data.reply.nama)}</b><div class="truncate">${esc(data.reply.pesan).substring(0,40)}</div></div>`:'';
-    let content=''; 
-    if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; 
-    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
-    else content=`<div class="break-words">${esc(data.pesan)}</div>`;
-    
-    // TOMBOL HAPUS BOSKU SUDAH ADA LAGI BOSKU!
-    div.innerHTML=`${replyHtml}${!isMe?`<div class="font-bold text-[11px] text-[#075E54]">${esc(data.nama)}</div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span><button onclick="hapusChat('${key}','${esc(data.nama)}')" class="btn-hapus" title="Hapus chat">🗑️ Hapus</button></div>`;
+    let content=''; if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; else content=`<div class="break-words">${esc(data.pesan)}</div>`;
+    div.innerHTML=`${!isMe?`<div class="font-bold text-[11px] text-[#075E54]">${esc(data.nama)}</div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span><button onclick="hapusChat('${key}')" class="btn-hapus">🗑️</button></div>`;
     box.appendChild(div); box.scrollTop=box.scrollHeight;
-    if(!isMe && document.getElementById('panelChatWarga').classList.contains('hidden')) document.getElementById('notif-dot').classList.remove('hidden');
   });
-  // Kalau ada yang hapus, hapus dari UI juga bosku
-  ref.on('child_removed', snap=>{
-    let el=document.getElementById(`chat-item-${snap.key}`);
-    if(el) el.remove();
-  });
+  ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
 });
 </script>
+  
 <!-- ========== SELESAI BOSKU ========== -->
 <!-- ========== AKHIR CHAT LENGKAP BOSKU ========== -->
   </body>
