@@ -1250,131 +1250,111 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
-  <!-- TOMBOL BULAT -->
-<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl">💬</button>
+  
+<!-- TOMBOL SULTAN -->
+<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl animate-pulse">💬</button>
 
-<!-- PANEL CHAT FULL LAYAR - FINAL FIX KIRIM -->
-<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[380px] md:h-[80vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+<!-- PANEL SULTAN -->
+<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
   
   <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div>
-      <div><h4 class="font-bold text-[15px]">Obrolan Warga RT.36</h4><p class="text-[11px] text-emerald-100">24 jam auto hapus</p></div>
+      <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-9 h-9 bg-white rounded-full">
+      <div><h4 class="font-bold text-[15px]">Obrolan Warga RT.36 👑</h4><p class="text-[11px] text-emerald-100">Online 24 warga • auto hapus 24 jam</p></div>
     </div>
-    <button onclick="toggleBoxChat()" class="w-8 h-8 flex items-center justify-center bg-white/20 rounded-full">✕</button>
+    <button onclick="toggleBoxChat()" class="w-8 h-8 bg-white/20 rounded-full">✕</button>
   </div>
 
   <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2" style="background-color:#E5DDD5; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
   <div class="p-2 bg-[#F0F0F0] flex flex-col gap-2">
-    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl">
-      <span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span>
+    <div id="preview-balas" class="hidden bg-[#FFF8C4] border-l-4 border-[#25D366] p-2 rounded text-xs flex justify-between">
+      <div><b id="balas-nama" class="text-[#075E54]"></b><div id="balas-pesan" class="text-gray-500 truncate max-w-[200px]"></div></div>
+      <button onclick="batalBalas()" class="font-bold">✕</button>
     </div>
-    <input type="text" id="namaWarga" placeholder="Nama Anda..." class="border-0 p-3 rounded-full text-[13px] w-full focus:outline-none shadow-sm">
+
+    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap">
+      <span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span><span onclick="tambahEmoji('😍')">😍</span><span onclick="tambahEmoji('🥳')">🥳</span>
+    </div>
+    
+    <input type="text" id="namaWarga" placeholder="Nama Anda (cth: Pak RT)" class="border-0 p-2.5 rounded-full text-[13px] w-full shadow-sm focus:outline-none">
+    
     <div class="flex gap-2 items-center">
-      <button type="button" onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="bg-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm">😀</button>
-      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 focus:outline-none shadow-sm" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}">
-      <button type="button" onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-md">➤</button>
+      <button onclick="document.getElementById('inputFoto').click()" class="bg-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm">📸</button>
+      <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
+      
+      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="bg-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm">😀</button>
+      
+      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 focus:outline-none shadow-sm" onkeydown="if(event.key==='Enter') kirimPesanWarga()">
+      
+      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-md">➤</button>
     </div>
   </div>
 </div>
 
-<style>.bubble-wa{max-width:80%; padding:8px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.2)} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}</style>
+<style>.bubble-wa{max-width:82%; padding:8px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.2); position:relative} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .badge-admin{background:#FFD700; color:#000; font-size:9px; padding:1px 4px; border-radius:4px; font-weight:bold}</style>
 
 <script>
+let balasData=null;
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); }
+function balasPesan(nama,pesan){ balasData={nama,pesan}; document.getElementById('preview-balas').classList.remove('hidden'); document.getElementById('balas-nama').innerText='Membalas '+nama; document.getElementById('balas-pesan').innerText=pesan; }
+function batalBalas(){ balasData=null; document.getElementById('preview-balas').classList.add('hidden'); }
 
-function getChatRef(){
-  if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga');
-  if(typeof database!=='undefined'&&database&&database.ref) return database.ref('pesan_warga');
-  if(typeof firebase!=='undefined'&&firebase.database) return firebase.database().ref('pesan_warga');
-  return null;
-}
-
-function toggleBoxChat(){
-  const p=document.getElementById('panelChatWarga');
-  const b=document.getElementById('btnBukaChat');
-  if(!p) return;
-  p.classList.toggle('hidden');
-  if(b) b.classList.toggle('hidden');
-  if(!p.classList.contains('hidden')){
-    setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100);
-  }
-}
+function getChatRef(){ if(typeof db!=='undefined'&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); if(typeof firebase!=='undefined') return firebase.database().ref('pesan_warga'); return null; }
+function toggleBoxChat(){ let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100); } }
 
 function kirimPesanWarga(){
-  try{
-    const namaInput=document.getElementById('namaWarga');
-    const pesanInput=document.getElementById('teksPesanWarga');
-    if(!namaInput||!pesanInput) return;
-    const nama=namaInput.value.trim();
-    const pesan=pesanInput.value.trim();
-    if(!nama){ alert('Isi nama dulu bosku!'); namaInput.focus(); return; }
-    if(!pesan){ alert('Ketik pesan dulu bosku!'); pesanInput.focus(); return; }
+  let nama=document.getElementById('namaWarga').value.trim();
+  let pesan=document.getElementById('teksPesanWarga').value.trim();
+  if(!nama) return alert('Isi nama bosku!');
+  if(!pesan) return;
+  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
+  localStorage.setItem('nama_warga_rt36',nama);
+  let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply: balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); document.getElementById('emoji-list').classList.add('hidden'); });
+}
 
-    let myChatId=localStorage.getItem('my_chat_id');
-    let pinWarga=localStorage.getItem('pin_warga_rt36');
-    if(!myChatId){
-      pinWarga = (Math.floor(1000+Math.random()*9000)).toString();
-      myChatId='warga_'+pinWarga+'_'+Date.now();
-      localStorage.setItem('pin_warga_rt36',pinWarga);
-      localStorage.setItem('my_chat_id',myChatId);
-    }
-    localStorage.setItem('nama_warga_rt36',nama);
-    const jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    const ref=getChatRef();
-    if(!ref){ alert('Firebase belum konek bosku, refresh dulu!'); return; }
-    
-    ref.push({nama:nama, pesan:pesan, waktu:jam, userId:myChatId, timestamp:Date.now()}).then(()=>{
-      pesanInput.value='';
-      document.getElementById('emoji-list').classList.add('hidden');
-    }).catch(err=>{ alert('Gagal kirim: '+err.message); });
-  }catch(err){ alert('Error kirim: '+err.message); console.log(err); }
+function kirimFoto(input){
+  if(!input.files[0]) return;
+  let nama=document.getElementById('namaWarga').value.trim() || 'Warga';
+  let reader=new FileReader();
+  reader.onload=function(e){
+    let myId=localStorage.getItem('my_chat_id') || 'warga_'+Date.now();
+    let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    if(e.target.result.length > 800000) return alert('Foto kegedean bosku! Maks 700KB, kompres dulu bosku!');
+    getChatRef().push({nama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'foto'});
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value='';
 }
 
 window.addEventListener('load', function(){
-  const saved=localStorage.getItem('nama_warga_rt36');
-  if(saved){ let el=document.getElementById('namaWarga'); if(el) el.value=saved; }
-  
-  const ref=getChatRef();
-  if(!ref) return;
-  const box=document.getElementById('boxChatWarga');
-  
+  let saved=localStorage.getItem('nama_warga_rt36'); if(saved) document.getElementById('namaWarga').value=saved;
+  let ref=getChatRef(); if(!ref) return;
+  let box=document.getElementById('boxChatWarga');
   ref.limitToLast(50).on('child_added', function(snap){
-    const data=snap.val();
-    const key=snap.key;
-    if(!data||!data.timestamp) return;
-    if(Date.now()-data.timestamp>86400000){ ref.child(key).remove(); return; }
+    let data=snap.val(), key=snap.key;
+    if(!data) return; if(Date.now()-data.timestamp>86400000){ ref.child(key).remove(); return; }
+    if(document.getElementById(`chat-item-${key}`)) return;
+    let myId=localStorage.getItem('my_chat_id'); let isMe=data.userId===myId;
+    let isAdmin=data.nama.toLowerCase().includes('rt') || data.nama.toLowerCase().includes('admin');
     
-    const myId=localStorage.getItem('my_chat_id');
-    const isMe=data.userId && data.userId===myId;
+    let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
+    let esc=t=>t?t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
     
-    let div=document.getElementById(`chat-item-${key}`);
-    if(div) return; // cegah dobel
-    
-    div=document.createElement('div');
-    div.id=`chat-item-${key}`;
-    div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
-    
-    const esc=(t)=>{ if(!t) return ''; return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); };
-    
+    let replyHtml=data.reply?`<div class="bg-black/10 border-l-2 border-[#25D366] pl-2 mb-1 text-[11px] rounded"><b class="text-[#075E54]">${esc(data.reply.nama)}</b><div class="truncate">${esc(data.reply.pesan).substring(0,40)}</div></div>`:'';
+    let content=data.tipe==='foto'?`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60 cursor-pointer" onclick="window.open(this.src)">`:`<div class="text-[14px] break-words">${esc(data.pesan)}</div>`;
+    let adminBadge=isAdmin?`<span class="badge-admin">👑 ADMIN</span>`:'';
     let hapus=isMe?`<button onclick="hapusPesanChat('${key}')" class="text-[9px] text-gray-400 ml-2">🗑️</button>`:'';
     
-    div.innerHTML=`${!isMe?`<div class="font-bold text-[11px] text-[#075E54]">${esc(data.nama)}</div>`:''}<div class="text-[14px] break-words">${esc(data.pesan)}</div><div class="text-right text-[10px] text-gray-500 mt-1">${data.waktu} ${isMe?'✓✓':''} ${hapus}</div>`;
-    
-    box.appendChild(div);
-    box.scrollTop=box.scrollHeight;
+    div.innerHTML=`${replyHtml}${!isMe?`<div class="font-bold text-[11px] text-[#075E54] flex gap-1">${esc(data.nama)} ${adminBadge}</div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end gap-1">${data.waktu} ${isMe?'✓✓':''} ${hapus}</div>`;
+    div.onclick=function(){ if(!isMe) balasPesan(data.nama, data.tipe==='foto'?'[Foto]':data.pesan); };
+    box.appendChild(div); box.scrollTop=box.scrollHeight;
   });
-  
-  ref.on('child_removed', function(snap){
-    let e=document.getElementById(`chat-item-${snap.key}`);
-    if(e) e.remove();
-  });
+  ref.on('child_removed', s=>{ let e=document.getElementById(`chat-item-${s.key}`); if(e) e.remove(); });
 });
-
-function hapusPesanChat(k){ if(confirm('Hapus pesan ini bosku?')){ getChatRef().child(k).remove(); } }
+function hapusPesanChat(k){ if(confirm('Hapus pesan bosku?')) getChatRef().child(k).remove(); }
 </script>
-
         
   </body>
 </html>
