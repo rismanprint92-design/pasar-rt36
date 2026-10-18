@@ -72,6 +72,90 @@
 }
     
 </style>
+  <style>
+/* --- PASAR RT36 VERSI CANTIK SHOPEE BOSKU --- */
+body{ background:#f6f7f9 !important; font-family: 'Inter', system-ui, sans-serif !important; }
+header{ backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important; }
+
+/* Search bar bulat kayak Google bosku */
+input[placeholder*="Cari"]{
+  border-radius:9999px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+  border:1px solid #eef2f7 !important;
+  background:white !important;
+  padding-top:12px !important;
+  padding-bottom:12px !important;
+}
+
+/* Kategori pill cantik */
+#filter-kategori button, .kategori-btn{
+  background:white !important;
+  border:1px solid #eef2f7 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  border-radius:9999px !important;
+  font-weight:600 !important;
+  transition: all .2s !important;
+}
+#filter-kategori button.bg-emerald-600, #filter-kategori button.bg-green-700, .kategori-btn.active{
+  background:#059669 !important;
+  color:white !important;
+  border-color:#059669 !important;
+  box-shadow: 0 4px 14px rgba(5,150,105,0.3) !important;
+}
+
+/* CARD PRODUK PALING CANTIK BOSKU */
+.produk-card, [class*="rounded-xl"].bg-white{
+  border-radius:20px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+  border:1px solid #f1f5f9 !important;
+  overflow:hidden !important;
+  transition: all .2s !important;
+}
+.produk-card:active{ transform: scale(0.97) !important; }
+.produk-card img{
+  aspect-ratio: 1/1 !important;
+  object-fit: cover !important;
+}
+
+/* Harga Orange Shopee bosku */
+.text-emerald-600.font-bold, .font-bold.text-\[15px\]{
+  color:#f97316 !important;
+  font-weight:800 !important;
+  font-size:15px !important;
+}
+
+/* Tombol Beli Via WA gradasi Shopee bosku */
+button.bg-emerald-600{
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border-radius:12px !important;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3) !important;
+  font-weight:700 !important;
+  letter-spacing:0.2px !important;
+}
+
+/* Badge 3 Foto blur premium */
+.bg-black.bg-opacity-70, [class*="3 Foto"]{
+  backdrop-filter: blur(8px) !important;
+  background: rgba(0,0,0,0.6) !important;
+  border-radius:9999px !important;
+  font-size:11px !important;
+}
+
+/* Floating chat jangan nutupin produk bosku */
+#btn-chat-bubble, button[class*="fixed"][class*="bottom-4"][class*="right-4"]{
+  bottom: 88px !important;
+  right: 16px !important;
+  box-shadow: 0 8px 24px rgba(5,150,105,0.4) !important;
+  width:56px !important;
+  height:56px !important;
+}
+
+/* Modal pilihan jual cantik bosku */
+#modal-pilihan-jual > div{
+  animation: pop .25s ease-out !important;
+}
+@keyframes pop{ from{ transform:scale(0.9); opacity:0 } to{ transform:scale(1); opacity:1 } }
+</style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
