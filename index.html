@@ -996,6 +996,12 @@ function tutupModalToko(){
 function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
       e.preventDefault();
+      let namaToko = document.getElementById('inputNamaToko').value.trim();
+      let pinToko = document.getElementById('inputPinToko').value.trim();
+      let daftarPin = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}');
+      if(daftarPin[namaToko.toLowerCase()] && daftarPin[namaToko.toLowerCase()] !== pinToko){ alert("PIN toko ini sudah ada bosku, PIN harus sama!"); return; }
+      daftarPin[namaToko.toLowerCase()] = pinToko;
+      localStorage.setItem('pinTokoRT36', JSON.stringify(daftarPin));
       const fileInput = document.getElementById('input-file-foto');
 
       if (fileInput.files && fileInput.files.length > 0) {
