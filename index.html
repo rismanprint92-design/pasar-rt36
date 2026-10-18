@@ -1186,6 +1186,12 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
         window.open(`https://api.whatsapp.com/send?text=${teksEncoded}`, '_blank');
       } else if (platform === 'facebook') {
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${linkEncoded}&quote=${teksEncoded}`, '_blank');
+      } else if (platform === 'link') {
+        navigator.clipboard.writeText(dataProdukBaru.link).then(function(){
+          alert('✅ Link produk berhasil disalin bosku!\n\n'+dataProdukBaru.link+'\n\nTinggal paste ke WA / Facebook bosku!');
+        }).catch(function(){
+          prompt("Salin link ini bosku:", dataProdukBaru.link);
+        });
       }
 
       tutupModalShare();
