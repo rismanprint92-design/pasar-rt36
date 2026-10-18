@@ -1056,35 +1056,42 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     }
 
     function simpanKeFirebase(arrayFotoUrl) {
-      let namaTokoVal = document.getElementById('inputNamaToko').value.trim();
-      let pinVal = document.getElementById('pin-penjual').value.trim();
-      let daftar = {};
-      try { daftar = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}'); } catch(e){}
-      daftar[namaTokoVal.toLowerCase()] = pinVal;
-      localStorage.setItem('pinTokoRT36', JSON.stringify(daftar));
-      localStorage.setItem('namaTokoRT36', namaTokoVal);
+  let namaTokoVal = document.getElementById('inputNamaToko').value.trim();
+  let pinVal = document.getElementById('pin-penjual').value.trim();
+  let daftar = {};
+  try { daftar = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}'); } catch(e){}
+  daftar[namaTokoVal.toLowerCase()] = pinVal;
+  localStorage.setItem('pinTokoRT36', JSON.stringify(daftar));
+  localStorage.setItem('namaTokoRT36', namaTokoVal);
 
-      const barangBaru = {
-        nama: bersihkanTeks(document.getElementById('nama').value),
-        harga: parseInt(document.getElementById('harga').value),
-        kategori: document.getElementById('kategori').value,
-        penjual: bersihkanTeks(document.getElementById('penjual').value),
-        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
-        wa: document.getElementById('whatsapp').value,
-        pinPenjual: pinVal,
-        toko: namaTokoVal,
-        pinToko: pinVal,
-        catatan: bersihkanTeks(document.getElementById('catatan').value),
-        foto: arrayFotoUrl,
-        timestamp: Date.now()
-      };
+  const barangBaru = {
+    nama: bersihkanTeks(document.getElementById('nama').value),
+    harga: parseInt(document.getElementById('harga').value),
+    kategori: document.getElementById('kategori').value,
+    penjual: bersihkanTeks(document.getElementById('penjual').value),
+    lokasi: bersihkanTeks(document.getElementById('lokasi').value),
+    wa: document.getElementById('whatsapp').value,
+    pinPenjual: pinVal,
+    toko: namaTokoVal,
+    pinToko: pinVal,
+    catatan: bersihkanTeks(document.getElementById('catatan').value),
+    foto: arrayFotoUrl,
+    timestamp: Date.now()
+  };
 
-      dbRef.push(barangBaru).then((res) => {
-        tutupModalJual();
-        document.getElementById('form-tambah').reset();
-        tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
-      }).catch(err => alert("Gagal menyimpan: " + err.message));
-    }
+  // === LANGSUNG DORONG KE LIST LOKAL BOSKU, JADI TIDAK PERLU TUNGGU FIREBASE ===
+  let idSementara = 'temp_' + Date.now();
+  produkData.unshift({ id: idSementara, ...barangBaru });
+
+  dbRef.push(barangBaru).then((res) => {
+    tutupModalJual();
+    document.getElementById('form-tambah').reset();
+    // ganti id sementara dengan id asli bosku
+    let idx = produkData.findIndex(p => p.id === idSementara);
+    if(idx !== -1) produkData[idx].id = res.key;
+    tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
+  }).catch(err => alert("Gagal menyimpan: " + err.message));
+}
         
         // Memanggil pop-up pilihan share ke Sosmed & WA
         tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
