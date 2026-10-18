@@ -690,70 +690,36 @@ function loadLebihBanyak() {
  function muatLebihBanyakProduk() {
   loadLebihBanyak();
 }   
-     function renderProduk(data) {
+
+function renderProduk(data) {
   const container = document.getElementById('daftar-produk');
   container.innerHTML = '';
-
   if(!data || data.length === 0) {
-    container.innerHTML = `<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang yang cocok atau ditemukan.</div>`;
+    container.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>';
     return;
   }
-
-  data.forEach(item => {
-    const defaultFoto = 'https://via.placeholder.com/200?text=Produk+RT';
-    let listFoto = [defaultFoto];
+  data.forEach(function(item){
+    let def = 'https://via.placeholder.com/200?text=Produk+RT';
+    let list = [def];
     if (item.foto) {
-      listFoto = Array.isArray(item.foto) ? item.foto : [item.foto];
+      list = Array.isArray(item.foto) ? item.foto : [item.foto];
     }
-
-    const fotoUtama = listFoto[0];
-    const catatanId = `catatan-${item.id}`;
-    const catatanTeks = item.catatan || '';
-    const catatanHtml = catatanTeks ? `
-      <div style="background:#f0fdf4; padding:6px 8px; border-radius:8px; border-left:3px solid #059669; margin-top:6px;">
-      <div id="${catatanId}" class="catatan-teks">📝 ${bersihkanTeks(catatanTeks)}</div>
-      <button class="btn-lihat" onclick="bukaTutupCatatan('${catatanId}', this)">Lihat selengkapnya ▼</button>
-    </div>` : '';
-    
-    const badgeFoto = listFoto.length > 1 ? `
-      <span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-        <i class="ph ph-images"></i> ${listFoto.length} Foto
-      </span>
-    ` : '';
-    
-    const tombolAdminHapus = isAdmin ? `
-      <button onclick="hapusProdukAdmin('${item.id}')" class="w-full mt-1 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
-        <i class="ph ph-trash"></i> Hapus (Admin RT)
-      </button>
-    ` : '';
-
-    const card = `
-        <div id="produk-${item.id}" class="bg-white rounded-xl shadow-sm border-2 border-transparent transition-all duration-500 overflow-hidden flex flex-col justify-between">
-          <div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos, 0)" data-fotos='${JSON.stringify(listFoto)}'>
-            <img loading="lazy" decoding="async" src="${fotoUtama}" alt="${bersihkanTeks(item.nama)}" class="w-full h-36 object-cover bg-gray-100" onerror="this.src='${defaultFoto}'">
-            ${badgeFoto}
-          </div>
-          <div class="p-3 flex-1 flex flex-col justify-between">
-            <div>
-              <span class="text-[10px] bg-emerald-50 text-emerald-600 font-semibold px-2 py-0.5 rounded uppercase">${item.kategori}</span>
-              <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${item.nama}</h3>
-              <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
-              <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual} (${item.lokasi})</p>
-              ${catatanHtml}
-            </div>
-            <div class="mt-2 space-y-1.5">
-              <button onclick="bukaModalOpsiBeli('${item.wa || ''}', '${item.nama}', '${item.harga}', '${item.catatan || ''}')"
-                class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
-                <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      container.innerHTML += card;
-    });
-  }
-    
+    let foto = list[0];
+    let catatanId = 'catatan-' + item.id;
+    let catatanTeks = item.catatan || '';
+    let catatanHtml = '';
+    if(catatanTeks){
+      catatanHtml = '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>';
+    }
+    let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
+    let tombolAdmin = '';
+    if(isAdmin){
+      tombolAdmin = '<div class="grid grid-cols-2 gap-1 mt-2"><button onclick="muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold py-1.5 rounded-lg">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-1.5 rounded-lg">🗑️ Hapus Admin</button></div>';
+    }
+    let card = '<div id="produk-'+item.id+'" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col"><div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos,0)" data-fotos=\''+JSON.stringify(list).replace(/'/g,"&#039;")+'\'><img loading="lazy" src="'+foto+'" class="w-full h-36 object-cover bg-gray-100"><div>'+badge+'</div></div><div class="p-3 flex-1 flex flex-col justify-between"><div><span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">'+item.kategori+'</span><h3 class="font-bold text-sm mt-1">'+bersihkanTeks(item.nama)+'</h3><p class="text-emerald-600 font-bold text-sm">Rp '+parseInt(item.harga).toLocaleString('id-ID')+'</p><p class="text-[11px] text-gray-500">👤 '+bersihkanTeks(item.penjual)+' ('+bersihkanTeks(item.lokasi)+')</p>'+catatanHtml+'</div><div class="mt-2"><button onclick="bukaModalOpsiBeli(\''+(item.wa||'')+'\',\''+bersihkanTeks(item.nama).replace(/'/g,"\\'")+'\',\''+item.harga+'\',\''+bersihkanTeks(item.catatan||'').replace(/'/g,"\\'")+'\')" class="w-full bg-emerald-600 text-white text-xs py-2 rounded-lg">Beli Via WA</button>'+tombolAdmin+'</div></div></div>';
+    container.innerHTML += card;
+  });
+}
    // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
 function bukaModalInfoAdmin() {
   document.getElementById('modal-info-admin').classList.remove('hidden');
