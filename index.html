@@ -957,13 +957,35 @@ function pilihJualBaru(){
   tutupModalPilihanJual();
   document.getElementById('modal-jual').classList.remove('hidden');
 }
-function pilihEditLama(){
+function bukaModalTokoSaya(){
   tutupModalPilihanJual();
-  let nama = prompt("Ketik nama produk yang mau di edit bosku:");
-  if(!nama) return;
-  let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
-  if(p) bukaVerifikasiPenjual(p.id);
-  else alert("Produk gak ketemu bosku");
+  let namaToko = localStorage.getItem('namaTokoRT36') || prompt("Ketik Nama Toko bosku (contoh: Malikha):");
+  if(!namaToko) return;
+  localStorage.setItem('namaTokoRT36', namaToko);
+  document.getElementById('modal-toko').classList.remove('hidden');
+  document.getElementById('modal-toko').classList.add('flex');
+  let list = document.getElementById('list-toko-saya');
+  let produkSaya = produkData.filter(p => (p.toko && p.toko.toLowerCase().includes(namaToko.toLowerCase())) || (p.penjual && p.penjual.toLowerCase().includes(namaToko.toLowerCase())));
+  if(produkSaya.length==0){
+    list.innerHTML = `<p class='text-center text-gray-400 text-sm mt-10'>Belum ada jualan dengan nama toko "${namaToko}" bosku, jual barang baru dulu bosku!</p>`;
+  } else {
+    list.innerHTML = produkSaya.map(p => `
+      <div class="bg-white p-3 rounded-xl shadow-sm flex gap-3 items-center">
+        <img src="${p.foto[0]}" class="w-14 h-14 rounded-lg object-cover">
+        <div class="flex-1">
+          <p class="font-bold text-sm">${p.nama}</p>
+          <p class="text-xs text-orange-500 font-bold">Rp ${p.harga}</p>
+          <p class="text-[10px] text-gray-400">${p.toko || p.penjual}</p>
+        </div>
+        <button onclick="editProduk(${p.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
+        <button onclick="hapusProduk(${p.id})" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold">Hapus</button>
+      </div>
+    `).join('');
+  }
+}
+function tutupModalToko(){
+  document.getElementById('modal-toko').classList.add('hidden');
+  document.getElementById('modal-toko').classList.remove('flex');
 }
 function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
