@@ -1366,6 +1366,33 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 
   function hapusPesanChat(k){ if(confirm('Hapus pesan ini bosku?')) getChatRef().child(k).remove(); }
   function escapeHtml(t){ if(!t) return ''; return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  // === FITUR PRO MAX BOSKU ===
+let balasKe = null;
+
+function balasPesan(nama, pesan){
+  balasKe = {nama, pesan};
+  const boxInput = document.querySelector('.p-2.bg-\\[\\#F0F0F0\\]');
+  let preview = document.getElementById('preview-balas');
+  if(!preview){
+    preview = document.createElement('div');
+    preview.id = 'preview-balas';
+    preview.className = 'bg-white border-l-4 border-[#25D366] p-2 mb-2 rounded text-xs flex justify-between';
+    boxInput.prepend(preview);
+  }
+  preview.innerHTML = `<div><b class="text-[#075E54]">Membalas ${nama}</b><div class="text-gray-500 truncate">${pesan}</div></div><button onclick="batalBalas()" class="text-lg">✕</button>`;
+}
+
+function batalBalas(){ 
+  balasKe = null; 
+  const p = document.getElementById('preview-balas');
+  if(p) p.remove();
+}
+
+function tambahEmoji(e){
+  document.getElementById('teksPesanWarga').value += e;
+  document.getElementById('teksPesanWarga').focus();
+}
 </script>
 
         
