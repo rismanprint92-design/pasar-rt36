@@ -237,6 +237,21 @@
     </div>
   </div>
 
+  <!-- MODAL PILIHAN JUAL CANTIK BOSKU -->
+  <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl">
+      <h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3>
+      <p class="text-[11px] text-gray-400 text-center mb-4">Pilih salah satu bosku</p>
+      <button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2">
+        <i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru
+      </button>
+      <button onclick="pilihEditLama()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-2">
+        <i class="ph ph-pencil-simple text-lg"></i> Edit / Ganti Jualan Lama
+      </button>
+      <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button>
+    </div>
+  </div>
+  
   <!-- Modal Form Tambah Produk -->
   <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
     <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
@@ -832,17 +847,24 @@ function tutupModalOpsiBeli() {
 
     // --- FORM TAMBAH PRODUK (MAKSIMAL 3 FOTO - VERSI HEMAT) ---
     function bukaModalJual() { 
-  let pilih = confirm("Mau ngapain bosku?\n\nOK = Jual Barang BARU\nCancel = Edit / Ganti Jualan Lama");
-  if(pilih){
-    document.getElementById('modal-jual').classList.remove('hidden');
-  } else {
-    let nama = prompt("Ketik nama produk yang mau di edit bosku:");
-    if(nama){
-      let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
-      if(p) bukaVerifikasiPenjual(p.id);
-      else alert("Produk gak ketemu bosku, coba cek lagi namanya");
-    }
-  }
+  document.getElementById('modal-pilihan-jual').classList.remove('hidden');
+  document.getElementById('modal-pilihan-jual').classList.add('flex');
+}
+function tutupModalPilihanJual() { 
+  document.getElementById('modal-pilihan-jual').classList.add('hidden');
+  document.getElementById('modal-pilihan-jual').classList.remove('flex');
+}
+function pilihJualBaru(){
+  tutupModalPilihanJual();
+  document.getElementById('modal-jual').classList.remove('hidden');
+}
+function pilihEditLama(){
+  tutupModalPilihanJual();
+  let nama = prompt("Ketik nama produk yang mau di edit bosku:");
+  if(!nama) return;
+  let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
+  if(p) bukaVerifikasiPenjual(p.id);
+  else alert("Produk gak ketemu bosku");
 }
 function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
