@@ -1251,47 +1251,52 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
 
-<!-- Tombol Ikon Chat Melayang di Pojok Kanan Bawah -->
-<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 group">
+<!-- Tombol Ikon Chat Melayang -->
+<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-2xl flex items-center justify-center gap-2 group">
   <span class="text-2xl">💬</span>
-  <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-sm font-semibold">
-    Live Chat Warga
-  </span>
+  <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 text-sm font-semibold">Live Chat Warga</span>
 </button>
 
-<!-- Kotak Panel Chat -->
-<div id="panelChatWarga" class="hidden fixed bottom-20 right-5 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300">
+<!-- Kotak Panel Chat - V2 WHATSAPP FULLSCREEN BOSKU -->
+<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[380px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl border-0 md:border border-gray-200 flex flex-col overflow-hidden">
   
-  <!-- Header Kotak Chat -->
-  <div class="bg-emerald-600 text-white p-3.5 flex justify-between items-center">
-    <div class="flex items-center gap-2">
-      <span class="text-lg">💬</span>
+  <!-- Header Kayak WA Bosku -->
+  <div class="bg-[#075E54] text-white p-3 flex justify-between items-center shadow-md z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div>
       <div>
-        <h4 class="font-bold text-sm">Obrolan Warga RT.36</h4>
-        <p class="text-[10px] text-emerald-100">Pesan otomatis terhapus dalam 24 jam</p>
+        <h4 class="font-bold text-[15px] leading-none">Obrolan Warga RT.36</h4>
+        <p class="text-[11px] text-emerald-100 mt-1">tap untuk info grup • 24 jam auto hapus</p>
       </div>
     </div>
-    <button onclick="toggleBoxChat()" class="text-white hover:text-gray-200 font-bold text-lg px-2">
-      ✕
-    </button>
+    <button onclick="toggleBoxChat()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 text-xl">✕</button>
   </div>
 
-  <!-- Riwayat Pesan -->
-  <div id="boxChatWarga" class="h-72 overflow-y-auto p-3 bg-gray-50 flex flex-col gap-2 text-sm">
-    <!-- Pesan real-time masuk di sini -->
+  <!-- Riwayat Pesan Background WA Bosku -->
+  <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #E5DDD5;">
+    <!-- Pesan masuk di sini -->
   </div>
 
-  <!-- Form Input Pesan -->
-  <div class="p-3 bg-white border-t border-gray-200 flex flex-col gap-2">
-    <input type="text" id="namaWarga" placeholder="Nama / Panggilan (cth: Pak RT)" class="border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-    <div class="flex gap-1.5">
-      <input type="text" id="teksPesanWarga" placeholder="Tulis pesan..." class="border border-gray-300 p-2 rounded-lg text-xs flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="handleEnterChat(event)">
-      <button onclick="kirimPesanWarga()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors">
-        Kirim
+  <!-- Form Input Kayak WA Bosku -->
+  <div class="p-2 bg-[#F0F0F0] flex flex-col gap-2">
+    <input type="text" id="namaWarga" placeholder="Nama Anda (cth: Pak RT)" class="border-0 p-2.5 rounded-full text-[13px] focus:outline-none w-full shadow-sm">
+    <div class="flex gap-2 items-end">
+      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 focus:outline-none shadow-sm" onkeypress="handleEnterChat(event)">
+      <button onclick="kirimPesanWarga()" class="bg-[#25D366] hover:bg-[#128C7E] text-white w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-colors text-xl">
+        ➤
       </button>
     </div>
   </div>
 </div>
+
+<style>
+@media (max-width: 768px) {
+  #panelChatWarga { border-radius: 0 !important; }
+}
+.bubble-wa { max-width: 80%; padding: 6px 8px 6px 8px; border-radius: 7.5px; position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
+.bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; }
+.bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
+</style>
 
 
 <!-- ================================================= -->
@@ -1440,14 +1445,23 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 
         const elemenPesan = document.createElement('div');
         elemenPesan.id = `chat-item-${messageKey}`;
-        elemenPesan.className = 'bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs text-xs';
+        
+        const isMe = data.userId && data.userId === myChatId;
+        elemenPesan.className = isMe ? 'bubble-wa bubble-me self-end' : 'bubble-wa bubble-other self-start';
+        
+        let tombolHapusHtml = '';
+        if (isMe || (typeof isAdmin !== 'undefined' && isAdmin)) {
+          tombolHapusHtml = `<button onclick="hapusPesanChat('${messageKey}')" class="text-[9px] text-gray-400 ml-2">🗑️</button>`;
+        }
+
         elemenPesan.innerHTML = `
-          <div class="flex justify-between items-center mb-1">
-            <span class="font-bold text-emerald-700">${escapeHtml(data.nama)}</span>
-            <div class="flex items-center">
-              <span class="text-gray-400 text-[9px]">${data.waktu}</span>
-              ${tombolHapusHtml}
-            </div>
+          ${!isMe ? `<div class="font-bold text-[11px] text-[#075E54] mb-1">${escapeHtml(data.nama)}</div>` : ''}
+          <div class="text-[14px] text-gray-800 leading-[18px] break-words">${escapeHtml(data.pesan)}</div>
+          <div class="flex justify-end items-center gap-1 mt-1">
+            <span class="text-[10px] text-gray-500">${data.waktu}</span>
+            ${isMe ? `<span class="text-[10px] text-blue-500">✓✓</span>` : ''}
+            ${tombolHapusHtml}
+          </div>
           </div>
           <div class="text-gray-800 break-words">${escapeHtml(data.pesan)}</div>
         `;
