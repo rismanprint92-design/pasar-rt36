@@ -1263,69 +1263,16 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     <div id="step1Verif" class="mt-5 space-y-3">
       <div><label class="text-[11px] font-bold">NAMA LENGKAP</label><input type="text" id="inputNamaWA" placeholder="Contoh: Budi" class="w-full border-2 border-gray-200 p-3 rounded-xl text-[14px] mt-1 focus:border-[#25D366] focus:outline-none"></div>
       <div><label class="text-[11px] font-bold">NO WA ANDA SENDIRI</label><input type="tel" id="inputNoWA" placeholder="0852xxxx" class="w-full border-2 border-gray-200 p-3 rounded-xl text-[14px] mt-1 focus:border-[#25D366] focus:outline-none"></div>
-      <button onclick="kirimKodeKeSaya()" class="w-full bg-[#25D366] text-white font-bold py-3 rounded-xl">Kirim Kode ke WA Saya 📲</button>
+      <button onclick="kirimKodeKeSaya(event)" class="w-full bg-[#25D366] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"><span>Kirim Kode ke WA Saya 📲</span></button>
       <p id="statusKirim" class="hidden text-[11px] text-center font-bold"></p>
     </div>
     <div id="step2Verif" class="hidden mt-5">
       <div class="bg-yellow-50 border p-3 rounded-xl text-center"><p class="text-[11px]">Kode OTP (cek WA Anda):</p><p id="kodeDemo" class="text-[28px] font-black tracking-[6px] text-[#FF3B30]">0000</p></div>
       <input type="text" id="inputOTP" maxlength="4" placeholder="0000" class="w-full border-2 border-[#25D366] p-3 rounded-xl text-[22px] tracking-[10px] text-center font-bold mt-3">
-      <button onclick="cekOTP()" class="w-full bg-[#075E54] text-white font-bold py-3 rounded-xl mt-3">Verifikasi & Masuk</button>
+      <button onclick="cekOTP(event)" class="w-full bg-[#075E54] text-white font-bold py-3 rounded-xl mt-3 flex items-center justify-center gap-2"><span>Verifikasi & Masuk</span></button>
       <button onclick="kembaliStep1()" class="w-full text-[11px] text-gray-500 mt-2">Ganti Nomor</button>
     </div>
   </div>
-</div>
-
-<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
-  <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
-    <div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div><div><h4 class="font-bold text-[14px]">Obrolan Warga RT.36</h4>
-    <div class="flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span><p id="statusOnline" class="text-[11px] font-bold">1 Online</p><span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1"></span></div>
-    </div></div>
-    <div class="flex gap-1 items-center">
-      <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]">🔔</button>
-      <button onclick="toggleBoxChat()" class="bg-[#FF3B30] px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide text-white">KELUAR</button>
-    </div>
-  </div>
-
-  <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
-    <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
-    <div class="flex flex-col gap-2">
-      <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
-      <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
-      <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
-    </div>
-  </div>
-
-  <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
-  <div class="bg-[#F0F0F0] p-2 flex items-end gap-2">
-    <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
-      <div class="flex-1 relative min-h-[32px] flex items-center">
-        <div id="areaKetikNormal" class="w-full flex items-center"><input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="w-full bg-transparent border-0 text-[15px] px-2 py-2 focus:outline-none" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}"></div>
-        <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span><span class="flex gap-1"><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce"></span><span class="w-1 h-5 bg-red-500 rounded-full animate-bounce" style="animation-delay:0.1s"></span><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span></span></div>
-      </div>
-      <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
-        <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-        <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-        <button onclick="kirimLokasi()" class="w-8 h-8 flex items-center justify-center"><span class="text-[18px]">📍</span></button>
-        <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
-      </div>
-    </div>
-    <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden">
-      <span id="iconMic" class="relative">
-        <span class="absolute inset-0 bg-white/20 rounded-full animate-ping"></span>
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg>
-      </span>
-      <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
-      <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
-    </button>
-  </div>
-  <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
-    <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
-    <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
-    <button onclick="document.getElementById('inputFoto').click()" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🖼️</div><span class="text-[10px]">Galeri</span></button>
-    <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">😊</div><span class="text-[10px]">Emoji</span></button>
-  </div>
-  <div id="emoji-list" class="hidden bg-white p-2 flex gap-3 text-2xl flex-wrap border-t"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span></div>
 </div>
 
 <style>
@@ -1338,6 +1285,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 .mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important;}
 @keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
 .icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
+.animate-spin{animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 
 <script>
@@ -1362,7 +1310,8 @@ function getOnlineRef(){
   }catch(e){}
   return firebase.database().ref('online_warga');
 }
-function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
+
+// HANYA 1 FUNGSI CEK VERIFIKASI BOSKU - YANG DUPLIKAT SAYA HAPUS BOSKU
 function cekVerifikasi(){ 
   verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
   verifiedNama=localStorage.getItem('verified_nama_rt36'); 
@@ -1370,56 +1319,89 @@ function cekVerifikasi(){
     document.getElementById('modalVerifWA').classList.remove('hidden'); 
     return false; 
   } 
-  document.getElementById('myWALabel').innerText='✓ '+verifiedNama; 
+  let lbl = document.getElementById('myWALabel');
+  if(lbl) lbl.innerText='✓ '+verifiedNama; 
   updateIconNotif(); 
   setSuaraAktif(); 
   return true; 
 }
 
-async function kirimKodeKeSaya(){ 
-  let nama=document.getElementById('inputNama').value.trim();
-  let phone=document.getElementById('inputPhone').value.trim();
+// === FIX TOTAL KIRIM KODE + LOADING BOSKU ===
+async function kirimKodeKeSaya(event){ 
+  let elNama = document.getElementById('inputNamaWA');
+  let elPhone = document.getElementById('inputNoWA');
+  if(!elNama || !elPhone){ alert('Form tidak ketemu bosku!'); return; }
+  let nama = elNama.value.trim();
+  let phone = elPhone.value.trim();
   if(!nama || !phone){ alert('Isi nama dan nomor dulu bosku!'); return; }
   let nomorBersih = phone.replace(/\D/g,'');
 
-  // === TINGKAT 1 CEK DUPLIKAT BOSKU - VERSI AMAN BOSKU ===
+  // LOADING MUNCUL DULU BOSKU - PALING ATAS BOSKU
+  let btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
+  let textAsli = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Loading bosku...</span>';
+  btn.classList.add('opacity-70','cursor-not-allowed');
+
   try{
     let onlineRef = getOnlineRef();
     if(onlineRef){
       let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
       if(cek.exists()){
         alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
+        btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70','cursor-not-allowed');
         return;
       }
     }
   }catch(e){ console.log('lewati cek duplikat bosku', e); }
-  // === SELESAI CEK BOSKU ===
 
-  // === LANJUTAN CODE ASLI BIAR CHAT HIDUP LAGI BOSKU ===
-  let kodeOTP = Math.floor(1000 + Math.random() * 9000);
-  window.kodeVerifikasiSementara = kodeOTP.toString();
-  window.namaSementara = nama;
-  window.phoneSementara = nomorBersih;
-  
-  // simpan kode ke firebase (kalau ada)
-  try{
-    let rootRef = getRootRef();
-    if(rootRef) await rootRef.child('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
-  }catch(e){}
+  await new Promise(r => setTimeout(r, 700));
 
-  alert('Kode OTP bosku: '+kodeOTP+' (untuk tes bosku)');
+  let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+  otpKode = kodeOTP;
+  verifiedPhone = nomorBersih;
+  verifiedNama = nama;
+  window.otpKode = kodeOTP;
+
+  document.getElementById('kodeDemo').innerText = kodeOTP;
+  let st = document.getElementById('statusKirim');
+  if(st){ st.classList.remove('hidden'); st.innerText = 'Kode demo bosku: '+kodeOTP; }
+
   document.getElementById('step1Verif').classList.add('hidden');
   document.getElementById('step2Verif').classList.remove('hidden');
-} // <-- INI TUTUPNYA YANG TADI HILANG BOSKU! PENTING BOSKU!
 
-  // --- LANJUTKAN CODE LAMA BOSKU DARI SINI KE BAWAH, JANGAN DIHAPUS BOSKU ---
+  btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70','cursor-not-allowed');
+}
 
-  // lanjutkan kode lama bosku untuk kirim kode...
-  
-function cekOTP(){ if(document.getElementById('inputOTP').value.trim()!==otpKode){ alert('Kode salah bosku! Kode: '+otpKode); return; } localStorage.setItem('verified_wa_rt36', verifiedPhone); localStorage.setItem('verified_nama_rt36', verifiedNama); localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); localStorage.setItem('nama_warga_rt36', verifiedNama); document.getElementById('modalVerifWA').classList.add('hidden'); location.reload(); }
+async function cekOTP(event){ 
+  let elOTP = document.getElementById('inputOTP');
+  let input = elOTP.value.trim();
+  if(!input){ alert('Isi kode OTP dulu bosku!'); return; }
+
+  let btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
+  let textAsli = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Verifikasi bosku...</span>';
+  btn.classList.add('opacity-70');
+
+  await new Promise(r => setTimeout(r, 600));
+
+  let kodeBenar = window.otpKode || otpKode;
+  if(input !== kodeBenar){ 
+    alert('Kode salah bosku! Kode yang benar: '+kodeBenar); 
+    btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70');
+    return; 
+  } 
+  localStorage.setItem('verified_wa_rt36', verifiedPhone); 
+  localStorage.setItem('verified_nama_rt36', verifiedNama); 
+  localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
+  localStorage.setItem('nama_warga_rt36', verifiedNama); 
+  document.getElementById('modalVerifWA').classList.add('hidden'); 
+  location.reload(); 
+}
+
 function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
-
 function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
 function setSuaraAktif(){
   let audio=document.getElementById('notifSound');
@@ -1521,68 +1503,6 @@ function hapusChat(key, pemilikId){
   if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
   getChatRef().child(key).remove();
 }
-function autoHapus24Jam(){
-  let ref=getChatRef();
-  let batas=Date.now() - (24*60*60*1000);
-  ref.once('value').then(snap=>{
-    snap.forEach(child=>{
-      let data=child.val();
-      if(data && data.timestamp && data.timestamp < batas){
-        ref.child(child.key).remove();
-      }
-    });
-  });
-}
-
-window.addEventListener('load', function(){
-  let isVerif=cekVerifikasi(); if(!isVerif) return;
-  let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
-  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-  
-  // ====== FIX ONLINE FINAL - 3 JALUR BOSKU - PASTI JALAN BOSKU ======
-  try{
-    let onlineRoot = getOnlineRef();
-    let myOnlineRef = onlineRoot.child(myId);
-    myOnlineRef.set({nama: verifiedNama, time: Date.now()});
-    myOnlineRef.onDisconnect().remove();
-    setInterval(()=>{ myOnlineRef.update({time: Date.now()}); }, 25000);
-
-    onlineRoot.on('value', snap=>{
-      let count = snap.numChildren();
-      if(count < 1) count = 1;
-      let el = document.getElementById('statusOnline');
-      if(el) el.innerText = count + ' Online';
-    });
-  }catch(e){
-    console.log('online error', e);
-    document.getElementById('statusOnline').innerText = '1 Online';
-  }
-  // ====== SELESAI FIX ONLINE BOSKU ======
-
-  autoHapus24Jam();
-  setInterval(autoHapus24Jam, 60*60*1000);
-  
-  ref.limitToLast(80).on('child_added', snap=>{
-    let data=snap.val(), key=snap.key; if(!data) return; 
-    if(data.timestamp && (Date.now() - data.timestamp > 24*60*60*1000)){ ref.child(key).remove(); return; }
-    if(document.getElementById(`chat-item-${key}`)) return;
-    let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
-    let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
-    let content=''; 
-    if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; 
-    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
-    else if(data.tipe==='lokasi') content=`<div><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">📍 Lihat Lokasi Saya</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:4px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
-    else content=`<div class="break-words">${esc(data.pesan)}</div>`;
-    let namaHtml=`<div class="nama-atas">${esc(data.nama)} ${isMe?'(Anda)':''}</div>`;
-    let tombolHapus = isMe ? `<button onclick="hapusChat('${key}','${data.userId}')" class="btn-hapus">🗑️</button>` : ``;
-    div.innerHTML=`${namaHtml}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span>${tombolHapus}</div>`;
-    box.appendChild(div); box.scrollTop=box.scrollHeight;
-    if(!chatPertamaLoad && !isMe){ bunyikanNotifikasi(); kedipkanIconChat(); }
-  });
-  setTimeout(()=>{ chatPertamaLoad = false; }, 4000);
-  ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
-  document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
-});
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
 </body>
