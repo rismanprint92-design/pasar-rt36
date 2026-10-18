@@ -1335,6 +1335,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
   .bubble-wa{max-width:80%; padding:7px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .badge-admin{background:#FFD700; color:#000; font-size:9px; padding:1px 4px; border-radius:4px; font-weight:900} .poll-bar{height:18px; background:#e5e7eb; border-radius:10px; overflow:hidden} .poll-fill{height:100%; background:#25D366; transition:width .5s}</style>
 
 <script>
+let balasData=null, mediaRecorder, micStream=null, audioChunks=[], isRekam=false;
 let balasData=null, mediaRecorder, audioChunks=[], isRekam=false;
 function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
 function getRootRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
@@ -1347,21 +1348,27 @@ function sedangKetik(){ let nama=document.getElementById('namaWarga').value.trim
 function aksiTombol(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); } }
 function kirimPesanWarga(){ let nama=document.getElementById('namaWarga').value.trim(); let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!nama){ alert('Isi nama dulu bosku!'); return; } if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); } localStorage.setItem('nama_warga_rt36',nama); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply:balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); cekKetik(); }); }
 function kirimFoto(input){ if(!input.files[0]) return; let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let reader=new FileReader(); reader.onload=e=>{ if(e.target.result.length>800000){ alert('Foto kegedean bosku!'); return; } let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
+
+let micStream = null; // taro di atas dekat mediaRecorder bosku
+
 async function mulaiRekam(){ 
   if(document.getElementById('teksPesanWarga').value.trim()!=='') return; 
   isRekam=true; 
   document.getElementById('rekamInfo').classList.remove('hidden');
-  // GANTI JADI MERAH BOSKU!
   let btn = document.getElementById('btnAksi');
   btn.classList.add('mic-recording');
-  // GETAR HP BOSKU KAYA WA!
   if(navigator.vibrate) navigator.vibrate(50);
   try{ 
-    let stream=await navigator.mediaDevices.getUserMedia({audio:true}); 
-    mediaRecorder=new MediaRecorder(stream); 
+    micStream = await navigator.mediaDevices.getUserMedia({audio:true}); // simpan stream nya bosku
+    mediaRecorder=new MediaRecorder(micStream); 
     audioChunks=[]; 
     mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); 
     mediaRecorder.onstop=()=>{ 
+      // MATIKAN MIC TOTAL BIAR NOTIF HILANG BOSKU!
+      if(micStream){
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
       let blob=new Blob(audioChunks,{type:'audio/webm'}); 
       let reader=new FileReader(); 
       reader.onload=e=>{ 
@@ -1378,17 +1385,23 @@ async function mulaiRekam(){
     isRekam=false; 
     document.getElementById('rekamInfo').classList.add('hidden');
     btn.classList.remove('mic-recording');
+    if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
   } 
 }
+
 function stopRekam(){ 
   if(!isRekam) return; 
   isRekam=false; 
   document.getElementById('rekamInfo').classList.add('hidden');
-  // BALIKIN JADI HIJAU LAGI BOSKU!
   let btn = document.getElementById('btnAksi');
   btn.classList.remove('mic-recording');
-  if(navigator.vibrate) navigator.vibrate([30, 50, 30]); // getar 2x pas lepas bosku
-  if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); 
+  if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+  if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop(); // ini akan trigger onstop yang matikan mic
+  } else {
+    // jaga-jaga kalau belum sempat start bosku
+    if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+  }
 }
 function pinPesan(t){ localStorage.setItem('pin_rt36',t); document.getElementById('pinBox').classList.remove('hidden'); document.getElementById('pinText').innerText=t; getRootRef().ref('pin_info').set({text:t,time:Date.now()}); }
 function unPin(){ localStorage.removeItem('pin_rt36'); document.getElementById('pinBox').classList.add('hidden'); getRootRef().ref('pin_info').remove(); }
