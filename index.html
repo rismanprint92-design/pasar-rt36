@@ -321,30 +321,29 @@ button.bg-emerald-600{
     </div>
   </div>
 
-  <!-- MODAL PILIHAN JUAL CANTIK BOSKU -->
-  <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-      <h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3>
-      <p class="text-[11px] text-gray-400 text-center mb-4">Pilih salah satu bosku</p>
-      <button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2">
-        <i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru
+  <!-- MODAL PILIHAN JUAL - POSISI 1 BOSKU -->
+<div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
+  <div class="bg-white w-full max-w-sm rounded-2xl p-5">
+    <h3 class="font-bold text-center mb-4">Mau Jual Apa Bosku?</h3>
+    <div class="space-y-3">
+      <button onclick="pilihJualBaru()" class="w-full bg-emerald-50 text-emerald-700 font-bold py-3.5 rounded-xl border border-emerald-200">
+        <i class="ph ph-plus-circle"></i> Jual Barang Baru
       </button>
       <button onclick="bukaModalTokoSaya()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200">
-        <i class="ph ph-storefront text-lg"></i> Toko / Edit Jualan
+        <i class="ph ph-storefront"></i> Toko / Edit Jualan
       </button>
-      <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button>
     </div>
+    <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-sm">Batal</button>
   </div>
+</div>
 
-  <!-- MODAL TOKO SAYA BOSKU -->
+  <!-- MODAL TOKO SAYA + PIN - POSISI 2 BOSKU - TEMPEL DI SINI -->
 <div id="modal-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col z-[70] bg-white">
   <div class="bg-emerald-600 text-white p-4 flex items-center gap-3">
-    <button onclick="tutupModalToko()" class="text-xl"><i class="ph ph-arrow-left"></i></button>
+    <button onclick="tutupModalToko()" class="text-xl">←</button>
     <h3 class="font-bold">Toko Saya</h3>
   </div>
-  <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50">
-    <!-- produk bakal muncul di sini bosku -->
-  </div>
+  <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50"></div>
 </div>
   
   <!-- Modal Form Tambah Produk -->
@@ -355,19 +354,22 @@ button.bg-emerald-600{
         <button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button>
       </div>
 
-      <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs">
-        <div class="mb-3">
-          <label class="text-xs font-bold text-gray-700">Nama Toko Bosku *</label>
-          <input id="inputNamaToko" type="text" placeholder="Contoh: Toko Malikha (Block E4)" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500">
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Nama Produk / Jasa</label>
-          <input type="text" id="nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Nasi Uduk Komplit">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Harga (Rp)</label>
-            <input type="number" id="harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="10000">
+      <form id="form-tambah" onsubmit="tambahProduk(event)">
+  <!-- POSISI 3A: NAMA TOKO -->
+  <div class="mb-3">
+    <label class="block font-medium text-xs mb-1">Nama Toko Bosku *</label>
+    <input type="text" id="inputNamaToko" placeholder="Contoh: Toko Malikha Block E4" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
+  </div>
+  <!-- POSISI 3B: PIN TOKO -->
+  <div class="mb-3">
+    <label class="block font-medium text-xs mb-1">Buat PIN Toko (4 angka) *</label>
+    <input type="password" id="inputPinToko" maxlength="4" inputmode="numeric" placeholder="Contoh: 1234" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
+    <p class="text-[10px] text-gray-400 mt-1">PIN ini buat buka Toko/Edit Jualan bosku, jangan lupa bosku!</p>
+  </div>
+
+  <div>
+    <label class="block font-medium text-xs mb-1">Nama Produk</label>
+    <input type="text" id="nama" ... > <!-- yang lama biarkan bosku -->
           </div>
           <div>
             <label class="block font-medium mb-1">Kategori</label>
