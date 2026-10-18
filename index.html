@@ -321,87 +321,104 @@ button.bg-emerald-600{
     </div>
   </div>
 
-  <!-- MODAL PILIHAN JUAL - POSISI 1 BOSKU -->
-<div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
-  <div class="bg-white w-full max-w-sm rounded-2xl p-5">
-    <h3 class="font-bold text-center mb-4">Mau Jual Apa Bosku?</h3>
-    <div class="space-y-3">
-      <button onclick="pilihJualBaru()" class="w-full bg-emerald-50 text-emerald-700 font-bold py-3.5 rounded-xl border border-emerald-200">
-        <i class="ph ph-plus-circle"></i> Jual Barang Baru
+  <!-- MODAL PILIHAN JUAL CANTIK BOSKU -->
+  <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl">
+      <h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3>
+      <p class="text-[11px] text-gray-400 text-center mb-4">Pilih salah satu bosku</p>
+      <button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2">
+        <i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru
       </button>
       <button onclick="bukaModalTokoSaya()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200">
-        <i class="ph ph-storefront"></i> Toko / Edit Jualan
+        <i class="ph ph-storefront text-lg"></i> Toko / Edit Jualan
       </button>
+      <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button>
     </div>
-    <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-sm">Batal</button>
   </div>
-</div>
 
-  <!-- MODAL TOKO SAYA + PIN - POSISI 2 BOSKU - TEMPEL DI SINI -->
+  <!-- MODAL TOKO SAYA BOSKU -->
 <div id="modal-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col z-[70] bg-white">
   <div class="bg-emerald-600 text-white p-4 flex items-center gap-3">
-    <button onclick="tutupModalToko()" class="text-xl">←</button>
+    <button onclick="tutupModalToko()" class="text-xl"><i class="ph ph-arrow-left"></i></button>
     <h3 class="font-bold">Toko Saya</h3>
   </div>
-  <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50"></div>
-</div>
-  
-  <!-- ===== FIX MODAL JUAL - ANTI MISTAR BOSKU ===== -->
-<div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
-  <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
-    <div class="bg-emerald-600 text-white p-4 flex items-center gap-3 shrink-0">
-      <button onclick="tutupModalJual()" class="text-xl">←</button>
-      <h3 class="font-bold">Jual Barang Baru</h3>
-    </div>
-    
-    <form id="form-tambah" onsubmit="tambahProduk(event)" class="p-4 space-y-3 overflow-auto flex-1">
-      
-      <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl">
-        <div class="mb-3">
-          <label class="block font-bold text-xs mb-1">Nama Toko Bosku *</label>
-          <input type="text" id="inputNamaToko" placeholder="Contoh: Toko Malikha" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-        </div>
-        <div>
-          <label class="block font-bold text-xs mb-1">Buat PIN Toko (4 angka) *</label>
-          <input type="password" id="inputPinToko" maxlength="4" inputmode="numeric" placeholder="1234" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-          <p class="text-[10px] text-gray-500 mt-1">Ingat PIN ini buat buka Toko bosku!</p>
-        </div>
-      </div>
-
-      <div>
-        <label class="block font-medium text-xs mb-1">Nama Produk *</label>
-        <input type="text" id="nama" placeholder="Nama barang" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block font-medium text-xs mb-1">Harga *</label>
-          <input type="number" id="harga" placeholder="50000" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-        </div>
-        <div>
-          <label class="block font-medium text-xs mb-1">Kategori</label>
-          <select id="kategori" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">
-            <option>Kuliner</option><option>Sembako</option><option>Jasa</option><option>Lainnya</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label class="block font-medium text-xs mb-1">Foto Produk (Maks 3) *</label>
-        <input type="file" id="foto" accept="image/*" multiple class="w-full text-sm border border-gray-200 rounded-xl p-2">
-      </div>
-
-      <div>
-        <label class="block font-medium text-xs mb-1">Catatan / WA</label>
-        <textarea id="catatan" placeholder="Contoh: Bisa antar area block..." class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm h-20"></textarea>
-      </div>
-
-      <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mt-2">Posting Jualan</button>
-      <button type="button" onclick="tutupModalJual()" class="w-full text-gray-400 text-sm py-2">Batal</button>
-    </form>
+  <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50">
+    <!-- produk bakal muncul di sini bosku -->
   </div>
 </div>
-    
+  
+  <!-- Modal Form Tambah Produk -->
+  <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
+    <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-gray-800">Pasang Dagangan Baru</h3>
+        <button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button>
+      </div>
+
+      <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs">
+        <div class="mb-3">
+          <label class="text-xs font-bold text-gray-700">Nama Toko Bosku *</label>
+          <input id="inputNamaToko" type="text" placeholder="Contoh: Toko Malikha (Block E4)" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Nama Produk / Jasa</label>
+          <input type="text" id="nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Nasi Uduk Komplit">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Harga (Rp)</label>
+            <input type="number" id="harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="10000">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Kategori</label>
+            <select id="kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+              <option value="kuliner">Kuliner</option>
+              <option value="sembako">Sembako</option>
+              <option value="jasa">Jasa</option>
+              <option value="bekas">Barang Bekas</option>
+              <option value="pakaian">Pakaian</option>
+              <option value="aksesoris">Aksesoris</option>
+              <option value="elektronik">Elektronik</option>
+              <option value="dll">Dll</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Nama Penjual</label>
+            <input type="text" id="penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Bu RT / Pak Ahmad">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Blok / No. Rumah</label>
+            <input type="text" id="lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Blok A1 No. 4">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">No. WhatsApp</label>
+            <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789 ">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">PIN Rahasia Penjual</label>
+            <input type="password" id="pin-penjual" required class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="1234">
+          </div>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Catatan / Keterangan (Opsional)</label>
+          <textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi."></textarea>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Foto Produk (Maksimal 3 Foto, Otomatis Kompres)</label>
+          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+          <p class="text-[10px] text-emerald-700 mt-1">💡 Anda dapat memilih hingga 3 foto sekaligus.</p>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">
+          Tayangkan Dagangan
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Modal Login Penjual untuk Edit/Hapus -->
   <div id="modal-login-penjual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
@@ -939,36 +956,32 @@ function tutupModalPilihanJual() {
 function pilihJualBaru(){
   tutupModalPilihanJual();
   document.getElementById('modal-jual').classList.remove('hidden');
-  document.getElementById('modal-jual').classList.add('flex');
 }
-
 function bukaModalTokoSaya(){
   tutupModalPilihanJual();
-  let namaToko = prompt("Masukkan Nama Toko bosku:");
+  let namaToko = localStorage.getItem('namaTokoRT36') || prompt("Ketik Nama Toko bosku (contoh: Malikha):");
   if(!namaToko) return;
-  let pinInput = prompt("Masukkan PIN Toko "+namaToko+" :");
-  if(!pinInput) return;
-  
-  let daftarPin = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}');
-  let pinAsli = daftarPin[namaToko.toLowerCase()];
-  if(!pinAsli){
-    let p = produkData.find(x => x.toko && x.toko.toLowerCase() === namaToko.toLowerCase());
-    if(p) pinAsli = p.pinToko;
-  }
-  if(!pinAsli){ alert("Toko "+namaToko+" belum ada bosku! Jual dulu bosku."); return; }
-  if(pinAsli !== pinInput){ alert("PIN SALAH bosku!"); return; }
-
+  localStorage.setItem('namaTokoRT36', namaToko);
   document.getElementById('modal-toko').classList.remove('hidden');
   document.getElementById('modal-toko').classList.add('flex');
   let list = document.getElementById('list-toko-saya');
-  let produkSaya = produkData.filter(p => p.toko && p.toko.toLowerCase() === namaToko.toLowerCase());
-  list.innerHTML = produkSaya.length ? produkSaya.map(p => `
-      <div class="bg-white p-3 rounded-xl shadow flex gap-3 items-center">
+  let produkSaya = produkData.filter(p => (p.toko && p.toko.toLowerCase().includes(namaToko.toLowerCase())) || (p.penjual && p.penjual.toLowerCase().includes(namaToko.toLowerCase())));
+  if(produkSaya.length==0){
+    list.innerHTML = `<p class='text-center text-gray-400 text-sm mt-10'>Belum ada jualan dengan nama toko "${namaToko}" bosku, jual barang baru dulu bosku!</p>`;
+  } else {
+    list.innerHTML = produkSaya.map(p => `
+      <div class="bg-white p-3 rounded-xl shadow-sm flex gap-3 items-center">
         <img src="${p.foto[0]}" class="w-14 h-14 rounded-lg object-cover">
-        <div class="flex-1"><p class="font-bold text-sm">${p.nama}</p><p class="text-xs text-orange-500 font-bold">Rp ${p.harga}</p></div>
+        <div class="flex-1">
+          <p class="font-bold text-sm">${p.nama}</p>
+          <p class="text-xs text-orange-500 font-bold">Rp ${p.harga}</p>
+          <p class="text-[10px] text-gray-400">${p.toko || p.penjual}</p>
+        </div>
         <button onclick="editProduk(${p.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
         <button onclick="hapusProduk(${p.id})" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold">Hapus</button>
-      </div>`).join('') : `<p class='text-center text-gray-400 mt-10'>Toko kosong bosku</p>`;
+      </div>
+    `).join('');
+  }
 }
 function tutupModalToko(){
   document.getElementById('modal-toko').classList.add('hidden');
@@ -977,12 +990,6 @@ function tutupModalToko(){
 function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
       e.preventDefault();
-      let namaToko = document.getElementById('inputNamaToko').value.trim();
-      let pinToko = document.getElementById('inputPinToko').value.trim();
-      let daftarPin = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}');
-      if(daftarPin[namaToko.toLowerCase()] && daftarPin[namaToko.toLowerCase()] !== pinToko){ alert("PIN toko ini sudah ada bosku, PIN harus sama!"); return; }
-      daftarPin[namaToko.toLowerCase()] = pinToko;
-      localStorage.setItem('pinTokoRT36', JSON.stringify(daftarPin));
       const fileInput = document.getElementById('input-file-foto');
 
       if (fileInput.files && fileInput.files.length > 0) {
