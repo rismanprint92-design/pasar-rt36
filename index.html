@@ -1353,9 +1353,11 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
       let hapusBtn = '';
       if(isMe) hapusBtn = `<button onclick="hapusPesanChat('${key}')" class="text-[9px] text-gray-400 ml-2">🗑️</button>`;
       
-      el.innerHTML = `${!isMe ? `<div class="font-bold text-[11px] text-[#075E54]">${data.nama}</div>` : ''}<div class="text-[14px] break-words">${data.pesan}</div><div class="text-right text-[10px] text-gray-500 mt-1">${data.waktu} ${isMe ? '✓✓' : ''} ${hapusBtn}</div>`;
-      boxChat.appendChild(el);
-      boxChat.scrollTop = boxChat.scrollHeight;
+      el.innerHTML = `
+      ${balasKe ? `<div class="bg-black/10 border-l-2 border-[#25D366] pl-2 mb-1 text-[11px] rounded"><b>${balasKe.nama}</b> ${balasKe.pesan}</div>` : ''}
+      ${!isMe ? `<div class="font-bold text-[11px] text-[#075E54]">${data.nama}</div>` : ''}
+      <div class="text-[14px] break-words" onclick="balasPesan('${data.nama}','${data.pesan.replace(/'/g,"")}')">${data.pesan}</div>
+      <div class="text-right text-[10px] text-gray-500 mt-1">${data.waktu} ${isMe ? '✓✓' : ''} ${hapusBtn}</div>`;
     });
     
     chatRef.on('child_removed', function(snap){
