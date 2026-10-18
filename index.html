@@ -622,12 +622,6 @@ function loadLebihBanyak() {
       </span>
     ` : '';
     
-    const tombolEditPenjual = `
-      <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full mt-2 bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
-        <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
-      </button>
-    `;
-
     const tombolAdminHapus = isAdmin ? `
       <button onclick="hapusProdukAdmin('${item.id}')" class="w-full mt-1 bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg border border-red-200 hover:bg-red-200 flex items-center justify-center gap-1">
         <i class="ph ph-trash"></i> Hapus (Admin RT)
@@ -652,10 +646,6 @@ function loadLebihBanyak() {
               <button onclick="bukaModalOpsiBeli('${item.wa || ''}', '${item.nama}', '${item.harga}', '${item.catatan || ''}')"
                 class="w-full bg-emerald-600 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-emerald-700">
                 <i class="ph ph-whatsapp-logo text-base"></i> Beli Via WA
-              </button>
-              
-              <button onclick="bukaVerifikasiPenjual('${item.id}')" class="w-full bg-amber-50 text-amber-700 text-xs font-bold py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-1">
-                <i class="ph ph-pencil-simple"></i> Edit / Ganti Jualan
               </button>
             </div>
           </div>
@@ -841,9 +831,20 @@ function tutupModalOpsiBeli() {
     } 
 
     // --- FORM TAMBAH PRODUK (MAKSIMAL 3 FOTO - VERSI HEMAT) ---
-    function bukaModalJual() { document.getElementById('modal-jual').classList.remove('hidden'); }
-    function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
-
+    function bukaModalJual() { 
+  let pilih = confirm("Mau ngapain bosku?\n\nOK = Jual Barang BARU\nCancel = Edit / Ganti Jualan Lama");
+  if(pilih){
+    document.getElementById('modal-jual').classList.remove('hidden');
+  } else {
+    let nama = prompt("Ketik nama produk yang mau di edit bosku:");
+    if(nama){
+      let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
+      if(p) bukaVerifikasiPenjual(p.id);
+      else alert("Produk gak ketemu bosku, coba cek lagi namanya");
+    }
+  }
+}
+function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
       e.preventDefault();
       const fileInput = document.getElementById('input-file-foto');
