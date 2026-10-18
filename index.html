@@ -960,7 +960,6 @@ function pilihJualBaru(){
 function bukaModalTokoSaya(){
   tutupModalPilihanJual();
   
-  // WAJIB TANYA ULANG SETIAP KLIK BOSKU
   let namaToko = prompt("Masukkan Nama Toko Bosku:");
   if(!namaToko) return;
   namaToko = namaToko.trim();
@@ -969,55 +968,61 @@ function bukaModalTokoSaya(){
   if(!pinInput) return;
   pinInput = pinInput.trim();
   
-  // CEK PIN DARI LOCALSTORAGE DAN DARI DATA PRODUK
+  // CARI DULU APAKAH TOKO ADA (CEK TOKO ATAU NAMA PENJUAL BOSKU - BIAR YANG LAMA KEDETEK)
+  let produkSaya = produkData.filter(p => {
+    let toko = (p.toko || '').toLowerCase();
+    let penjual = (p.penjual || '').toLowerCase();
+    let cari = namaToko.toLowerCase();
+    return toko.includes(cari) || penjual.includes(cari) || toko === cari || penjual === cari;
+  });
+  
+  if(produkSaya.length === 0){
+    alert("Toko '"+namaToko+"' belum ada bosku! Silahkan Jual Barang Baru dulu pakai nama toko '"+namaToko+"' bosku!");
+    return;
+  }
+  
+  // CEK PIN - COCOK DENGAN SALAH SATU PRODUK NYA BOSKU
+  let pinBenar = false;
   let daftarPin = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}');
-  let pinTersimpan = daftarPin[namaToko.toLowerCase()];
+  let pinLocal = daftarPin[namaToko.toLowerCase()];
+  if(pinLocal && pinLocal === pinInput) pinBenar = true;
   
-  // kalau belum ada di localStorage, cek di produk yang sudah ada
-  if(!pinTersimpan){
-    let produkCek = produkData.find(p => p.toko && p.toko.toLowerCase() === namaToko.toLowerCase());
-    if(produkCek && produkCek.pinToko) pinTersimpan = produkCek.pinToko;
-    else if(produkCek && produkCek.pinPenjual) pinTersimpan = produkCek.pinPenjual;
+  // cek pin di produk nya langsung bosku
+  for(let p of produkSaya){
+    if((p.pinPenjual && p.pinPenjual === pinInput) || (p.pinToko && p.pinToko === pinInput)){
+      pinBenar = true;
+      break;
+    }
   }
   
-  if(!pinTersimpan){
-    alert("Toko '"+namaToko+"' belum ada bosku! Silahkan Jual Barang Baru dulu pakai nama toko itu bosku!");
+  if(!pinBenar){
+    alert("PIN SALAH bosku! PIN harus sama dengan PIN yang bosku pakai waktu pertama jualan bosku!");
     return;
   }
   
-  if(pinTersimpan !== pinInput){
-    alert("PIN SALAH bosku! Cek lagi bosku!");
-    return;
-  }
+  // Lolos - simpan pin nya biar next gampang bosku
+  daftarPin[namaToko.toLowerCase()] = pinInput;
+  localStorage.setItem('pinTokoRT36', JSON.stringify(daftarPin));
+  localStorage.setItem('namaTokoRT36', namaToko);
   
-  // KALAU LOLOS BARU BUKA
   document.getElementById('modal-toko').classList.remove('hidden');
   document.getElementById('modal-toko').classList.add('flex');
   
   let list = document.getElementById('list-toko-saya');
-  let produkSaya = produkData.filter(p => 
-    (p.toko && p.toko.toLowerCase() === namaToko.toLowerCase()) || 
-    (p.penjual && p.penjual.toLowerCase() === namaToko.toLowerCase())
-  );
-  
-  if(produkSaya.length==0){
-    list.innerHTML = `<p class='text-center text-gray-400 text-sm mt-10'>Belum ada jualan untuk Toko "${bersihkanTeks(namaToko)}" bosku</p>`;
-  } else {
-    list.innerHTML = produkSaya.map(p => {
-      let foto = Array.isArray(p.foto) ? p.foto[0] : p.foto;
-      return `
+  list.innerHTML = produkSaya.map(p => {
+    let foto = Array.isArray(p.foto) ? p.foto[0] : p.foto;
+    return `
       <div class="bg-white p-3 rounded-xl shadow-sm flex gap-3 items-center">
         <img src="${foto}" class="w-14 h-14 rounded-lg object-cover">
         <div class="flex-1">
-          <p class="font-bold text-sm">${p.nama}</p>
+          <p class="font-bold text-sm">${bersihkanTeks(p.nama)}</p>
           <p class="text-xs text-orange-500 font-bold">Rp ${parseInt(p.harga).toLocaleString('id-ID')}</p>
-          <p class="text-[10px] text-gray-400">${p.toko || ''}</p>
+          <p class="text-[10px] text-gray-400">${bersihkanTeks(p.toko || p.penjual)} - ${p.kategori}</p>
         </div>
-        <button onclick="bukaVerifikasiPenjual('${p.id}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
-        <button onclick="bukaVerifikasiPenjual('${p.id}')" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold">Hapus</button>
+        <button onclick="bukaVerifikasiPenjual('${p.id}'); tutupModalToko();" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
       </div>`;
-    }).join('');
-  }
+  }).join('');
+}
 }
 function tutupModalToko(){
   document.getElementById('modal-toko').classList.add('hidden');
