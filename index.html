@@ -1364,7 +1364,28 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
-function kirimKodeKeSaya(){ let nama=document.getElementById('inputNamaWA').value.trim(); let no=document.getElementById('inputNoWA').value.trim().replace(/[^0-9]/g,''); if(nama.length<3){ alert('Isi nama dulu bosku!'); return; } if(no.length<10){ alert('Nomor tidak valid bosku!'); return; } if(no.startsWith('0')) no='62'+no.substring(1); otpKode=String(Math.floor(1000+Math.random()*9000)); verifiedPhone=no; verifiedNama=nama; document.getElementById('kodeDemo').innerText=otpKode; document.getElementById('statusKirim').classList.remove('hidden'); document.getElementById('statusKirim').innerText='✅ Kode dibuat! Membuka WA Anda sendiri...'; document.getElementById('step1Verif').classList.add('hidden'); document.getElementById('step2Verif').classList.remove('hidden'); let pesan=`*RT.36 KODE VERIFIKASI*\n\nHalo ${nama} bosku!\nKode Anda: *${otpKode}*\nMasukkan di website RT.36 bosku!`; setTimeout(()=>{ window.open(`https://wa.me/${no}?text=${encodeURIComponent(pesan)}`, '_blank'); },600); }
+async function kirimKodeKeSaya(){ 
+  let nama=document.getElementById('inputNama').value.trim();
+  let phone=document.getElementById('inputPhone').value.trim(); // sesuaikan ID nya bosku
+  if(!nama || !phone){ alert('Isi nama dan nomor dulu bosku!'); return; }
+  
+  let nomorBersih = phone.replace(/\D/g,'');
+  
+  // === TINGKAT 1: CEK DUPLIKAT NOMOR BOSKU ===
+  try{
+    let onlineRef = getOnlineRef(); // pakai fungsi yang sudah ada di script bosku
+    if(onlineRef){
+      let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
+      if(cek.exists()){
+        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor hanya untuk satu warga bosku!');
+        return;
+      }
+    }
+  }catch(e){ console.log('cek duplikat error bosku', e); }
+  // === SELESAI CEK BOSKU ===
+
+  // lanjutkan kode lama bosku untuk kirim kode...
+  
 function cekOTP(){ if(document.getElementById('inputOTP').value.trim()!==otpKode){ alert('Kode salah bosku! Kode: '+otpKode); return; } localStorage.setItem('verified_wa_rt36', verifiedPhone); localStorage.setItem('verified_nama_rt36', verifiedNama); localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); localStorage.setItem('nama_warga_rt36', verifiedNama); document.getElementById('modalVerifWA').classList.add('hidden'); location.reload(); }
 function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
