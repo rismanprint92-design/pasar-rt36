@@ -1365,24 +1365,26 @@ function getOnlineRef(){
 }
 function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
 async function kirimKodeKeSaya(){ 
+async function kirimKodeKeSaya(){
   let nama=document.getElementById('inputNama').value.trim();
-  let phone=document.getElementById('inputPhone').value.trim(); // sesuaikan ID nya bosku
+  let phone=document.getElementById('inputPhone').value.trim();
   if(!nama || !phone){ alert('Isi nama dan nomor dulu bosku!'); return; }
-  
   let nomorBersih = phone.replace(/\D/g,'');
-  
-  // === TINGKAT 1: CEK DUPLIKAT NOMOR BOSKU ===
+
+  // === TINGKAT 1 CEK DUPLIKAT BOSKU - VERSI AMAN BOSKU ===
   try{
-    let onlineRef = getOnlineRef(); // pakai fungsi yang sudah ada di script bosku
+    let onlineRef = getOnlineRef();
     if(onlineRef){
       let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
       if(cek.exists()){
-        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor hanya untuk satu warga bosku!');
+        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku!');
         return;
       }
     }
-  }catch(e){ console.log('cek duplikat error bosku', e); }
+  }catch(e){ console.log('lewati cek duplikat bosku', e); }
   // === SELESAI CEK BOSKU ===
+
+  // --- LANJUTKAN CODE LAMA BOSKU DARI SINI KE BAWAH, JANGAN DIHAPUS BOSKU ---
 
   // lanjutkan kode lama bosku untuk kirim kode...
   
