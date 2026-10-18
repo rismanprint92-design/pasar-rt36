@@ -1253,146 +1253,199 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Pasar RT.36 - Makassar</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pasar RT.36 Makassar - AR & Metroland</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<style>.hidden{display:none}.animate-spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style>
+<style>
+.hidden{display:none}
+.animate-spin{animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+</style>
 </head>
-<body class="bg-gray-50">
-
-<!-- MODAL VERIFIKASI BOSKU -->
-<div id="modalVerifWA" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4">
-  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-    <h2 class="text-xl font-bold text-center mb-2">Verifikasi Warga RT.36</h2>
-    <p class="text-sm text-gray-500 text-center mb-4">Untuk keamanan masukkan nama & no. HP hanya berlaku satu kali</p>
+<body class="bg-gray-100 min-h-screen">
+<!-- MODAL VERIFIKASI WARGA RT.36 BOSKU -->
+<div id="modalVerifWA" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+  <div class="bg-white rounded-[20px] max-w-[360px] w-full p-6 shadow-2xl">
+    <h2 class="text-[20px] font-bold text-center">Verifikasi Warga RT.36</h2>
+    <p class="text-[13px] text-gray-500 text-center mt-1 mb-5">Untuk keamanan, masukkan nama & no. HP hanya berlaku satu kali</p>
     
     <div id="step1Verif">
-      <input id="inputNamaWA" type="text" placeholder="Nama Lengkap" class="w-full border rounded-xl p-3 mb-3">
-      <input id="inputNoWA" type="tel" placeholder="No WA (08...)" class="w-full border rounded-xl p-3 mb-3">
-      <button onclick="kirimKodeKeSaya(event)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all">
+      <label class="text-sm font-medium">Nama Lengkap</label>
+      <input id="inputNamaWA" type="text" placeholder="Contoh: Arham" class="w-full border border-gray-300 rounded-xl p-3.5 mt-1 mb-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+      
+      <label class="text-sm font-medium">No. WA / HP</label>
+      <input id="inputNoWA" type="tel" placeholder="0853..." class="w-full border border-gray-300 rounded-xl p-3.5 mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500">
+      
+      <button onclick="kirimKodeKeSaya(event)" class="w-full bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all">
         <span>Kirim Kode ke WA Saya 📲</span>
       </button>
-      <div id="statusKirim" class="hidden mt-3 text-center text-sm bg-yellow-100 p-2 rounded-lg">Kode Demo: <b id="kodeDemo">-</b> bosku!</div>
+      
+      <div id="statusKirim" class="hidden mt-4 text-center text-sm bg-yellow-100 border border-yellow-200 p-3 rounded-xl">
+        DEMO: Kode OTP bosku: <b id="kodeDemo" class="text-lg">-</b>
+      </div>
     </div>
 
     <div id="step2Verif" class="hidden">
-      <p class="text-sm mb-2">Masukkan kode OTP bosku:</p>
-      <input id="inputOTP" type="text" maxlength="4" placeholder="4 Digit Kode" class="w-full border rounded-xl p-3 mb-3 text-center text-xl tracking-widest">
-      <button onclick="cekOTP(event)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all">
+      <p class="text-sm mb-2">Kode dikirim! Masukkan 4 digit:</p>
+      <input id="inputOTP" type="tel" maxlength="4" placeholder="0000" class="w-full border-2 border-indigo-200 rounded-xl p-4 mb-4 text-center text-2xl tracking-[8px] font-bold">
+      <button onclick="cekOTP(event)" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all">
         <span>Verifikasi & Masuk Pasar 🔓</span>
       </button>
-      <button onclick="kembaliStep1()" class="w-full mt-2 text-sm text-gray-500">Kembali</button>
+      <button onclick="kembaliStep1()" class="w-full mt-3 text-sm text-gray-500 hover:text-gray-700">← Kembali ubah nomor</button>
     </div>
   </div>
 </div>
 
-<!-- HEADER & KONTEN PASAR BOSKU (TIDAK DIUBAH BOSKU) -->
-<div class="max-w-5xl mx-auto p-4">
-  <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow mb-4">
-    <h1 class="font-bold text-lg">Pasar RT.36 Makassar</h1>
-    <span id="myWALabel" class="text-sm bg-green-100 px-3 py-1 rounded-full"></span>
+<!-- HEADER -->
+<div class="max-w-5xl mx-auto p-3">
+  <div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center">
+    <div>
+      <h1 class="font-bold text-[16px]">Pasar RT. 36 AR & Metroland</h1>
+      <p class="text-xs text-gray-500">Beli dari tetangga, bantu ekonomi warga</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <span id="myWALabel" class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold">Guest</span>
+      <button class="bg-gray-900 text-white text-sm px-4 py-2 rounded-full">+ Jual</button>
+    </div>
   </div>
-  <div id="produkList" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+
+  <!-- PRODUK CONTOH -->
+  <div id="produkList" class="grid grid-cols-2 gap-3 mt-4">
+    <div class="bg-white p-3 rounded-xl shadow">
+      <div class="text-xs text-green-600 font-bold">AKSESORIS</div>
+      <div class="font-bold text-sm">Gantungan Kunci Lucu</div>
+      <div class="text-red-600 font-bold">Rp 12.000</div>
+    </div>
+    <div class="bg-white p-3 rounded-xl shadow">
+      <div class="text-xs text-green-600 font-bold">AKSESORIS</div>
+      <div class="font-bold text-sm">Gantungan Kunci Murah</div>
+      <div class="text-red-600 font-bold">Rp 5.000</div>
+    </div>
+  </div>
 </div>
 
 <script>
-// === CONFIG FIREBASE BOSKU (PAKAI PUNYA BOSKU) ===
+// === FIREBASE CONFIG - GANTI PUNYA BOSKU ===
 var firebaseConfig = {
-  apiKey: "AIzaSy...",
+  apiKey: "AIzaSyDummy",
   authDomain: "pasar-rt36.firebaseapp.com",
   databaseURL: "https://pasar-rt36-default-rtdb.firebaseio.com",
-  projectId: "pasar-rt36"
+  projectId: "pasar-rt36",
+  appId: "1:123:web:abc"
 };
-try{ firebase.initializeApp(firebaseConfig); }catch(e){}
-var db = firebase.database();
+try{ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig); }catch(e){ console.log(e); }
+var db = null;
+try{ db = firebase.database(); }catch(e){}
 
-function getOnlineRef(){ try{ return db.ref('online_warga'); }catch(e){ return null; } }
+function getOnlineRef(){ try{ if(db) return db.ref('online_warga'); else return null; }catch(e){ return null; } }
 function updateIconNotif(){}
 function setSuaraAktif(){}
 
-let verifiedPhone = '';
-let verifiedNama = '';
+let verifiedPhone = localStorage.getItem('verified_wa_rt36') || '';
+let verifiedNama = localStorage.getItem('verified_nama_rt36') || '';
 let otpKode = '';
+let chatPertamaLoad = true;
 let myChatId = localStorage.getItem('my_chat_id') || '';
 
-// === 3 FUNGSI FINAL + LOADING BOSKU ===
-function cekVerifikasi(){ 
-  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
-  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
-  if(!verifiedPhone||!verifiedNama){ 
-    document.getElementById('modalVerifWA').classList.remove('hidden'); 
-    return false; 
-  } 
-  document.getElementById('myWALabel').innerText='✓ '+verifiedNama; 
-  updateIconNotif(); 
-  setSuaraAktif(); 
-  return true; 
+// === CEK VERIFIKASI BOSKU ===
+function cekVerifikasi(){
+  verifiedPhone = localStorage.getItem('verified_wa_rt36');
+  verifiedNama = localStorage.getItem('verified_nama_rt36');
+  if(!verifiedPhone || !verifiedNama){
+    document.getElementById('modalVerifWA').classList.remove('hidden');
+    return false;
+  }
+  let lbl = document.getElementById('myWALabel');
+  if(lbl) lbl.innerText = '✓ '+verifiedNama;
+  updateIconNotif();
+  setSuaraAktif();
+  return true;
 }
 
-async function kirimKodeKeSaya(event){ 
+// === KIRIM KODE + LOADING + ANTI DUPLIKAT BOSKU ===
+async function kirimKodeKeSaya(event){
   let elNama = document.getElementById('inputNamaWA');
   let elPhone = document.getElementById('inputNoWA');
+  
+  if(!elNama || !elPhone){ alert('Form error bosku! Reload!'); return; }
+  
   let nama = elNama.value.trim();
   let phone = elPhone.value.trim();
-  if(!nama || !phone){ alert('Isi Nama Lengkap dan No WA dulu bosku!'); return; }
+  
+  if(nama.length < 3){ alert('Isi Nama Lengkap min 3 huruf bosku! Contoh: Arham'); elNama.focus(); return; }
+  if(phone.length < 10){ alert('Isi No WA yang benar bosku! Contoh: 085320876652'); elPhone.focus(); return; }
+  
   let nomorBersih = phone.replace(/\D/g,'');
 
-  let btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
+  // LOADING MUNCUL BOSKU
+  let btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKode"]');
   let textAsli = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Loading bosku...';
+  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Loading bosku...</span>';
   btn.classList.add('opacity-70','cursor-not-allowed');
 
+  // CEK DUPLIKAT BOSKU - TAPI TIDAK BIKIN MACET BOSKU
   try{
     let onlineRef = getOnlineRef();
     if(onlineRef){
-      let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
-      if(cek.exists()){
-        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
+      let snap = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
+      if(snap.exists()){
+        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! 1 nomor 1 warga bosku!');
         btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70','cursor-not-allowed');
         return;
       }
     }
-  }catch(e){ console.log('skip cek bosku',e); }
+  }catch(err){ console.log('Skip cek duplikat bosku:', err); }
 
-  await new Promise(r => setTimeout(r, 700));
+  await new Promise(r => setTimeout(r, 800));
 
   let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
   otpKode = kodeOTP;
+  window.otpKode = kodeOTP;
   verifiedPhone = nomorBersih;
   verifiedNama = nama;
-  
+
   document.getElementById('kodeDemo').innerText = kodeOTP;
   document.getElementById('statusKirim').classList.remove('hidden');
   document.getElementById('step1Verif').classList.add('hidden');
   document.getElementById('step2Verif').classList.remove('hidden');
 
-  btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70','cursor-not-allowed');
+  btn.disabled = false;
+  btn.innerHTML = textAsli;
+  btn.classList.remove('opacity-70','cursor-not-allowed');
 }
 
-async function cekOTP(event){ 
-  let input = document.getElementById('inputOTP').value.trim();
+// === VERIFIKASI + LOADING BOSKU ===
+async function cekOTP(event){
+  let elOTP = document.getElementById('inputOTP');
+  let input = elOTP.value.trim();
+  if(input.length !== 4){ alert('Kode harus 4 digit bosku!'); return; }
+
+  let kodeBenar = window.otpKode || otpKode;
   let btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
   let textAsli = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Verifikasi bosku...';
+  btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Verifikasi bosku...</span>';
   btn.classList.add('opacity-70');
 
   await new Promise(r => setTimeout(r, 600));
 
-  if(input !== otpKode){ 
-    alert('Kode salah bosku! Kode yang benar: '+otpKode); 
+  if(input !== kodeBenar){
+    alert('Kode salah bosku! Kode yang benar: '+kodeBenar);
     btn.disabled = false; btn.innerHTML = textAsli; btn.classList.remove('opacity-70');
-    return; 
-  } 
-  localStorage.setItem('verified_wa_rt36', verifiedPhone); 
-  localStorage.setItem('verified_nama_rt36', verifiedNama); 
-  localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
-  localStorage.setItem('nama_warga_rt36', verifiedNama); 
-  document.getElementById('modalVerifWA').classList.add('hidden'); 
-  location.reload(); 
+    return;
+  }
+
+  localStorage.setItem('verified_wa_rt36', verifiedPhone);
+  localStorage.setItem('verified_nama_rt36', verifiedNama);
+  localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now());
+  localStorage.setItem('nama_warga_rt36', verifiedNama);
+
+  document.getElementById('modalVerifWA').classList.add('hidden');
+  location.reload();
 }
 
 function kembaliStep1(){
@@ -1400,9 +1453,13 @@ function kembaliStep1(){
   document.getElementById('step1Verif').classList.remove('hidden');
 }
 
-// === LANJUTAN CODE LAMA BOSKU (TIDAK DIUBAH) ===
-window.onload = function(){ cekVerifikasi(); }
+function bunyikanNotifikasi(){}
+function kedipkanIcon(){}
+function hapusChat(key){ if(confirm('Hapus chat bosku?')){ try{ db.ref('chats').child(key).remove(); }catch(e){} } }
+
+window.onload = function(){ cekVerifikasi(); };
 </script>
+<!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
 </body>
 </html>
     </body>
