@@ -1365,7 +1365,6 @@ function getOnlineRef(){
 }
 function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
 async function kirimKodeKeSaya(){ 
-async function kirimKodeKeSaya(){
   let nama=document.getElementById('inputNama').value.trim();
   let phone=document.getElementById('inputPhone').value.trim();
   if(!nama || !phone){ alert('Isi nama dan nomor dulu bosku!'); return; }
