@@ -1364,6 +1364,19 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
+function cekVerifikasi(){ 
+  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
+  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
+  if(!verifiedPhone||!verifiedNama){ 
+    document.getElementById('modalVerifWA').classList.remove('hidden'); 
+    return false; 
+  } 
+  document.getElementById('myWALabel').innerText='✓ '+verifiedNama; 
+  updateIconNotif(); 
+  setSuaraAktif(); 
+  return true; 
+}
+
 async function kirimKodeKeSaya(){ 
   let nama=document.getElementById('inputNama').value.trim();
   let phone=document.getElementById('inputPhone').value.trim();
@@ -1376,12 +1389,29 @@ async function kirimKodeKeSaya(){
     if(onlineRef){
       let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
       if(cek.exists()){
-        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku!');
+        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
         return;
       }
     }
   }catch(e){ console.log('lewati cek duplikat bosku', e); }
   // === SELESAI CEK BOSKU ===
+
+  // === LANJUTAN CODE ASLI BIAR CHAT HIDUP LAGI BOSKU ===
+  let kodeOTP = Math.floor(1000 + Math.random() * 9000);
+  window.kodeVerifikasiSementara = kodeOTP.toString();
+  window.namaSementara = nama;
+  window.phoneSementara = nomorBersih;
+  
+  // simpan kode ke firebase (kalau ada)
+  try{
+    let rootRef = getRootRef();
+    if(rootRef) await rootRef.child('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
+  }catch(e){}
+
+  alert('Kode OTP bosku: '+kodeOTP+' (untuk tes bosku)');
+  document.getElementById('step1Verif').classList.add('hidden');
+  document.getElementById('step2Verif').classList.remove('hidden');
+} // <-- INI TUTUPNYA YANG TADI HILANG BOSKU! PENTING BOSKU!
 
   // --- LANJUTKAN CODE LAMA BOSKU DARI SINI KE BAWAH, JANGAN DIHAPUS BOSKU ---
 
