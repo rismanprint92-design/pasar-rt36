@@ -1250,51 +1250,61 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
- <!-- TOMBOL ULTRA -->
-<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl">💬<span id="notif-dot" class="hidden absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full text-[10px] flex items-center justify-center">!</span></button>
+<!-- TOMBOL DEWA -->
+<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-gradient-to-r from-[#25D366] to-[#075E54] text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl animate-bounce">💬<span id="notif-dot" class="hidden absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-bold">!</span></button>
 
-<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[420px] md:h-[90vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
   
-  <!-- HEADER ULTRA -->
+  <!-- HEADER DEWA -->
   <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div>
+      <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-lg">RT</div>
       <div>
-        <h4 class="font-bold text-[15px]">Obrolan Warga RT.36 👑</h4>
-        <p id="statusOnline" class="text-[11px] text-emerald-100">Memuat...</p>
+        <h4 class="font-bold text-[15px]">RT.36 DEWA CHAT 👑⚡</h4>
+        <p id="statusOnline" class="text-[11px] text-emerald-100">Menghitung warga...</p>
         <p id="statusKetik" class="text-[10px] text-yellow-300 hidden italic"></p>
       </div>
     </div>
-    <button onclick="toggleBoxChat()" class="w-8 h-8 bg-white/20 rounded-full">✕</button>
+    <div class="flex gap-2">
+      <button onclick="buatPolling()" class="w-8 h-8 bg-white/20 rounded-full text-sm" title="Buat Polling">📊</button>
+      <button onclick="broadcastRT()" class="w-8 h-8 bg-yellow-400 text-black rounded-full text-sm font-bold" title="Broadcast RT">📢</button>
+      <button onclick="toggleBoxChat()" class="w-8 h-8 bg-white/20 rounded-full">✕</button>
+    </div>
   </div>
 
-  <!-- PIN PENGUMUMAN -->
-  <div id="pinBox" class="hidden bg-[#FFF8C4] border-b border-yellow-300 p-2 px-3 text-xs flex justify-between items-center">
-    <div><b class="text-[#075E54]">📌 Pengumuman:</b> <span id="pinText"></span></div>
-    <button onclick="unPin()" class="font-bold ml-2">✕</button>
-  </div>
-
+  <div id="pinBox" class="hidden bg-[#FFF8C4] border-b-2 border-yellow-400 p-2 px-3 text-xs flex justify-between items-center"><div><b class="text-[#075E54]">📌 PIN:</b> <span id="pinText"></span></div><button onclick="unPin()" class="font-bold ml-2">✕</button></div>
+  
   <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2" style="background-color:#E5DDD5; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
-  <!-- INPUT ULTRA -->
+  <!-- INPUT DEWA -->
   <div class="p-2 bg-[#F0F0F0] flex flex-col gap-2">
     <div id="preview-balas" class="hidden bg-[#FFF8C4] border-l-4 border-[#25D366] p-2 rounded text-xs flex justify-between"><div><b id="balas-nama" class="text-[#075E54]"></b><div id="balas-pesan" class="text-gray-500 truncate max-w-[200px]"></div></div><button onclick="batalBalas()" class="font-bold">✕</button></div>
-    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span></div>
-    <input type="text" id="namaWarga" placeholder="Nama Anda..." class="border-0 p-2.5 rounded-full text-[13px] w-full shadow-sm focus:outline-none">
-    <div class="flex gap-2 items-center">
-      <button onclick="document.getElementById('inputFoto').click()" class="bg-white w-11 h-11 rounded-full flex items-center justify-center shadow-sm">📸</button>
+    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span><span onclick="tambahEmoji('📍')">📍</span></div>
+    <input type="text" id="namaWarga" placeholder="Nama Anda (Pak RT = Admin)" class="border-0 p-2.5 rounded-full text-[13px] w-full shadow-sm focus:outline-none">
+    <div class="flex gap-1.5 items-center">
+      <button onclick="document.getElementById('inputFoto').click()" class="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm" title="Kirim Foto">📸</button>
       <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
-      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="bg-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm">😀</button>
-      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 shadow-sm focus:outline-none" oninput="sedangKetik()" onkeydown="if(event.key==='Enter') kirimPesanWarga()">
-      <!-- TOMBOL VOICE / KIRIM -->
-      <button id="btnMic" onmousedown="mulaiRekam()" onmouseup="stopRekam()" ontouchstart="mulaiRekam()" ontouchend="stopRekam()" class="bg-white text-red-500 w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm">🎤</button>
-      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-md">➤</button>
+      <button onclick="kirimLokasi()" class="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm" title="Share Lokasi">📍</button>
+      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="bg-white w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm">😀</button>
+      <input type="text" id="teksPesanWarga" placeholder="Ketik..." class="border-0 p-3 rounded-full text-[14px] flex-1 shadow-sm focus:outline-none" oninput="sedangKetik()" onkeydown="if(event.key==='Enter') kirimPesanWarga()">
+      <button id="btnMic" onmousedown="mulaiRekam()" onmouseup="stopRekam()" ontouchstart="mulaiRekam()" ontouchend="stopRekam()" class="bg-white text-red-500 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🎤</button>
+      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">➤</button>
     </div>
-    <div id="rekamInfo" class="hidden text-center text-xs text-red-500 font-bold animate-pulse">🔴 Merekam... Lepas untuk kirim</div>
+    <div id="rekamInfo" class="hidden text-center text-xs text-red-500 font-bold animate-pulse">🔴 Tahan & Bicara... Lepas untuk kirim</div>
   </div>
 </div>
 
-<style>.bubble-wa{max-width:82%; padding:8px 10px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.2)} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .badge-admin{background:#FFD700; color:#000; font-size:9px; padding:1px 4px; border-radius:4px; font-weight:bold}</style>
+<!-- MODAL BROADCAST DEWA -->
+<div id="modalBroadcast" class="hidden fixed inset-0 z-[1000] bg-black/70 flex items-center justify-center p-5">
+  <div class="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl text-center animate-bounce">
+    <div class="text-5xl mb-3">📢</div>
+    <h2 class="font-bold text-lg text-[#075E54]">PENGUMUMAN RT.36</h2>
+    <p id="broadcastText" class="text-sm text-gray-700 mt-3 p-3 bg-yellow-50 rounded-lg"></p>
+    <button onclick="document.getElementById('modalBroadcast').classList.add('hidden')" class="mt-4 bg-[#25D366] text-white px-6 py-2 rounded-full font-bold">Siap Pak RT!</button>
+  </div>
+</div>
+
+<style>.bubble-wa{max-width:82%; padding:8px 10px; border-radius:12px; box-shadow:0 1px .5px rgba(0,0,0,.2)} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .badge-admin{background:linear-gradient(90deg,#FFD700,#FFA500); color:#000; font-size:9px; padding:2px 6px; border-radius:6px; font-weight:900} .poll-bar{height:20px; background:#e5e7eb; border-radius:10px; overflow:hidden; position:relative} .poll-fill{height:100%; background:#25D366; transition:width .5s}</style>
 
 <script>
 let balasData=null, mediaRecorder, audioChunks=[], isRekam=false;
@@ -1303,69 +1313,65 @@ function balasPesan(n,p){ balasData={nama:n,pesan:p}; document.getElementById('p
 function batalBalas(){ balasData=null; document.getElementById('preview-balas').classList.add('hidden'); }
 function getChatRef(){ if(typeof db!=='undefined'&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
 function getRootRef(){ if(typeof db!=='undefined'&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
-function toggleBoxChat(){ let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); document.getElementById('notif-dot').classList.add('hidden'); if(!p.classList.contains('hidden')){ setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100); } }
+function toggleBoxChat(){ let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); document.getElementById('notif-dot').classList.add('hidden'); if(!p.classList.contains('hidden')) setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100); }
+function sedangKetik(){ let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let root=getRootRef(); root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).set({nama,time:Date.now()}); setTimeout(()=>{ root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).remove(); },3000); }
+function kirimPesanWarga(){ let nama=document.getElementById('namaWarga').value.trim(); let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!nama) return alert('Isi nama bosku!'); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); } localStorage.setItem('nama_warga_rt36',nama); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply:balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); }); }
+function kirimFoto(input){ if(!input.files[0]) return; let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let reader=new FileReader(); reader.onload=e=>{ if(e.target.result.length>800000) return alert('Foto kegedean bosku! Kompres dulu!'); let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
 
-function sedangKetik(){
-  let nama=document.getElementById('namaWarga').value.trim() || 'Warga';
-  let root=getRootRef();
-  root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).set({nama, time:Date.now()});
-  setTimeout(()=>{ root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).remove(); },3000);
-}
-
-function kirimPesanWarga(){
-  let nama=document.getElementById('namaWarga').value.trim(); let pesan=document.getElementById('teksPesanWarga').value.trim();
-  if(!nama) return alert('Isi nama bosku!'); if(!pesan) return;
-  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-  localStorage.setItem('nama_warga_rt36',nama); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply:balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); getRootRef().ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).remove(); });
-}
-
-function kirimFoto(input){
-  if(!input.files[0]) return; let nama=document.getElementById('namaWarga').value.trim()||'Warga';
-  let reader=new FileReader(); reader.onload=e=>{
-    if(e.target.result.length>800000) return alert('Foto kegedean bosku! Maks 700KB bosku!');
+// DEWA: SHARE LOKASI BOSKU
+function kirimLokasi(){
+  let nama=document.getElementById('namaWarga').value.trim(); if(!nama) return alert('Isi nama dulu bosku!');
+  if(!navigator.geolocation) return alert('HP tidak support lokasi bosku!');
+  alert('Mengambil lokasi bosku... Izinkan lokasi bosku!');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    let lat=pos.coords.latitude, lng=pos.coords.longitude;
     let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'});
-  }; reader.readAsDataURL(input.files[0]); input.value='';
+    let mapsUrl=`https://maps.google.com/?q=${lat},${lng}`;
+    getChatRef().push({nama,pesan:mapsUrl,lat,lng,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'lokasi'});
+  }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS bosku!'); });
 }
 
-// VOICE NOTE ULTRA BOSKU
-async function mulaiRekam(){
-  if(isRekam) return; isRekam=true; document.getElementById('rekamInfo').classList.remove('hidden');
-  try{ let stream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(stream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=async()=>{
-    let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{
-      let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      if(e.target.result.length>900000) return alert('Voice kepanjangan bosku! Maks 15 detik bosku!');
-      getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'voice'});
-    }; reader.readAsDataURL(blob);
-  }; mediaRecorder.start();
-  }catch(err){ alert('Mic tidak diijinkan bosku! Aktifkan mic di browser bosku!'); isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); }
+// DEWA: POLLING BOSKU
+function buatPolling(){
+  let pertanyaan=prompt('Tulis pertanyaan polling bosku, contoh: Kerja bakti hari Minggu?'); if(!pertanyaan) return;
+  let opsi1=prompt('Opsi 1:', 'Setuju'); let opsi2=prompt('Opsi 2:', 'Tidak Setuju'); if(!opsi1||!opsi2) return;
+  let nama=document.getElementById('namaWarga').value.trim()||'Admin RT'; let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  getChatRef().push({nama,pesan:pertanyaan,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'poll', poll:{opsi1, opsi2, votes:{opsi1:0, opsi2:0}, voters:{}}});
 }
-function stopRekam(){ if(!isRekam) return; isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); }
+function votePoll(key, pilihan){
+  let myId=localStorage.getItem('my_chat_id'); if(!myId) return alert('Isi nama dulu bosku!');
+  let root=getRootRef(); root.ref('pesan_warga/'+key+'/poll').transaction(poll=>{
+    if(!poll) return poll;
+    if(poll.voters && poll.voters[myId]) return; // sudah vote
+    poll.votes[pilihan]++; if(!poll.voters) poll.voters={}; poll.voters[myId]=pilihan; return poll;
+  });
+}
 
-function pinPesan(text){ localStorage.setItem('pin_rt36',text); document.getElementById('pinBox').classList.remove('hidden'); document.getElementById('pinText').innerText=text; getRootRef().ref('pin_info').set({text, time:Date.now()}); }
+// DEWA: BROADCAST BOSKU
+function broadcastRT(){
+  let nama=document.getElementById('namaWarga').value.trim(); if(!nama.toLowerCase().includes('rt') && !nama.toLowerCase().includes('admin')) return alert('Hanya Pak RT / Admin yang bisa broadcast bosku!');
+  let pesan=prompt('Tulis pengumuman penting bosku, akan muncul POP-UP di semua warga bosku!'); if(!pesan) return;
+  getRootRef().ref('broadcast_rt').set({text:pesan, from:nama, time:Date.now()});
+  pinPesan(pesan);
+}
+function pinPesan(text){ localStorage.setItem('pin_rt36',text); document.getElementById('pinBox').classList.remove('hidden'); document.getElementById('pinText').innerText=text; getRootRef().ref('pin_info').set({text,time:Date.now()}); }
 function unPin(){ localStorage.removeItem('pin_rt36'); document.getElementById('pinBox').classList.add('hidden'); getRootRef().ref('pin_info').remove(); }
+
+// VOICE
+async function mulaiRekam(){ if(isRekam) return; isRekam=true; document.getElementById('rekamInfo').classList.remove('hidden'); try{ let stream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(stream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); if(e.target.result.length>900000) return alert('Voice kepanjangan bosku!'); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Mic tidak diijinkan bosku!'); isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); } }
+function stopRekam(){ if(!isRekam) return; isRekam=false; document.getElementById('rekamInfo').classList.add('hidden'); if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); }
 
 window.addEventListener('load', function(){
   let saved=localStorage.getItem('nama_warga_rt36'); if(saved) document.getElementById('namaWarga').value=saved;
-  let savedPin=localStorage.getItem('pin_rt36'); if(savedPin){ document.getElementById('pinBox').classList.remove('hidden'); document.getElementById('pinText').innerText=savedPin; }
   let ref=getChatRef(); let root=getRootRef(); let box=document.getElementById('boxChatWarga');
-  
-  // ONLINE SYSTEM
   let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
   root.ref('online_warga').child(myId).set({nama:saved||'Warga', time:Date.now()}); root.ref('online_warga').child(myId).onDisconnect().remove();
-  root.ref('online_warga').on('value', snap=>{ let count=snap.numChildren(); document.getElementById('statusOnline').innerText=count+' warga online • 24 jam auto hapus'; });
-  
-  // KETIK SYSTEM
-  root.ref('sedang_ketik').on('value', snap=>{
-    let ketik=[]; snap.forEach(c=>{ let v=c.val(); if(Date.now()-v.time<4000) ketik.push(v.nama); });
-    let el=document.getElementById('statusKetik'); if(ketik.length>0){ el.classList.remove('hidden'); el.innerText=ketik[0]+' sedang mengetik...'; } else el.classList.add('hidden');
-  });
-  
-  // PIN SYSTEM
+  root.ref('online_warga').on('value', snap=>{ document.getElementById('statusOnline').innerText=snap.numChildren()+' warga online • dewa mode'; });
+  root.ref('sedang_ketik').on('value', snap=>{ let k=[]; snap.forEach(c=>{ let v=c.val(); if(Date.now()-v.time<4000) k.push(v.nama); }); let el=document.getElementById('statusKetik'); if(k.length>0){ el.classList.remove('hidden'); el.innerText=k[0]+' sedang mengetik...'; } else el.classList.add('hidden'); });
   root.ref('pin_info').on('value', snap=>{ let v=snap.val(); if(v){ document.getElementById('pinBox').classList.remove('hidden'); document.getElementById('pinText').innerText=v.text; } else document.getElementById('pinBox').classList.add('hidden'); });
-
-  ref.limitToLast(60).on('child_added', snap=>{
+  root.ref('broadcast_rt').on('value', snap=>{ let v=snap.val(); if(v && Date.now()-v.time<86400000){ document.getElementById('modalBroadcast').classList.remove('hidden'); document.getElementById('broadcastText').innerText=v.from+': '+v.text; try{ new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3').play(); }catch(e){} } });
+  
+  ref.limitToLast(70).on('child_added', snap=>{
     let data=snap.val(), key=snap.key; if(!data) return; if(Date.now()-data.timestamp>86400000){ ref.child(key).remove(); return; } if(document.getElementById(`chat-item-${key}`)) return;
     let isMe=data.userId===myId; let isAdmin=data.nama.toLowerCase().includes('rt')||data.nama.toLowerCase().includes('admin');
     let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
@@ -1373,21 +1379,41 @@ window.addEventListener('load', function(){
     let replyHtml=data.reply?`<div class="bg-black/10 border-l-2 border-[#25D366] pl-2 mb-1 text-[11px] rounded"><b class="text-[#075E54]">${esc(data.reply.nama)}</b><div class="truncate">${esc(data.reply.pesan).substring(0,40)}</div></div>`:'';
     let content='';
     if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`;
-    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px]"></audio>`;
+    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`;
+    else if(data.tipe==='lokasi') content=`<div class="text-[13px]"><b>📍 Lokasi ${esc(data.nama)}</b><br><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">Buka di Google Maps</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:5px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
+    else if(data.tipe==='poll'){
+      let total=(data.poll.votes.opsi1||0)+(data.poll.votes.opsi2||0)||1;
+      let p1=Math.round((data.poll.votes.opsi1||0)/total*100), p2=Math.round((data.poll.votes.opsi2||0)/total*100);
+      content=`<div class="text-[13px]"><b>📊 POLLING: ${esc(data.pesan)}</b><div class="mt-2 space-y-2"><button onclick="votePoll('${key}','opsi1')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi1)}</span><span>${p1}% (${data.poll.votes.opsi1||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill" style="width:${p1}%"></div></div></button><button onclick="votePoll('${key}','opsi2')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi2)}</span><span>${p2}% (${data.poll.votes.opsi2||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill bg-blue-500" style="width:${p2}%"></div></div></button></div><div class="text-[10px] text-gray-500 mt-2">${total} suara</div></div>`;
+    }
     else content=`<div class="text-[14px] break-words">${esc(data.pesan)}</div>`;
     let adminBadge=isAdmin?`<span class="badge-admin">👑 ADMIN</span>`:'';
-    let pinBtn=isAdmin?`<button onclick="pinPesan('${esc(data.pesan).substring(0,100).replace(/'/g,'')}')" class="text-[9px] ml-2">📌</button>`:'';
-    let hapus=isMe||isAdmin?`<button onclick="hapusPesanChat('${key}')" class="text-[9px] text-gray-400 ml-1">🗑️</button>`:'';
-    div.innerHTML=`${replyHtml}${!isMe?`<div class="font-bold text-[11px] text-[#075E54] flex gap-1">${esc(data.nama)} ${adminBadge}</div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end gap-1">${data.waktu} ${isMe?'✓✓':''} ${pinBtn} ${hapus}</div>`;
-    div.onclick=()=>{ if(!isMe) balasPesan(data.nama, data.tipe==='foto'?'[Foto]':data.tipe==='voice'?'[Voice]':data.pesan); };
+    let pinBtn=isAdmin?`<button onclick="pinPesan('${esc(data.pesan).substring(0,80).replace(/'/g,'')}')" class="text-[9px] ml-1">📌</button>`:'';
+    let hapus=`<button onclick="hapusPesanChat('${key}')" class="text-[9px] text-gray-400 ml-1">🗑️</button>`;
+    div.innerHTML=`${replyHtml}${!isMe?`<div class="font-bold text-[11px] text-[#075E54] flex gap-1">${esc(data.nama)} ${adminBadge}</div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end">${data.waktu} ${isMe?'✓✓':''} ${pinBtn} ${hapus}</div>`;
+    div.onclick=()=>{ if(!isMe && data.tipe!=='poll') balasPesan(data.nama, data.tipe==='foto'?'[Foto]':data.tipe==='voice'?'[Voice]':data.tipe==='lokasi'?'[Lokasi]':data.pesan); };
     box.appendChild(div); box.scrollTop=box.scrollHeight;
-    // NOTIF BUNYI
-    if(!isMe && document.getElementById('panelChatWarga').classList.contains('hidden')){ document.getElementById('notif-dot').classList.remove('hidden'); try{ new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3').play(); }catch(e){} }
+    if(!isMe && document.getElementById('panelChatWarga').classList.contains('hidden')){ document.getElementById('notif-dot').classList.remove('hidden'); }
   });
   ref.on('child_removed', s=>{ let e=document.getElementById(`chat-item-${s.key}`); if(e) e.remove(); });
+  ref.on('child_changed', snap=>{ // untuk polling update
+    let data=snap.val(), key=snap.key; let old=document.getElementById(`chat-item-${key}`); if(old) old.remove();
+    // trigger ulang child_added dengan memanggil ulang logic - simpel: reload page? tapi kita buat ulang manual
+    let isMe=data.userId===myId; let isAdmin=data.nama.toLowerCase().includes('rt')||data.nama.toLowerCase().includes('admin');
+    if(data.tipe==='poll'){
+      let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
+      let esc=t=>t?t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
+      let total=(data.poll.votes.opsi1||0)+(data.poll.votes.opsi2||0)||1;
+      let p1=Math.round((data.poll.votes.opsi1||0)/total*100), p2=Math.round((data.poll.votes.opsi2||0)/total*100);
+      let content=`<div class="text-[13px]"><b>📊 POLLING: ${esc(data.pesan)}</b><div class="mt-2 space-y-2"><button onclick="votePoll('${key}','opsi1')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi1)}</span><span>${p1}% (${data.poll.votes.opsi1||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill" style="width:${p1}%"></div></div></button><button onclick="votePoll('${key}','opsi2')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi2)}</span><span>${p2}% (${data.poll.votes.opsi2||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill bg-blue-500" style="width:${p2}%"></div></div></button></div></div>`;
+      div.innerHTML=`${!isMe?`<div class="font-bold text-[11px] text-[#075E54]">${esc(data.nama)} <span class="badge-admin">👑 ADMIN</span></div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1">${data.waktu}</div>`;
+      document.getElementById('boxChatWarga').appendChild(div);
+    }
+  });
 });
-function hapusPesanChat(k){ if(confirm('Hapus pesan bosku?')) getChatRef().child(k).remove(); }
-</script>  
+function hapusPesanChat(k){ if(confirm('Hapus bosku?')) getChatRef().child(k).remove(); }
+</script> 
+
 
   
   
