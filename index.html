@@ -329,23 +329,12 @@ button.bg-emerald-600{
       <button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2">
         <i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru
       </button>
-      <button onclick="bukaModalTokoSaya()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200">
-        <i class="ph ph-storefront text-lg"></i> Toko / Edit Jualan
+      <button onclick="pilihEditLama()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-2">
+        <i class="ph ph-pencil-simple text-lg"></i> Edit / Ganti Jualan Lama
       </button>
       <button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button>
     </div>
   </div>
-
-  <!-- MODAL TOKO SAYA BOSKU -->
-<div id="modal-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex-col z-[70] bg-white">
-  <div class="bg-emerald-600 text-white p-4 flex items-center gap-3">
-    <button onclick="tutupModalToko()" class="text-xl"><i class="ph ph-arrow-left"></i></button>
-    <h3 class="font-bold">Toko Saya</h3>
-  </div>
-  <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50">
-    <!-- produk bakal muncul di sini bosku -->
-  </div>
-</div>
   
   <!-- Modal Form Tambah Produk -->
   <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
@@ -356,10 +345,6 @@ button.bg-emerald-600{
       </div>
 
       <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs">
-        <div class="mb-3">
-          <label class="text-xs font-bold text-gray-700">Nama Toko Bosku *</label>
-          <input id="inputNamaToko" type="text" placeholder="Contoh: Toko Malikha (Block E4)" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500">
-        </div>
         <div>
           <label class="block font-medium mb-1">Nama Produk / Jasa</label>
           <input type="text" id="nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Nasi Uduk Komplit">
@@ -957,91 +942,32 @@ function pilihJualBaru(){
   tutupModalPilihanJual();
   document.getElementById('modal-jual').classList.remove('hidden');
 }
-function bukaModalTokoSaya(){
+function pilihEditLama(){
   tutupModalPilihanJual();
-  let namaToko = prompt("Masukkan Nama Toko Bosku:");
-  if(!namaToko) return;
-  namaToko = namaToko.trim();
-  let pinInput = prompt("Masukkan PIN Toko '"+namaToko+"' :");
-  if(!pinInput) return;
-  pinInput = pinInput.trim();
-
-  let produkSaya = produkData.filter(function(p){
-    let toko = (p.toko || '').toLowerCase();
-    let penjual = (p.penjual || '').toLowerCase();
-    let cari = namaToko.toLowerCase();
-    return toko.indexOf(cari) !== -1 || penjual.indexOf(cari) !== -1;
-  });
-
-  // === FALLBACK BOSKU: KALAU BARU POSTING, DATA BELUM MASUK FIREBASE, CEK DARI HP BOSKU ===
-  let daftar = {};
-  try { daftar = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}'); } catch(e){}
-  let adaDiHp = daftar[namaToko.toLowerCase()];
-
-  if(produkSaya.length === 0 && !adaDiHp){
-    alert("Toko '"+namaToko+"' belum ada bosku! Silahkan Jual Barang Baru dulu pakai nama toko '"+namaToko+"' bosku!");
-    return;
-  }
-
-  let pinBenar = false;
-  if(adaDiHp && adaDiHp === pinInput) pinBenar = true;
-  for(let i=0;i<produkSaya.length;i++){
-    let p = produkSaya[i];
-    if((p.pinPenjual && p.pinPenjual === pinInput) || (p.pinToko && p.pinToko === pinInput)){
-      pinBenar = true; break;
-    }
-  }
-
-  if(!pinBenar){
-    alert("PIN SALAH bosku!");
-    return;
-  }
-
-  daftar[namaToko.toLowerCase()] = pinInput;
-  localStorage.setItem('pinTokoRT36', JSON.stringify(daftar));
-  localStorage.setItem('namaTokoRT36', namaToko);
-
-  document.getElementById('modal-toko').classList.remove('hidden');
-  document.getElementById('modal-toko').classList.add('flex');
-  let list = document.getElementById('list-toko-saya');
-  
-  if(produkSaya.length === 0 && adaDiHp){
-    list.innerHTML = "<p class='text-center text-sm text-gray-500 mt-10'>Toko '"+namaToko+"' baru saja diposting bosku!<br>Tunggu 5 detik lalu tutup-buka lagi bosku, produk akan muncul otomatis bosku!</p>";
-    return;
-  }
-
-  let html = '';
-  for(let i=0;i<produkSaya.length;i++){
-    let p = produkSaya[i];
-    let foto = Array.isArray(p.foto) ? p.foto[0] : p.foto;
-    let harga = parseInt(p.harga || 0).toLocaleString('id-ID');
-    html += '<div class="bg-white p-3 rounded-xl flex gap-3 items-center"><img src="'+foto+'" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-sm">'+p.nama+'</p><p class="text-xs text-orange-500 font-bold">Rp '+harga+'</p><p class="text-[10px] text-gray-400">'+(p.toko || p.penjual)+'</p></div><button onclick="bukaVerifikasiPenjual(\''+p.id+'\');tutupModalToko();" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button></div>';
-  }
-  list.innerHTML = html;
-}
-function tutupModalToko(){
-  document.getElementById('modal-toko').classList.add('hidden');
-  document.getElementById('modal-toko').classList.remove('flex');
+  let nama = prompt("Ketik nama produk yang mau di edit bosku:");
+  if(!nama) return;
+  let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
+  if(p) bukaVerifikasiPenjual(p.id);
+  else alert("Produk gak ketemu bosku");
 }
 function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
       e.preventDefault();
-      let namaTokoInput = document.getElementById('inputNamaToko');
-      if(!namaTokoInput || !namaTokoInput.value.trim()){
-        alert('Isi Nama Toko dulu bosku!');
-        return;
-      }
       const fileInput = document.getElementById('input-file-foto');
+
       if (fileInput.files && fileInput.files.length > 0) {
+        // --- UBAH DARI 5 JADI 3 ---
         if (fileInput.files.length > 3) {
-          alert('Maksimal 3 foto saja ya bos!');
-          fileInput.value = '';
+          alert('Maksimal 3 foto saja ya bos! Biar hemat storage & buka aplikasi ngebut. 3 foto sudah cukup kok untuk jualan.');
+          fileInput.value = ''; // reset input
           return;
         }
+
         let compressedPhotos = [];
         let filesProcessed = 0;
         const totalFiles = fileInput.files.length;
-        Array.from(fileInput.files).forEach(function(file, index) {
+
+        Array.from(fileInput.files).forEach((file, index) => {
           kompresGambar(file, function(compressedDataUrl) {
             compressedPhotos[index] = compressedDataUrl;
             filesProcessed++;
@@ -1056,42 +982,22 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     }
 
     function simpanKeFirebase(arrayFotoUrl) {
-  let namaTokoVal = document.getElementById('inputNamaToko').value.trim();
-  let pinVal = document.getElementById('pin-penjual').value.trim();
-  let daftar = {};
-  try { daftar = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}'); } catch(e){}
-  daftar[namaTokoVal.toLowerCase()] = pinVal;
-  localStorage.setItem('pinTokoRT36', JSON.stringify(daftar));
-  localStorage.setItem('namaTokoRT36', namaTokoVal);
+      const barangBaru = {
+        nama: bersihkanTeks(document.getElementById('nama').value),
+        harga: parseInt(document.getElementById('harga').value),
+        kategori: document.getElementById('kategori').value,
+        penjual: bersihkanTeks(document.getElementById('penjual').value),
+        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
+        wa: document.getElementById('whatsapp').value,
+        pinPenjual: document.getElementById('pin-penjual').value,
+        catatan: bersihkanTeks(document.getElementById('catatan').value),
+        foto: arrayFotoUrl,
+        timestamp: Date.now()
+      };
 
-  const barangBaru = {
-    nama: bersihkanTeks(document.getElementById('nama').value),
-    harga: parseInt(document.getElementById('harga').value),
-    kategori: document.getElementById('kategori').value,
-    penjual: bersihkanTeks(document.getElementById('penjual').value),
-    lokasi: bersihkanTeks(document.getElementById('lokasi').value),
-    wa: document.getElementById('whatsapp').value,
-    pinPenjual: pinVal,
-    toko: namaTokoVal,
-    pinToko: pinVal,
-    catatan: bersihkanTeks(document.getElementById('catatan').value),
-    foto: arrayFotoUrl,
-    timestamp: Date.now()
-  };
-
-  // === LANGSUNG DORONG KE LIST LOKAL BOSKU, JADI TIDAK PERLU TUNGGU FIREBASE ===
-  let idSementara = 'temp_' + Date.now();
-  produkData.unshift({ id: idSementara, ...barangBaru });
-
-  dbRef.push(barangBaru).then((res) => {
-    tutupModalJual();
-    document.getElementById('form-tambah').reset();
-    // ganti id sementara dengan id asli bosku
-    let idx = produkData.findIndex(p => p.id === idSementara);
-    if(idx !== -1) produkData[idx].id = res.key;
-    tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
-  }).catch(err => alert("Gagal menyimpan: " + err.message));
-}
+      dbRef.push(barangBaru).then((res) => {
+        tutupModalJual();
+        document.getElementById('form-tambah').reset();
         
         // Memanggil pop-up pilihan share ke Sosmed & WA
         tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
