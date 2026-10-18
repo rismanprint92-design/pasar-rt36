@@ -959,28 +959,64 @@ function pilihJualBaru(){
 }
 function bukaModalTokoSaya(){
   tutupModalPilihanJual();
-  let namaToko = localStorage.getItem('namaTokoRT36') || prompt("Ketik Nama Toko bosku (contoh: Malikha):");
+  
+  // WAJIB TANYA ULANG SETIAP KLIK BOSKU
+  let namaToko = prompt("Masukkan Nama Toko Bosku:");
   if(!namaToko) return;
-  localStorage.setItem('namaTokoRT36', namaToko);
+  namaToko = namaToko.trim();
+  
+  let pinInput = prompt("Masukkan PIN Toko '"+namaToko+"' :");
+  if(!pinInput) return;
+  pinInput = pinInput.trim();
+  
+  // CEK PIN DARI LOCALSTORAGE DAN DARI DATA PRODUK
+  let daftarPin = JSON.parse(localStorage.getItem('pinTokoRT36') || '{}');
+  let pinTersimpan = daftarPin[namaToko.toLowerCase()];
+  
+  // kalau belum ada di localStorage, cek di produk yang sudah ada
+  if(!pinTersimpan){
+    let produkCek = produkData.find(p => p.toko && p.toko.toLowerCase() === namaToko.toLowerCase());
+    if(produkCek && produkCek.pinToko) pinTersimpan = produkCek.pinToko;
+    else if(produkCek && produkCek.pinPenjual) pinTersimpan = produkCek.pinPenjual;
+  }
+  
+  if(!pinTersimpan){
+    alert("Toko '"+namaToko+"' belum ada bosku! Silahkan Jual Barang Baru dulu pakai nama toko itu bosku!");
+    return;
+  }
+  
+  if(pinTersimpan !== pinInput){
+    alert("PIN SALAH bosku! Cek lagi bosku!");
+    return;
+  }
+  
+  // KALAU LOLOS BARU BUKA
   document.getElementById('modal-toko').classList.remove('hidden');
   document.getElementById('modal-toko').classList.add('flex');
+  
   let list = document.getElementById('list-toko-saya');
-  let produkSaya = produkData.filter(p => (p.toko && p.toko.toLowerCase().includes(namaToko.toLowerCase())) || (p.penjual && p.penjual.toLowerCase().includes(namaToko.toLowerCase())));
+  let produkSaya = produkData.filter(p => 
+    (p.toko && p.toko.toLowerCase() === namaToko.toLowerCase()) || 
+    (p.penjual && p.penjual.toLowerCase() === namaToko.toLowerCase())
+  );
+  
   if(produkSaya.length==0){
-    list.innerHTML = `<p class='text-center text-gray-400 text-sm mt-10'>Belum ada jualan dengan nama toko "${namaToko}" bosku, jual barang baru dulu bosku!</p>`;
+    list.innerHTML = `<p class='text-center text-gray-400 text-sm mt-10'>Belum ada jualan untuk Toko "${bersihkanTeks(namaToko)}" bosku</p>`;
   } else {
-    list.innerHTML = produkSaya.map(p => `
+    list.innerHTML = produkSaya.map(p => {
+      let foto = Array.isArray(p.foto) ? p.foto[0] : p.foto;
+      return `
       <div class="bg-white p-3 rounded-xl shadow-sm flex gap-3 items-center">
-        <img src="${p.foto[0]}" class="w-14 h-14 rounded-lg object-cover">
+        <img src="${foto}" class="w-14 h-14 rounded-lg object-cover">
         <div class="flex-1">
           <p class="font-bold text-sm">${p.nama}</p>
-          <p class="text-xs text-orange-500 font-bold">Rp ${p.harga}</p>
-          <p class="text-[10px] text-gray-400">${p.toko || p.penjual}</p>
+          <p class="text-xs text-orange-500 font-bold">Rp ${parseInt(p.harga).toLocaleString('id-ID')}</p>
+          <p class="text-[10px] text-gray-400">${p.toko || ''}</p>
         </div>
-        <button onclick="editProduk(${p.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
-        <button onclick="hapusProduk(${p.id})" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold">Hapus</button>
-      </div>
-    `).join('');
+        <button onclick="bukaVerifikasiPenjual('${p.id}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">Edit</button>
+        <button onclick="bukaVerifikasiPenjual('${p.id}')" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold">Hapus</button>
+      </div>`;
+    }).join('');
   }
 }
 function tutupModalToko(){
