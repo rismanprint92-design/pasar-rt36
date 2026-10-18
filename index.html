@@ -1273,13 +1273,34 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
   </div>
 
   <div class="p-2 bg-[#F0F0F0] flex flex-col gap-2">
-    <input type="text" id="namaWarga" placeholder="Nama Anda..." class="border-0 p-2.5 rounded-full text-[13px] w-full focus:outline-none">
-    <div class="flex gap-2">
-      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 focus:outline-none" onkeypress="if(event.key==='Enter'){kirimPesanWarga()}">
-      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-11 h-11 rounded-full flex items-center justify-center text-xl">➤</button>
+    
+    <!-- TEMPAT LIST EMOJI DI SINI BOSKU - DI ATAS INPUT BOSKU -->
+    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-2 text-xl mb-1 flex-wrap">
+      <span onclick="tambahEmoji('😀')" class="cursor-pointer">😀</span>
+      <span onclick="tambahEmoji('😂')" class="cursor-pointer">😂</span>
+      <span onclick="tambahEmoji('❤️')" class="cursor-pointer">❤️</span>
+      <span onclick="tambahEmoji('🙏')" class="cursor-pointer">🙏</span>
+      <span onclick="tambahEmoji('👍')" class="cursor-pointer">👍</span>
+      <span onclick="tambahEmoji('🔥')" class="cursor-pointer">🔥</span>
+      <span onclick="tambahEmoji('😍')" class="cursor-pointer">😍</span>
+      <span onclick="tambahEmoji('🤣')" class="cursor-pointer">🤣</span>
     </div>
+
+    <input type="text" id="namaWarga" placeholder="Nama Anda..." class="border-0 p-2.5 rounded-full text-[13px] w-full focus:outline-none">
+
+    <!-- BARIS KETIK + TOMBOL EMOJI + KIRIM BOSKU -->
+    <div class="flex gap-2 items-center">
+      <!-- TOMBOL EMOJI DI SINI BOSKU - SEBELAH KIRI INPUT BOSKU -->
+      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" type="button" class="bg-white w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-sm flex-shrink-0">
+        😀
+      </button>
+
+      <input type="text" id="teksPesanWarga" placeholder="Ketik pesan..." class="border-0 p-3 rounded-full text-[14px] flex-1 focus:outline-none" onkeypress="if(event.key==='Enter'){kirimPesanWarga()}">
+      
+      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0">➤</button>
+    </div>
+
   </div>
-</div>
 
 <style>
 .bubble-wa{max-width:80%; padding:8px 10px; border-radius:8px; box-shadow:0 1px 0.5px rgba(0,0,0,.2)}
