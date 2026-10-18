@@ -346,81 +346,62 @@ button.bg-emerald-600{
   <div id="list-toko-saya" class="p-4 space-y-3 overflow-auto flex-1 bg-gray-50"></div>
 </div>
   
-  <!-- Modal Form Tambah Produk -->
-  <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
-    <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-gray-800">Pasang Dagangan Baru</h3>
-        <button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button>
+  <!-- ===== FIX MODAL JUAL - ANTI MISTAR BOSKU ===== -->
+<div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
+  <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div class="bg-emerald-600 text-white p-4 flex items-center gap-3 shrink-0">
+      <button onclick="tutupModalJual()" class="text-xl">←</button>
+      <h3 class="font-bold">Jual Barang Baru</h3>
+    </div>
+    
+    <form id="form-tambah" onsubmit="tambahProduk(event)" class="p-4 space-y-3 overflow-auto flex-1">
+      
+      <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl">
+        <div class="mb-3">
+          <label class="block font-bold text-xs mb-1">Nama Toko Bosku *</label>
+          <input type="text" id="inputNamaToko" placeholder="Contoh: Toko Malikha" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
+        </div>
+        <div>
+          <label class="block font-bold text-xs mb-1">Buat PIN Toko (4 angka) *</label>
+          <input type="password" id="inputPinToko" maxlength="4" inputmode="numeric" placeholder="1234" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
+          <p class="text-[10px] text-gray-500 mt-1">Ingat PIN ini buat buka Toko bosku!</p>
+        </div>
       </div>
 
-      <form id="form-tambah" onsubmit="tambahProduk(event)">
-  <!-- POSISI 3A: NAMA TOKO -->
-  <div class="mb-3">
-    <label class="block font-medium text-xs mb-1">Nama Toko Bosku *</label>
-    <input type="text" id="inputNamaToko" placeholder="Contoh: Toko Malikha Block E4" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-  </div>
-  <!-- POSISI 3B: PIN TOKO -->
-  <div class="mb-3">
-    <label class="block font-medium text-xs mb-1">Buat PIN Toko (4 angka) *</label>
-    <input type="password" id="inputPinToko" maxlength="4" inputmode="numeric" placeholder="Contoh: 1234" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
-    <p class="text-[10px] text-gray-400 mt-1">PIN ini buat buka Toko/Edit Jualan bosku, jangan lupa bosku!</p>
-  </div>
-
-  <div>
-    <label class="block font-medium text-xs mb-1">Nama Produk</label>
-    <input type="text" id="nama" ... > <!-- yang lama biarkan bosku -->
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Kategori</label>
-            <select id="kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-              <option value="kuliner">Kuliner</option>
-              <option value="sembako">Sembako</option>
-              <option value="jasa">Jasa</option>
-              <option value="bekas">Barang Bekas</option>
-              <option value="pakaian">Pakaian</option>
-              <option value="aksesoris">Aksesoris</option>
-              <option value="elektronik">Elektronik</option>
-              <option value="dll">Dll</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Nama Penjual</label>
-            <input type="text" id="penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Bu RT / Pak Ahmad">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Blok / No. Rumah</label>
-            <input type="text" id="lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Blok A1 No. 4">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">No. WhatsApp</label>
-            <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789 ">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">PIN Rahasia Penjual</label>
-            <input type="password" id="pin-penjual" required class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="1234">
-          </div>
+      <div>
+        <label class="block font-medium text-xs mb-1">Nama Produk *</label>
+        <input type="text" id="nama" placeholder="Nama barang" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-medium text-xs mb-1">Harga *</label>
+          <input type="number" id="harga" placeholder="50000" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required>
         </div>
         <div>
-          <label class="block font-medium mb-1">Catatan / Keterangan (Opsional)</label>
-          <textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi."></textarea>
+          <label class="block font-medium text-xs mb-1">Kategori</label>
+          <select id="kategori" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">
+            <option>Kuliner</option><option>Sembako</option><option>Jasa</option><option>Lainnya</option>
+          </select>
         </div>
-        <div>
-          <label class="block font-medium mb-1">Foto Produk (Maksimal 3 Foto, Otomatis Kompres)</label>
-          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-          <p class="text-[10px] text-emerald-700 mt-1">💡 Anda dapat memilih hingga 3 foto sekaligus.</p>
-        </div>
+      </div>
 
-        <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">
-          Tayangkan Dagangan
-        </button>
-      </form>
-    </div>
+      <div>
+        <label class="block font-medium text-xs mb-1">Foto Produk (Maks 3) *</label>
+        <input type="file" id="foto" accept="image/*" multiple class="w-full text-sm border border-gray-200 rounded-xl p-2">
+      </div>
+
+      <div>
+        <label class="block font-medium text-xs mb-1">Catatan / WA</label>
+        <textarea id="catatan" placeholder="Contoh: Bisa antar area block..." class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm h-20"></textarea>
+      </div>
+
+      <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mt-2">Posting Jualan</button>
+      <button type="button" onclick="tutupModalJual()" class="w-full text-gray-400 text-sm py-2">Batal</button>
+    </form>
   </div>
+</div>
+    
 
   <!-- Modal Login Penjual untuk Edit/Hapus -->
   <div id="modal-login-penjual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
