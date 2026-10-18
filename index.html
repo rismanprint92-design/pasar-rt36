@@ -1276,59 +1276,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
   
   <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2" style="background-color:#E5DDD5; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
-  <!-- INPUT DEWA -->
-  <div class="p-2 bg-[#F0F0F0] flex flex-col gap-2">
-    <div id="preview-balas" class="hidden bg-[#FFF8C4] border-l-4 border-[#25D366] p-2 rounded text-xs flex justify-between"><div><b id="balas-nama" class="text-[#075E54]"></b><div id="balas-pesan" class="text-gray-500 truncate max-w-[200px]"></div></div><button onclick="batalBalas()" class="font-bold">✕</button></div>
-    <div id="emoji-list" class="hidden bg-white p-2 rounded-xl shadow flex gap-3 text-2xl flex-wrap"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span><span onclick="tambahEmoji('🔥')">🔥</span><span onclick="tambahEmoji('📍')">📍</span></div>
-    <input type="text" id="namaWarga" placeholder="Nama Anda (Pak RT = Admin)" class="border-0 p-2.5 rounded-full text-[13px] w-full shadow-sm focus:outline-none">
-    <div class="flex gap-1.5 items-center">
-      <button onclick="document.getElementById('inputFoto').click()" class="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm" title="Kirim Foto">📸</button>
-      <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
-      <button onclick="kirimLokasi()" class="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm" title="Share Lokasi">📍</button>
-      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="bg-white w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm">😀</button>
-      <input type="text" id="teksPesanWarga" placeholder="Ketik..." class="border-0 p-3 rounded-full text-[14px] flex-1 shadow-sm focus:outline-none" oninput="sedangKetik()" onkeydown="if(event.key==='Enter') kirimPesanWarga()">
-      <button id="btnMic" onmousedown="mulaiRekam()" onmouseup="stopRekam()" ontouchstart="mulaiRekam()" ontouchend="stopRekam()" class="bg-white text-red-500 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🎤</button>
-      <button onclick="kirimPesanWarga()" class="bg-[#25D366] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">➤</button>
-    </div>
-    <div id="rekamInfo" class="hidden text-center text-xs text-red-500 font-bold animate-pulse">🔴 Tahan & Bicara... Lepas untuk kirim</div>
-  </div>
-</div>
-
-<!-- MODAL BROADCAST DEWA -->
-<div id="modalBroadcast" class="hidden fixed inset-0 z-[1000] bg-black/70 flex items-center justify-center p-5">
-  <div class="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl text-center animate-bounce">
-    <div class="text-5xl mb-3">📢</div>
-    <h2 class="font-bold text-lg text-[#075E54]">PENGUMUMAN RT.36</h2>
-    <p id="broadcastText" class="text-sm text-gray-700 mt-3 p-3 bg-yellow-50 rounded-lg"></p>
-    <button onclick="document.getElementById('modalBroadcast').classList.add('hidden')" class="mt-4 bg-[#25D366] text-white px-6 py-2 rounded-full font-bold">Siap Pak RT!</button>
-  </div>
-</div>
-
-<style>.bubble-wa{max-width:82%; padding:8px 10px; border-radius:12px; box-shadow:0 1px .5px rgba(0,0,0,.2)} .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0} .badge-admin{background:linear-gradient(90deg,#FFD700,#FFA500); color:#000; font-size:9px; padding:2px 6px; border-radius:6px; font-weight:900} .poll-bar{height:20px; background:#e5e7eb; border-radius:10px; overflow:hidden; position:relative} .poll-fill{height:100%; background:#25D366; transition:width .5s}</style>
-
-<script>
-let balasData=null, mediaRecorder, audioChunks=[], isRekam=false;
-function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); sedangKetik(); }
-function balasPesan(n,p){ balasData={nama:n,pesan:p}; document.getElementById('preview-balas').classList.remove('hidden'); document.getElementById('balas-nama').innerText='Membalas '+n; document.getElementById('balas-pesan').innerText=p; }
-function batalBalas(){ balasData=null; document.getElementById('preview-balas').classList.add('hidden'); }
-function getChatRef(){ if(typeof db!=='undefined'&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
-function getRootRef(){ if(typeof db!=='undefined'&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
-function toggleBoxChat(){ let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'); p.classList.toggle('hidden'); b.classList.toggle('hidden'); document.getElementById('notif-dot').classList.add('hidden'); if(!p.classList.contains('hidden')) setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); box.scrollTop=box.scrollHeight; },100); }
-function sedangKetik(){ let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let root=getRootRef(); root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).set({nama,time:Date.now()}); setTimeout(()=>{ root.ref('sedang_ketik').child(btoa(nama).replace(/=/g,'')).remove(); },3000); }
-function kirimPesanWarga(){ let nama=document.getElementById('namaWarga').value.trim(); let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!nama) return alert('Isi nama bosku!'); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+Date.now(); localStorage.setItem('my_chat_id',myId); } localStorage.setItem('nama_warga_rt36',nama); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan,waktu:jam,userId:myId,timestamp:Date.now(), reply:balasData||null, tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; batalBalas(); }); }
-function kirimFoto(input){ if(!input.files[0]) return; let nama=document.getElementById('namaWarga').value.trim()||'Warga'; let reader=new FileReader(); reader.onload=e=>{ if(e.target.result.length>800000) return alert('Foto kegedean bosku! Kompres dulu!'); let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama,pesan:e.target.result,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
-
-// DEWA: SHARE LOKASI BOSKU
-function kirimLokasi(){
-  let nama=document.getElementById('namaWarga').value.trim(); if(!nama) return alert('Isi nama dulu bosku!');
-  if(!navigator.geolocation) return alert('HP tidak support lokasi bosku!');
-  alert('Mengambil lokasi bosku... Izinkan lokasi bosku!');
-  navigator.geolocation.getCurrentPosition(pos=>{
-    let lat=pos.coords.latitude, lng=pos.coords.longitude;
-    let myId=localStorage.getItem('my_chat_id')||'warga_'+Date.now(); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    let mapsUrl=`https://maps.google.com/?q=${lat},${lng}`;
-    getChatRef().push({nama,pesan:mapsUrl,lat,lng,waktu:jam,userId:myId,timestamp:Date.now(), tipe:'lokasi'});
-  }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS bosku!'); });
+   ambil lokasi bosku! Aktifkan GPS bosku!'); });
 }
 
 // DEWA: POLLING BOSKU
@@ -1395,28 +1343,53 @@ window.addEventListener('load', function(){
     box.appendChild(div); box.scrollTop=box.scrollHeight;
     if(!isMe && document.getElementById('panelChatWarga').classList.contains('hidden')){ document.getElementById('notif-dot').classList.remove('hidden'); }
   });
-  ref.on('child_removed', s=>{ let e=document.getElementById(`chat-item-${s.key}`); if(e) e.remove(); });
-  ref.on('child_changed', snap=>{ // untuk polling update
-    let data=snap.val(), key=snap.key; let old=document.getElementById(`chat-item-${key}`); if(old) old.remove();
-    // trigger ulang child_added dengan memanggil ulang logic - simpel: reload page? tapi kita buat ulang manual
-    let isMe=data.userId===myId; let isAdmin=data.nama.toLowerCase().includes('rt')||data.nama.toLowerCase().includes('admin');
-    if(data.tipe==='poll'){
-      let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
-      let esc=t=>t?t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
-      let total=(data.poll.votes.opsi1||0)+(data.poll.votes.opsi2||0)||1;
-      let p1=Math.round((data.poll.votes.opsi1||0)/total*100), p2=Math.round((data.poll.votes.opsi2||0)/total*100);
-      let content=`<div class="text-[13px]"><b>📊 POLLING: ${esc(data.pesan)}</b><div class="mt-2 space-y-2"><button onclick="votePoll('${key}','opsi1')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi1)}</span><span>${p1}% (${data.poll.votes.opsi1||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill" style="width:${p1}%"></div></div></button><button onclick="votePoll('${key}','opsi2')" class="w-full text-left"><div class="flex justify-between text-xs"><span>${esc(data.poll.opsi2)}</span><span>${p2}% (${data.poll.votes.opsi2||0})</span></div><div class="poll-bar mt-1"><div class="poll-fill bg-blue-500" style="width:${p2}%"></div></div></button></div></div>`;
-      div.innerHTML=`${!isMe?`<div class="font-bold text-[11px] text-[#075E54]">${esc(data.nama)} <span class="badge-admin">👑 ADMIN</span></div>`:''}${content}<div class="text-right text-[10px] text-gray-500 mt-1">${data.waktu}</div>`;
-      document.getElementById('boxChatWarga').appendChild(div);
-    }
-  });
+   <!-- INPUT BAR 100% WHATSAPP ORIGINAL BOSKU -->
+<div class="p-2 bg-[#F0F0F0] flex items-end gap-2">
+  
+  <div class="bg-white flex-1 rounded-[24px] flex items-end px-3 py-2 shadow-sm min-h-[45px]">
+    
+    <!-- 1. ICON EMOJI KIRI - SAMA KAYAK FOTO BOSKU -->
+    <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F] mb-1">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+    </button>
+
+    <!-- 2. INPUT KETIK PESAN -->
+    <input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="flex-1 bg-transparent border-0 text-[15px] px-3 py-2 focus:outline-none placeholder:text-[#667781]" oninput="sedangKetik()" onkeydown="if(event.key==='Enter') kirimPesanWarga()">
+
+    <!-- 3. ICON ATTACH / KLIP KERTAS - SAMA KAYAK FOTO BOSKU -->
+    <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F] mb-1 rotate-[-45deg]">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+    </button>
+    <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
+
+    <!-- 4. ICON KAMERA - SAMA KAYAK FOTO BOSKU -->
+    <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F] mb-1 ml-1">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+    </button>
+
+  </div>
+
+  <!-- 5. TOMBOL MIC BULAT HIJAU DI LUAR - SAMA PERSIS FOTO BOSKU -->
+  <button id="btnMic" onmousedown="mulaiRekam()" onmouseup="stopRekam()" ontouchstart="mulaiRekam()" ontouchend="stopRekam()" onclick="if(document.getElementById('teksPesanWarga').value.trim()!==''){kirimPesanWarga()}" class="bg-[#25D366] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+    <!-- Icon Mic kalau kosong, Icon Kirim kalau ada ketikan -->
+    <span id="iconMic">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"></path></svg>
+    </span>
+    <span id="iconSend" class="hidden">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg>
+    </span>
+  </button>
+
+</div>
+
+<script>
+// LOGIKA GANTI ICON OTOMATIS KAYAK WA BOSKU!
+document.getElementById('teksPesanWarga').addEventListener('input', function(){
+  let ada = this.value.trim() !== '';
+  document.getElementById('iconMic').classList.toggle('hidden', ada);
+  document.getElementById('iconSend').classList.toggle('hidden', !ada);
 });
-function hapusPesanChat(k){ if(confirm('Hapus bosku?')) getChatRef().child(k).remove(); }
-</script> 
-
-
-  
-  
-        
+</script>
+ 
   </body>
 </html>
