@@ -1632,6 +1632,19 @@ window.addEventListener('load', function(){
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
   <script>
+function keluarDariPasarRT36(){
+  if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
+    localStorage.removeItem('namaRT36');
+    localStorage.removeItem('onlineCountRT36');
+    localStorage.removeItem('kodeMasukRT36');
+    localStorage.removeItem('verifikasiRT36');
+    localStorage.clear();
+    alert('Berhasil keluar Bosku! Silahkan login lagi pakai kode masuk Bosku!');
+    location.reload();
+  }
+}
+</script>
+  <script>
 function updateRunningTextPremium(){
   const el=document.getElementById('runningTextOnline');
   if(!el) return;
