@@ -173,6 +173,7 @@ button.bg-emerald-600{
         <button onclick="toggleModeAdmin()" id="btn-admin" class="bg-emerald-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center gap-1">
           <i class="ph ph-shield-check text-xs"></i> <span id="label-admin">Admin</span>
         </button>
+        <button onclick="logoutPakaiKode()" class="bg-red-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full border-2 border-white">🚪 Keluar</button>
       </div>
     </div>
   </header>
@@ -1631,6 +1632,21 @@ window.addEventListener('load', function(){
 });
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
+  <script>
+function logoutPakaiKode(){
+  let k = prompt('Masukkan KODE MASUK untuk keluar Bosku:');
+  if(!k) return;
+  // Kode yang bisa untuk keluar = kode yang dipakai masuk
+  if(k.toUpperCase() === 'RT36' || k === '36' || k === localStorage.getItem('kodeMasukRT36')){
+    if(confirm('Kode benar Bosku! Mau keluar dari Pasar RT.36?')){
+      localStorage.clear();
+      location.reload();
+    }
+  } else {
+    alert('Kode Salah Bosku! Tidak bisa keluar Bosku!');
+  }
+}
+</script>
   <script>
 function keluarDariPasarRT36(){
   if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
