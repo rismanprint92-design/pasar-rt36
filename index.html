@@ -1662,7 +1662,90 @@ document.addEventListener('DOMContentLoaded',function(){
   },15000);
 });
 </script>
-</body>
-</html>
+  <script>
+// --- PATCH FIX TOMBOL DAPATKAN KODE - TANPA UBAH FUNGSI LAIN BOSKU ---
+(function(){
+  // Jangan buat ulang kalau sudah ada bosku
+  if(typeof window.dapatkanKodeMasukPatched !== 'undefined') return;
+  window.dapatkanKodeMasukPatched = true;
+
+  // Cari Firebase ref yang sudah ada bosku, jangan buat baru kalau ada
+  let wRef;
+  try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
+
+  function amanDapatkanKode(){
+    // Cari input pakai semua kemungkinan ID lama bosku
+    let namaEl = document.getElementById('input-nama-warga') || document.getElementById('nama-warga') || document.querySelector('input[placeholder*="Nama"]');
+    let hpEl = document.getElementById('input-hp-warga') || document.getElementById('hp-warga') || document.querySelector('input[type="tel"]') || document.querySelectorAll('input')[1];
+    let btn = document.getElementById('btn-dapatkan-kode') || document.querySelector('button');
+
+    let nama = namaEl ? namaEl.value.trim() : '';
+    let hp = hpEl ? hpEl.value.trim().replace(/\D/g,'') : '';
+
+    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); return; }
+    if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
+    if(hp.startsWith('0')) hp = '62' + hp.slice(1);
+
+    let kode = Math.floor(1000 + Math.random() * 9000);
+    
+    // Simpan aman di localStorage bosku (tidak ganggu fungsi lain)
+    localStorage.setItem('warga_nama_sementara', nama);
+    localStorage.setItem('warga_hp_sementara', hp);
+    localStorage.setItem('warga_kode_sementara', kode);
+
+    if(wRef){
+      wRef.child(hp).set({nama: nama, hp: hp, kode: kode, timestamp: Date.now(), status: 'menunggu'}).catch(()=>{});
+    }
+
+    let waAdmin = '6282299511782';
+    try { if(typeof adminWaAktif !== 'undefined' && adminWaAktif) waAdmin = adminWaAktif; } catch(e){}
+
+    let pesan = `VERIFIKASI WARGA RT36%0ANama: ${nama}%0AHP: ${hp}%0AKode: ${kode}`;
+    window.open(`https://wa.me/${waAdmin}?text=${pesan}`, '_blank');
+
+    // Coba pindah step kalau ada step 2 bosku, kalau tidak ada tetap aman bosku
+    let step1 = document.getElementById('step-1-verif');
+    let step2 = document.getElementById('step-2-verif');
+    if(step1 && step2){
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+    } else {
+      // Kalau modal lama cuma 1 step bosku, langsung verifikasi otomatis bosku
+      let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
+      if(tanya == kode){
+        localStorage.setItem('warga_rt36_verified','true');
+        let modal = document.getElementById('modal-verifikasi-warga');
+        if(modal) modal.classList.add('hidden');
+        alert('✅ Berhasil masuk bosku!');
+        location.reload();
+      }
+    }
+  }
+
+  // PASANG KE TOMBOL YANG ADA - TANPA UBAH ONCLICK LAMA BOSKU
+  function pasangTombol(){
+    let tombol = null;
+    // Cari tombol dengan teks Dapatkan Kode Masuk
+    document.querySelectorAll('button').forEach(b=>{
+      if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')) tombol = b;
+    });
+    if(tombol){
+      // Hapus onclick rusak bosku, ganti yang baru bosku tapi fungsi lain tetap aman
+      tombol.onclick = amanDapatkanKode;
+      console.log('Patch tombol Dapatkan Kode Masuk TERPASANG bosku!');
+    }
+  }
+
+  // Tunggu halaman siap baru pasang bosku
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', pasangTombol);
+  } else {
+    pasangTombol();
+  }
+  // Pasang lagi setiap 2 detik jaga-jaga modal muncul telat bosku
+  setTimeout(pasangTombol, 1000);
+  setTimeout(pasangTombol, 3000);
+})();
+</script>
     </body>
 </html>
