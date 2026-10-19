@@ -1382,15 +1382,14 @@ function cekVerifikasi(){
   return true; 
 }
 
-async function kirimKodeKeSaya(event){  
-  // Mengambil langsung dari input pertama (nama) dan input kedua (no hp) di dalam modal
+async function kirimKodeKeWhatsApp(event){  
   let modal = document.getElementById('modalVerifWA') || document.body;
   let inputs = modal.querySelectorAll('input');
   
-  let elNama = inputs[0]; // Kotak input Nama Lengkap
-  let elPhone = inputs[1]; // Kotak input No HP / WA
+  let elNama = inputs[0]; // Input Nama
+  let elPhone = inputs[1]; // Input No HP / WA
   
-  if(!elNama || !elPhone){ alert('Form tidak ketemu bosku!'); return; }
+  if(!elNama || !elPhone){ alert('Form tidak ditemukan bosku!'); return; }
   
   let nama = elNama.value.trim();
   let phone = elPhone.value.trim();
@@ -1399,45 +1398,43 @@ async function kirimKodeKeSaya(event){
   if(!phone || phone.length < 10){ alert('Isi nomor WA dulu bosku dengan benar!'); elPhone.focus(); return; }
   
   let nomorBersih = phone.replace(/\D/g,'');
-  localStorage.setItem('namaRT36', nama);
 
-  let btn = null, textAsli = '';
+  let btn = event ? event.currentTarget : null;
+  let textAsli = btn ? btn.innerHTML : '';
+  
   try {
-    btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
-    if(btn){ textAsli = btn.innerHTML; btn.disabled = true; btn.innerHTML = '⏳ Loading bosku...'; btn.style.opacity = '0.6'; }
+    if(btn){ btn.disabled = true; btn.innerHTML = '⏳ Mengecek nomor...'; btn.style.opacity = '0.6'; }
 
-    try{
+    // 1. CEK APAKAH NOMOR WA SUDAH PERNAH TERDAFTAR DI PERANGKAT LAIN (FIREBASE)
+    try {
       let onlineRef = getOnlineRef();
       if(onlineRef){
         let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
         if(cek.exists()){
-          alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
+          alert('⚠️ MAAF BOSKU! Nomor WhatsApp '+nomorBersih+' sudah terdaftar dan aktif di perangkat lain! Satu nomor hanya untuk satu perangkat.');
           if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
           return;
         }
       }
-    }catch(e){ console.log('lewati cek duplikat', e); }
+    } catch(e) { console.log('Lewati cek duplikat', e); }
 
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 500));
+
+    // 2. GENERATE KODE OTP LANGSUNG DI LAYAR (TANPA BUKA WHATSAPP)
     let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    otpKode = kodeOTP; 
-    verifiedPhone = nomorBersih;
-    verifiedNama = nama;
-    
-    window.kodeVerifikasiSementara = kodeOTP;
-    window.namaSementara = nama;
-    window.phoneSementara = nomorBersih;
-      
-    try{
-      let rootRef = getRootRef();
-      if(rootRef) await rootRef.ref('verifikasi/'+nomorBersih).set({nama: nama, kode: kodeOTP, time: Date.now()});
-    }catch(e){}
+    otpKodeSimpan = kodeOTP;
+    dataWargaSementara = { nama: nama, phone: nomorBersih };
 
+    // Tampilkan kode OTP langsung di kotak kuning modal
     let elKode = document.getElementById('kodeDemo');
     let elStatus = document.getElementById('statusKirim');
     if(elKode) elKode.innerText = kodeOTP;
-    if(elStatus){ elStatus.innerText = 'Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
+    if(elStatus){ 
+      elStatus.innerText = '✅ Kode OTP Berhasil Dibuat!'; 
+      elStatus.classList.remove('hidden'); 
+    }
 
+    // 3. PINDAH KE MENU INPUT OTP (STEP 2)
     let step1 = document.getElementById('step1Verif');
     let step2 = document.getElementById('step2Verif');
     if(step1) step1.classList.add('hidden');
