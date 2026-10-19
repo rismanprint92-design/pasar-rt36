@@ -1681,7 +1681,7 @@ document.addEventListener('DOMContentLoaded',function(){
   try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
 
   function amanDapatkanKode(){
-    let modal = document.getElementById('modal-verifikasi-warga');
+    let modal = document.getElementById('modalVerifWA');
     let inputs = modal ? modal.querySelectorAll('input') : [];
     let namaEl = inputs[0] || document.getElementById('input-nama-warga') || document.getElementById('nama-warga');
     let hpEl = inputs[1] || document.getElementById('input-hp-warga') || document.getElementById('hp-warga');
