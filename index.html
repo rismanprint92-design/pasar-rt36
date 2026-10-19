@@ -1383,9 +1383,9 @@ function cekVerifikasi(){
 }
 
 // === FIX KIRIM KODE BOSKU - ID BENAR + LOADING + OTP NYAMBUNG BOSKU ===
-async function kirimKodeKeSaya(event){ 
-  let elNama = document.getElementById('inputNama') || document.getElementById('inputNamaWA');
-  let elPhone = document.getElementById('inputWA') || document.getElementById('inputNoWA');
+async function kirimKodeKeSaya(event){  
+  let elNama = document.getElementById('inputNama');
+  let elPhone = document.getElementById('inputWA');
   
   if(!elNama || !elPhone){ alert('Form tidak ketemu bosku!'); return; }
   
@@ -1398,10 +1398,11 @@ async function kirimKodeKeSaya(event){
   let nomorBersih = phone.replace(/\D/g,'');
   localStorage.setItem('namaRT36', nama);
 
-  let btn = null, textAsli = '';
+  let btn = event ? event.currentTarget : null;
+  let textAsli = btn ? btn.innerHTML : '';
+  
   try {
-    btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
-    if(btn){ textAsli = btn.innerHTML; btn.disabled = true; btn.innerHTML = '⏳ Loading bosku...'; btn.style.opacity = '0.6'; }
+    if(btn){ btn.disabled = true; btn.innerHTML = '⏳ Loading bosku...'; btn.style.opacity = '0.6'; }
 
     try{
       let onlineRef = getOnlineRef();
@@ -1417,13 +1418,9 @@ async function kirimKodeKeSaya(event){
 
     await new Promise(r => setTimeout(r, 600));
     let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    otpKode = kodeOTP; // Disimpan agar terbaca oleh cekOTP
+    otpKode = kodeOTP; 
     verifiedPhone = nomorBersih;
     verifiedNama = nama;
-    
-    window.kodeVerifikasiSementara = kodeOTP;
-    window.namaSementara = nama;
-    window.phoneSementara = nomorBersih;
       
     try{
       let rootRef = getRootRef();
@@ -1435,10 +1432,8 @@ async function kirimKodeKeSaya(event){
     if(elKode) elKode.innerText = kodeOTP;
     if(elStatus){ elStatus.innerText = 'Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
 
-    let step1 = document.getElementById('step1Verif');
-    let step2 = document.getElementById('step2Verif');
-    if(step1) step1.classList.add('hidden');
-    if(step2) step2.classList.remove('hidden');
+    document.getElementById('step1Verif').classList.add('hidden');
+    document.getElementById('step2Verif').classList.remove('hidden');
     
     if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
   } catch(err) {
