@@ -1673,8 +1673,8 @@ document.addEventListener('DOMContentLoaded',function(){
   function amanDapatkanKode(){
     let modal = document.getElementById('modal-verifikasi-warga');
     let inputs = modal ? modal.querySelectorAll('input') : [];
-    let namaEl = document.getElementById('input-nama-warga') || document.getElementById('nama-warga') || inputs[0];
-    let hpEl = document.getElementById('input-hp-warga') || document.getElementById('hp-warga') || inputs[1];
+    let namaEl = inputs[0] || document.getElementById('input-nama-warga') || document.getElementById('nama-warga');
+    let hpEl = inputs[1] || document.getElementById('input-hp-warga') || document.getElementById('hp-warga');
     let btn = document.getElementById('btn-dapatkan-kode') || document.querySelector('button');
 
     let nama = namaEl ? namaEl.value.trim() : '';
