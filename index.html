@@ -1663,49 +1663,56 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
   <script>
-// --- PATCH V7 TINGKAT 1 ANTI DUPLIKAT BOSKU ---
+// --- PATCH V8 TINGKAT 1 FIX 3 INPUT BOSKU ---
 (function(){
-  console.log('PATCH V7 TINGKAT 1 LOADED BOSKU!');
+  console.log('PATCH V8 TINGKAT 1 LOADED BOSKU!');
   
+  // Hapus SW dulu bosku biar tidak cache lagi!
+  try{ navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister())); }catch(e){}
+
   async function amanDapatkanKodeTingkat1(){
-    // Ambil input yang terlihat bosku (fix yang kemarin 0 itu bosku)
-    let all = Array.from(document.querySelectorAll('input')).filter(i => i.offsetParent !== null && i.type !== 'hidden' && i.type !== 'checkbox');
-    console.log('V7 - Input terlihat:', all.length, all.map(x=>x.value));
+    let all = Array.from(document.querySelectorAll('input')).filter(i => i.offsetParent !== null && i.type !== 'hidden' && i.type !== 'checkbox' && i.type !== 'radio');
+    console.log('V8 - Input terlihat:', all.length, all.map(x=>`[${x.value}]`));
     
-    let namaEl = all[0];
-    let hpEl = all[1];
-    if(!namaEl || !hpEl){ alert('Form tidak ketemu bosku!'); return; }
+    // --- LOGIKA PINTAR BOSKU: CARI NAMA & HP BUKAN PAKAI URUTAN BOSKU ---
+    let nama = '';
+    let hpRaw = '';
     
-    let nama = namaEl.value.trim();
-    let hpRaw = hpEl.value.trim().replace(/\D/g,'');
-    let hp = hpRaw;
+    for(let inp of all){
+      let v = inp.value.trim();
+      if(!v) continue; // Skip kosong bosku
+      let digit = v.replace(/\D/g,'');
+      // Kalau isinya banyak angka dan panjang >=10 = HP bosku
+      if(digit.length >= 10 && digit.length <= 15){
+        hpRaw = v;
+      } else if(v.length >= 3) {
+        // Kalau ada huruf = Nama bosku
+        nama = v;
+      }
+    }
+    
+    console.log('V8 - NAMA DETEKSI:', '['+nama+']', 'HP DETEKSI:', '['+hpRaw+']');
+
+    if(nama.length < 3){ alert('Isi nama dulu bosku! Terdeteksi: ['+nama+'] dari '+all.length+' input'); return; }
+    if(!hpRaw){ alert('Isi No HP dulu bosku!'); return; }
+    
+    let hp = hpRaw.replace(/\D/g,'');
     if(hp.startsWith('0')) hp = '62' + hp.slice(1);
-    
-    console.log('V7 - NAMA:', nama, 'HP:', hp);
 
-    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf. Terbaca: ['+nama+']'); return; }
-    if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
-
-    // --- CEK DUPLIKAT BOSKU - INTI TINGKAT 1 BOSKU ---
+    // --- TINGKAT 1: CEK DUPLIKAT BOSKU ---
     try{
       let wRef = firebase.database().ref('warga_rt36');
       let cekSnap = await wRef.child(hp).get();
-      
       if(cekSnap.exists()){
         let dataLama = cekSnap.val();
-        alert(`❌ NOMOR SUDAH TERDAFTAR BOSKU!\n\nAtas Nama: ${dataLama.nama}\nNo HP: ${hpRaw}\n\n1 Nomor hanya untuk 1 HP bosku!\nKalau ini HP bosku sendiri, hubungi Pak RT bosku!`);
-        console.log('V7 - DUPLIKAT DITEMUKAN:', dataLama);
-        return; // STOP BOSKU, JANGAN LANJUT
+        alert(`❌ NOMOR SUDAH TERDAFTAR BOSKU!\n\nAtas Nama: ${dataLama.nama}\nNo HP: ${hpRaw}\n\n1 Nomor hanya 1 akun bosku!`);
+        console.log('V8 - DUPLIKAT:', dataLama);
+        return;
       }
-      
-      console.log('V7 - Nomor aman belum terdaftar bosku!');
-      
-    }catch(e){
-      console.log('V7 - Gagal cek duplikat (anggap aman):', e);
-      // Lanjut aja bosku kalau Firebase error, jangan block warga
-    }
+      console.log('V8 - Nomor AMAN belum ada bosku!');
+    }catch(e){ console.log('V8 - Cek duplikat skip:', e); }
 
-    // --- LANJUT DAFTAR BOSKU KALAU AMAN ---
+    // --- LANJUT SIMPAN BOSKU ---
     let kode = Math.floor(1000 + Math.random() * 9000);
     localStorage.setItem('warga_nama_sementara', nama);
     localStorage.setItem('warga_hp_sementara', hp);
@@ -1713,38 +1720,31 @@ document.addEventListener('DOMContentLoaded',function(){
     
     try{
       await firebase.database().ref('warga_rt36').child(hp).set({
-        nama: nama,
-        hp: hp,
-        kode: kode,
-        status: 'aktif',
-        timestamp: Date.now()
+        nama: nama, hp: hp, kode: kode, status: 'aktif', timestamp: Date.now()
       });
     }catch(e){}
 
     let waAdmin = '6282299511782';
-    try{ if(typeof adminWaAktif !== 'undefined' && adminWaAktif) waAdmin = adminWaAktif; }catch(e){}
+    window.open(`https://wa.me/${waAdmin}?text=VERIFIKASI%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`, '_blank');
     
-    window.open(`https://wa.me/${waAdmin}?text=VERIFIKASI%20WARGA%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`, '_blank');
-
-    let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (ketik ${kode}):`);
+    let tanya = prompt(`Kode ${kode} terkirim bosku! Ketik ${kode} untuk masuk:`);
     if(tanya == kode){
       localStorage.setItem('warga_rt36_verified','true');
       alert('✅ Berhasil masuk bosku!');
-      location.reload();
+      location.href = location.href.split('?')[0] + '?v=8sukses';
     }
   }
 
-  function pasangTombolV7(){
+  function pasangV8(){
     document.querySelectorAll('button').forEach(b=>{
       if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')){
         b.onclick = amanDapatkanKodeTingkat1;
-        console.log('V7 - Tombol anti duplikat dipasang bosku!');
+        console.log('V8 - Tombol terpasang bosku!');
       }
     });
   }
-  
-  setTimeout(pasangTombolV7, 500);
-  setTimeout(pasangTombolV7, 2000);
+  setTimeout(pasangV8, 500);
+  setTimeout(pasangV8, 2000);
 })();
 </script>
     </body>
