@@ -5,125 +5,157 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace RT. 36 AR & Metroland</title>
   
-  <!-- PWA Manifest Check -->
-  <script>
-    var isOld = /Android [1-8]\./.test(navigator.userAgent);
-    if (!isOld) {
-      var link = document.createElement('link');
-      link.id = 'pwa-manifest';
-      link.rel = 'manifest';
-      link.href = 'manifest.json';
-      document.head.appendChild(link);
-    } else {
-      window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        return false;
-      });
-    }
-  </script>
+  <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
+<script>
+  var isOld = /Android [1-8]\./.test(navigator.userAgent);
+  // Hanya HP baru yang dikasih manifest, HP lama tidak dikasih sama sekali
+  if (!isOld) {
+    var link = document.createElement('link');
+    link.id = 'pwa-manifest';
+    link.rel = 'manifest';
+    link.href = 'manifest.json';
+    document.head.appendChild(link);
+  } else {
+    // Blokir total pop-up Instal di HP lama
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  }
+</script>
   <meta name="theme-color" content="#059669">
   <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
   
-  <!-- Tailwind CSS & Phosphor Icons -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>  
-
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
   <style>
-    #search-bar-container { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+    #search-bar-container {
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    }
     .catatan-teks {
-      font-size: 11px;
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      color: #6b7280;
-      font-style: italic;
-      margin-top: 4px;
-    }
-    .catatan-teks.buka {
-      -webkit-line-clamp: unset;
-      display: block;
-      white-space: pre-wrap;
-      text-overflow: clip;
-    }
-    .btn-lihat {
-      font-size: 10px;
-      color: #059669;
-      font-weight: bold;
-      background: none;
-      border: none;
-      padding: 2px 0 0 0;
-      cursor: pointer;
-      text-decoration: underline;
-      display: block;
-    }
-    body { background:#f6f7f9 !important; font-family: 'Inter', system-ui, sans-serif !important; }
-    header { backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important; }
+  font-size: 11px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 4px;
+}
+.catatan-teks.buka {
+  -webkit-line-clamp: unset;
+  display: block;
+  white-space: pre-wrap;
+  text-overflow: clip;
+}
+.btn-lihat {
+  font-size: 10px;
+  color: #059669;
+  font-weight: bold;
+  background: none;
+  border: none;
+  padding: 2px 0 0 0;
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+}
+    
+</style>
+  <style>
+/* --- PASAR RT36 VERSI CANTIK SHOPEE BOSKU --- */
+body{ background:#f6f7f9 !important; font-family: 'Inter', system-ui, sans-serif !important; }
+header{ backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important; }
 
-    input[placeholder*="Cari"] {
-      border-radius:9999px !important;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
-      border:1px solid #eef2f7 !important;
-      background:white !important;
-      padding-top:12px !important;
-      padding-bottom:12px !important;
-    }
+/* Search bar bulat kayak Google bosku */
+input[placeholder*="Cari"]{
+  border-radius:9999px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+  border:1px solid #eef2f7 !important;
+  background:white !important;
+  padding-top:12px !important;
+  padding-bottom:12px !important;
+}
 
-    #filter-kategori button, .kategori-btn {
-      background:white !important;
-      border:1px solid #eef2f7 !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-      border-radius:9999px !important;
-      font-weight:600 !important;
-      transition: all .2s !important;
-    }
+/* Kategori pill cantik */
+#filter-kategori button, .kategori-btn{
+  background:white !important;
+  border:1px solid #eef2f7 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  border-radius:9999px !important;
+  font-weight:600 !important;
+  transition: all .2s !important;
+}
+#filter-kategori button.bg-emerald-600, #filter-kategori button.bg-green-700, .kategori-btn.active{
+  background:#059669 !important;
+  color:white !important;
+  border-color:#059669 !important;
+  box-shadow: 0 4px 14px rgba(5,150,105,0.3) !important;
+}
 
-    .produk-card, [class*="rounded-xl"].bg-white {
-      border-radius:20px !important;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
-      border:1px solid #f1f5f9 !important;
-      overflow:hidden !important;
-      transition: all .2s !important;
-    }
-    .produk-card:active { transform: scale(0.97) !important; }
-    .produk-card img { aspect-ratio: 1/1 !important; object-fit: cover !important; }
+/* CARD PRODUK PALING CANTIK BOSKU */
+.produk-card, [class*="rounded-xl"].bg-white{
+  border-radius:20px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+  border:1px solid #f1f5f9 !important;
+  overflow:hidden !important;
+  transition: all .2s !important;
+}
+.produk-card:active{ transform: scale(0.97) !important; }
+.produk-card img{
+  aspect-ratio: 1/1 !important;
+  object-fit: cover !important;
+}
 
-    .text-emerald-600.font-bold, .font-bold.text-\[15px\] {
-      color:#f97316 !important;
-      font-weight:800 !important;
-      font-size:15px !important;
-    }
+/* Harga Orange Shopee bosku */
+.text-emerald-600.font-bold, .font-bold.text-\[15px\]{
+  color:#f97316 !important;
+  font-weight:800 !important;
+  font-size:15px !important;
+}
 
-    button.bg-emerald-600 {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-      border-radius:12px !important;
-      box-shadow: 0 4px 12px rgba(16,185,129,0.3) !important;
-      font-weight:700 !important;
-      letter-spacing:0.2px !important;
-    }
+/* Tombol Beli Via WA gradasi Shopee bosku */
+button.bg-emerald-600{
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border-radius:12px !important;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3) !important;
+  font-weight:700 !important;
+  letter-spacing:0.2px !important;
+}
 
-    #modal-pilihan-jual > div { animation: pop .25s ease-out !important; }
-    @keyframes pop { from { transform:scale(0.9); opacity:0 } to { transform:scale(1); opacity:1 } }
+/* Badge 3 Foto blur premium */
+.bg-black.bg-opacity-70, [class*="3 Foto"]{
+  backdrop-filter: blur(8px) !important;
+  background: rgba(0,0,0,0.6) !important;
+  border-radius:9999px !important;
+  font-size:11px !important;
+}
 
-    /* Styling Live Chat */
-    .bubble-wa{max-width:80%; padding:6px 8px 5px 8px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px} 
-    .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} 
-    .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
-    .nama-atas{font-weight:800; font-size:11px; margin-bottom:2px; color:#075E54}
-    .btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px}
-    @keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}} 
-    .mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important;}
-    @keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
-    .icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
-  </style>
+/* Floating chat jangan nutupin produk bosku */
+#btn-chat-bubble, button[class*="fixed"][class*="bottom-4"][class*="right-4"]{
+  bottom: 88px !important;
+  right: 16px !important;
+  box-shadow: 0 8px 24px rgba(5,150,105,0.4) !important;
+  width:56px !important;
+  height:56px !important;
+}
+
+/* Modal pilihan jual cantik bosku */
+#modal-pilihan-jual > div{
+  animation: pop .25s ease-out !important;
+}
+@keyframes pop{ from{ transform:scale(0.9); opacity:0 } to{ transform:scale(1); opacity:1 } }
+</style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
@@ -156,6 +188,7 @@
 
   <!-- Filter & Pencarian -->
   <main class="max-w-md mx-auto p-4">
+    <!-- Bar Pencarian & Tombol Bantuan Mini Berdampingan (Auto-Hide saat Scroll) -->
     <div id="search-bar-container" class="sticky top-[56px] z-30 bg-gray-100 pt-1 pb-2">
       <div class="flex gap-2 items-center">
         <div class="relative flex-1">
@@ -164,11 +197,13 @@
           </span>
           <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
         </div>
-        <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan">
+        <!-- Tombol Ikon Bantuan -->
+        <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
           <i class="ph ph-chat-circle-dots text-lg"></i>
         </button>
       </div>
 
+      <!-- Filter Kategori di dalam container agar ikut tersembunyi rapi -->
       <div class="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs font-medium no-scrollbar">
         <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
         <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
@@ -183,108 +218,34 @@
     </div>
 
     <!-- Grid Produk -->
-    <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2"></div>
+    <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-2">
+      <!-- Card Produk dimuat secara realtime dari Firebase -->
+    </div>
     <button id="btn-shopee" onclick="muatLebihBanyakProduk()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">
-      Lihat Produk Lainnya ↓
-    </button>
+  Lihat Produk Lainnya ↓
+</button>
   </main>
 
-  <!-- Live Chat & Verifikasi Warga -->
-  <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
-    <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
-    <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
-  </button>
-
-  <audio id="notifSound" preload="auto" playsinline></audio>
-
-  <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
-      <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
-      <h2 class="font-bold text-[18px] text-[#075E54] text-center">Verifikasi Warga RT.36</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Untuk Keamanan, isi nama & no. HP untuk mendapatkan kode masuk. 1 nomor hanya untuk 1 HP!</p>
-      <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden"><div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;"><span class="text-white text-[11px] font-bold mx-4">✨ SELAMAT DATANG DI PASAR RT.36 ✨</span></div></div><style>@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</style>
-      <div id="step1Verif" class="mt-5 space-y-3">
-        <div><label class="text-[11px] font-bold">NAMA LENGKAP</label><input type="text" id="inputNama" placeholder="Contoh: Budi" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <div><label class="text-[11px] font-bold">NO HP / WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <button onclick="kirimKodeKeSaya(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Dapatkan Kode Masuk 📲</button>
-        <p id="statusKirim" class="hidden text-[11px] text-center font-bold"></p>
-      </div>
-      <div id="step2Verif" class="hidden mt-5">
-        <div class="bg-yellow-50 border p-3 rounded-xl text-center"><p class="text-[11px]">Kode OTP (cek WA Anda):</p><p id="kodeDemo" class="text-[28px] font-black tracking-[6px] text-[#FF3B30]">0000</p></div>
-        <input type="text" id="inputOTP" maxlength="4" placeholder="0000" class="w-full border-2 border-[#25D366] p-3 rounded-xl text-[22px] tracking-[10px] text-center font-bold mt-3">
-        <button onclick="cekOTP(event)" class="w-full bg-[#075E54] text-white font-bold py-3 rounded-xl mt-3">Verifikasi & Masuk</button>
-        <button onclick="kembaliStep1()" class="w-full text-[11px] text-gray-500 mt-2">Ganti Nomor</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
-    <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
-      <div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div><div><h4 class="font-bold text-[14px]">Obrolan Warga RT.36</h4>
-      <div class="flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span><p id="statusOnline" class="text-[11px] font-bold">1 Online</p><span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1"></span></div>
-      </div></div>
-      <div class="flex gap-1 items-center">
-        <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]">🔔</button>
-        <button onclick="keluarDariPasarRT36()" class="bg-[#FF3B30] px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide text-white">KELUAR</button>
-      </div>
-    </div>
-    <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
-      <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
-      <div class="flex flex-col gap-2">
-        <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
-        <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
-        <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
-      </div>
-    </div>
-    <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
-    <div class="bg-[#F0F0F0] p-2 flex items-end gap-2">
-      <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-        <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
-        <div class="flex-1 relative min-h-[32px] flex items-center">
-          <div id="areaKetikNormal" class="w-full flex items-center"><input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="w-full bg-transparent border-0 text-[15px] px-2 py-2 focus:outline-none" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}"></div>
-          <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span><span class="flex gap-1"><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce"></span><span class="w-1 h-5 bg-red-500 rounded-full animate-bounce" style="animation-delay:0.1s"></span><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span></span></div>
-        </div>
-        <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
-          <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-          <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-          <button onclick="kirimLokasi()" class="w-8 h-8 flex items-center justify-center"><span class="text-[18px]">📍</span></button>
-          <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
-        </div>
-      </div>
-      <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden">
-        <span id="iconMic" class="relative">
-          <span class="absolute inset-0 bg-white/20 rounded-full animate-ping"></span>
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg>
-        </span>
-        <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
-        <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
-      </button>
-    </div>
-    <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
-      <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
-      <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
-      <button onclick="document.getElementById('inputFoto').click()" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🖼️</div><span class="text-[10px]">Galeri</span></button>
-      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">😊</div><span class="text-[10px]">Emoji</span></button>
-    </div>
-    <div id="emoji-list" class="hidden bg-white p-2 flex gap-3 text-2xl flex-wrap border-t"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span></div>
-  </div>
-
-  <!-- Modal Informasi & Masukan -->
+  <!-- Modal Informasi & Masukan Perbaikan Website -->
   <div id="modal-info-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl text-xs space-y-3 shadow-xl">
       <div class="flex justify-between items-center pb-2 border-b">
         <h3 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
-          <i class="ph ph-chats text-emerald-600 text-base"></i> Masukan & Perbaikan Website RT.36
+          <i class="ph ph-chats text-emerald-600 text-base"></i> Masukan & Perbaikan Website RT.36 AR & Metroland
         </h3>
         <button onclick="tutupModalInfoAdmin()" class="text-gray-400 text-xl font-bold">&times;</button>
       </div>
+
       <p class="text-gray-500 text-[11px]">
-        Punya saran, masukan, atau menemukan kendala/bug pada perbaikan fitur website <b>Pasar RT.36 AR & Metroland</b>?
+        Punya saran, masukan, atau menemukan kendala/bug pada perbaikan fitur website <b>Pasar RT.36 AR & Metroland</b>? Laporkan langsung kepada pengembang atau pengurus RT via WhatsApp di bawah ini.
       </p>
+
       <div>
         <label class="block font-medium mb-1 text-gray-700">Nomor WhatsApp Pengurus / Admin </label>
-        <input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg bg-gray-50 font-bold text-gray-700" value="6282299511782">
+        <input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg bg-gray-50 font-bold text-gray-700" value="6282299511782" placeholder="6282299511782">
+        <p class="text-[10px] text-gray-400 mt-0.5">*(Nomor ini dapat diubah oleh Admin jika diperlukan)*</p>
       </div>
+
       <div>
         <label class="block font-medium mb-1 text-gray-700">Pilih Topik Masukan</label>
         <select id="pilih-topik-admin" class="w-full border p-2.5 rounded-lg font-medium focus:outline-emerald-500">
@@ -295,10 +256,12 @@
           <option value="Lainnya">💬 Keperluan Lainnya</option>
         </select>
       </div>
+
       <div>
         <label class="block font-medium mb-1 text-gray-700">Tulis Pesan / Masukan Perbaikan Anda</label>
-        <textarea id="pesan-masukan-warga" rows="3" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Ketik laporan atau saran perbaikan di sini..."></textarea>
+        <textarea id="pesan-masukan-warga" rows="3" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Ketik laporan atau saran perbaikan website di sini..."></textarea>
       </div>
+
       <div class="pt-2">
         <button onclick="kirimPesanKeAdminRT()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-md">
           <i class="ph ph-whatsapp-logo text-base"></i> Kirim Masukan ke WhatsApp Admin
@@ -344,6 +307,7 @@
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs text-center space-y-3">
       <h3 class="font-bold text-gray-800 text-sm">Hubungi Penjual</h3>
       <p class="text-gray-500 text-[11px]" id="info-produk-beli"></p>
+      
       <div class="space-y-2 pt-2">
         <button id="btn-wa-otomatis" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-emerald-700">
           <i class="ph ph-whatsapp-logo text-base"></i> Chat WhatsApp Otomatis
@@ -352,11 +316,12 @@
           <i class="ph ph-phone text-base"></i> Salin / Lihat Nomor HP
         </button>
       </div>
+
       <button onclick="tutupModalOpsiBeli()" class="w-full bg-gray-200 text-gray-600 py-2 rounded-lg font-medium mt-1">Batal</button>
     </div>
   </div>
 
-  <!-- Modal Pilihan Jual -->
+  <!-- MODAL PILIHAN JUAL CANTIK BOSKU -->
   <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl">
       <h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3>
@@ -378,6 +343,7 @@
         <h3 class="font-bold text-gray-800">Pasang Dagangan Baru</h3>
         <button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button>
       </div>
+
       <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs">
         <div>
           <label class="block font-medium mb-1">Nama Produk / Jasa</label>
@@ -415,7 +381,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-medium mb-1">No. WhatsApp</label>
-            <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789">
+            <input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789 ">
           </div>
           <div>
             <label class="block font-medium mb-1">PIN Rahasia Penjual</label>
@@ -431,6 +397,7 @@
           <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
           <p class="text-[10px] text-emerald-700 mt-1">💡 Anda dapat memilih hingga 3 foto sekaligus.</p>
         </div>
+
         <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">
           Tayangkan Dagangan
         </button>
@@ -438,7 +405,7 @@
     </div>
   </div>
 
-  <!-- Modal Login Penjual -->
+  <!-- Modal Login Penjual untuk Edit/Hapus -->
   <div id="modal-login-penjual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs">
       <h3 class="font-bold text-gray-800 text-sm mb-1 text-center">Verifikasi Penjual</h3>
@@ -452,108 +419,121 @@
     </div>
   </div>
 
-  <!-- Modal Edit / Ganti Jualan -->
-  <div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
-    <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3>
-        <button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button>
-      </div>
-      <form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="edit-id">
-        <div>
-          <label class="block font-medium mb-1">Nama Produk / Jasa</label>
-          <input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Harga (Rp)</label>
-            <input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Kategori</label>
-            <select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-              <option value="kuliner">Kuliner</option>
-              <option value="sembako">Sembako</option>
-              <option value="jasa">Jasa</option>
-              <option value="bekas">Barang Bekas</option>
-              <option value="pakaian">Pakaian</option>
-              <option value="aksesoris">Aksesoris</option>
-              <option value="elektronik">Elektronik</option>
-              <option value="dll">Dll</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-medium mb-1">Nama Penjual</label>
-            <input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Blok / No. Rumah</label>
-            <input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-          </div>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">No. WhatsApp</label>
-          <input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Catatan / Keterangan</label>
-          <textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Ganti Foto Baru (Maksimal 3 Foto, Otomatis Kompres)</label>
-          <input type="file" id="edit-input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-        </div>
-
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="hapusOlehPenjual()" class="w-1/3 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200">Hapus Produk</button>
-          <button type="submit" class="w-2/3 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Simpan Perubahan</button>
-        </div>
-      </form>
+  <!-- Modal Edit / Ganti Jualan (Versi Sudah Diperbaiki) -->
+<div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3>
+      <button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button>
     </div>
-  </div>
 
-  <!-- Modal Share Produk -->
-  <div id="modal-share-produk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
-      <div class="text-4xl mb-2">🎉</div>
-      <h3 class="font-bold text-lg text-gray-800">Produk Berhasil Diunggah!</h3>
-      <p class="text-xs text-gray-500 mt-1 mb-4">Bagikan dagangan Anda sekarang agar cepat laku diserbu pembeli!</p>
-      
-      <div class="space-y-2">
-        <button onclick="shareProdukKe('wa_status')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
-          <span>🟢</span> Buat Status WhatsApp
-        </button>
-        <button onclick="shareProdukKe('wa_group')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
-          <span>👥</span> Bagikan ke Grup WhatsApp
-        </button>
-        <button onclick="shareProdukKe('facebook')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
-          <span>📘</span> Bagikan ke Facebook
-        </button>
-        <button onclick="shareProdukKe('link')" class="w-full bg-gray-800 hover:bg-black text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
-          <span>🔗</span> Salin Link Produk
-        </button>
+    <form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs">
+      <input type="hidden" id="edit-id">
+      <div>
+        <label class="block font-medium mb-1">Nama Produk / Jasa</label>
+        <input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-medium mb-1">Harga (Rp)</label>
+          <input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Kategori</label>
+          <select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+            <option value="kuliner">Kuliner</option>
+            <option value="sembako">Sembako</option>
+            <option value="jasa">Jasa</option>
+            <option value="bekas">Barang Bekas</option>
+            <option value="pakaian">Pakaian</option>
+            <option value="aksesoris">Aksesoris</option>
+            <option value="elektronik">Elektronik</option>
+            <option value="dll">Dll</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-medium mb-1">Nama Penjual</label>
+          <input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Blok / No. Rumah</label>
+          <input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+        </div>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">No. WhatsApp</label>
+        <input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Catatan / Keterangan</label>
+        <textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Ganti Foto Baru (Maksimal 3 Foto, Otomatis Kompres)</label>
+        <input type="file" id="edit-input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
       </div>
 
-      <button onclick="tutupModalShare()" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium py-2 rounded-xl">
-        Nanti Saja / Tidak
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="hapusOlehPenjual()" class="w-1/3 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200">Hapus Produk</button>
+        <button type="submit" class="w-2/3 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+  
+<!-- Modal Konfirmasi Share Produk -->
+<div id="modal-share-produk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+    <div class="text-4xl mb-2">🎉</div>
+    <h3 class="font-bold text-lg text-gray-800">Produk Berhasil Diunggah!</h3>
+    <p class="text-xs text-gray-500 mt-1 mb-4">Bagikan dagangan Anda sekarang agar cepat laku diserbu pembeli!</p>
+    
+    <!-- Pilihan Tombol Share -->
+    <div class="space-y-2">
+      <button onclick="shareProdukKe('wa_status')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>🟢</span> Buat Status WhatsApp
+      </button>
+      
+      <button onclick="shareProdukKe('wa_group')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>👥</span> Bagikan ke Grup WhatsApp
+      </button>
+      
+      <button onclick="shareProdukKe('facebook')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>📘</span> Bagikan ke Facebook
+      </button>
+      
+      <button onclick="shareProdukKe('link')" class="w-full bg-gray-800 hover:bg-black text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow">
+        <span>🔗</span> Salin Link Produk
       </button>
     </div>
+
+    <!-- Tombol Batal / Nanti Saja -->
+    <button onclick="tutupModalShare()" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium py-2 rounded-xl">
+      Nanti Saja / Tidak
+    </button>
+  </div>
+</div>
+  
+ <!-- Modal Zoom / Perbesar Foto -->
+<div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
+  <!-- Tombol Tutup -->
+  <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 px-3 py-1 rounded-full hover:bg-black z-10">✕</button>
+  
+  <!-- Tombol Geser Kiri -->
+  <button onclick="geserFotoZoom(-1)" class="absolute left-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❮</button>
+  
+  <!-- Gambar Target Zoom -->
+  <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
+    <img id="img-zoom-target" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl transition-all duration-200" alt="Zoom Foto">
   </div>
 
-  <!-- Modal Zoom -->
-  <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
-    <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 px-3 py-1 rounded-full hover:bg-black z-10">✕</button>
-    <button onclick="geserFotoZoom(-1)" class="absolute left-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❮</button>
-    <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
-      <img id="img-zoom-target" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl transition-all duration-200" alt="Zoom Foto">
-    </div>
-    <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
-  </div>
+  <!-- Tombol Geser Kanan -->
+  <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
+</div>
 
-  <!-- Script Firebase & Logika Aplikasi Utama -->
+  <!-- Script Firebase & Logika Aplikasi -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -575,7 +555,8 @@
     let isAdmin = false;
     let pinAdminAktif = "1234";
     let adminWaAktif = "6282299511782";
-
+    
+    // 👉 SIMPAN DI SINI
     function bersihkanTeks(teks) {
       if (!teks) return '';
       return String(teks)
@@ -587,28 +568,32 @@
     }
 
     function bukaTutupCatatan(id, btn) {
-      const teks = document.getElementById(id);
-      teks.classList.toggle('buka');
-      if (teks.classList.contains('buka')) {
-        btn.innerText = 'Sembunyikan ▲';
-      } else {
-        btn.innerText = 'Lihat selengkapnya ▼';
-      }
-    }
-
+  const teks = document.getElementById(id);
+  teks.classList.toggle('buka');
+  if (teks.classList.contains('buka')) {
+    btn.innerText = 'Sembunyikan ▲';
+  } else {
+    btn.innerText = 'Lihat selengkapnya ▼';
+  }
+}
     let produkData = [];
     let kategoriAktif = 'semua';
+    let currentZoomScale = 1;
+    let activeZoomPhotos = [];
 
-    // Auto-Hide Search Bar Saat Scroll
+    // --- LOGIKA AUTO-HIDE SEARCH BAR SAAT SCROLL ---
     let lastScrollTop = 0;
     const searchBarContainer = document.getElementById('search-bar-container');
 
     window.addEventListener('scroll', function() {
       let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
       if (scrollTop > lastScrollTop && scrollTop > 50) {
+        // Scroll ke Bawah -> Sembunyikan bar pencarian & filter
         searchBarContainer.style.transform = 'translateY(-120%)';
         searchBarContainer.style.opacity = '0';
       } else {
+        // Scroll ke Atas -> Munculkan kembali bar pencarian & filter
         searchBarContainer.style.transform = 'translateY(0)';
         searchBarContainer.style.opacity = '1';
       }
@@ -636,231 +621,243 @@
       if(inputWa) inputWa.value = adminWaAktif;
     });
 
-    let BATAS_TAMPIL = 12;
-    let produkFilteredGlobal = [];
+   // --- JURUS 2 SHOPEE: JANGAN LOAD 100 SEKALIGUS - HEMAT 90% ---
+let BATAS_TAMPIL = 12; // awal cuma 12 kayak Shopee
+let produkFilteredGlobal = []; // simpan hasil filter buat tombol
 
-    dbRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      produkData = [];
-      
-      if (data) {
-        const sekarang = Date.now();
-        const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
-        Object.keys(data).forEach(key => {
-          const item = data[key];
-          if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
-            dbRef.child(key).remove();
-            return;
-          }
-          produkData.unshift({ id: key, ...item });
-        });
+// --- JURUS HEMAT CLOUD: AUTO HAPUS 30 HARI PERMANEN ---
+dbRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  produkData = [];
+  
+  if (data) {
+    const sekarang = Date.now();
+    const BATAS_30_HARI = 30 * 24 * 60 * 60 * 1000;
+    Object.keys(data).forEach(key => {
+      const item = data[key];
+      if (item.timestamp && (sekarang - item.timestamp) > BATAS_30_HARI) {
+        dbRef.child(key).remove();
+        return;
       }
-      BATAS_TAMPIL = 12;
-      terapkanFilterDanPencarian();
-      setTimeout(cekDeepLinkProduk, 500);
+      produkData.unshift({ id: key, ...item });
     });
+  }
+  BATAS_TAMPIL = 12; // reset ke 12 kali buka
+  terapkanFilterDanPencarian();
+});
 
-    function terapkanFilterDanPencarian() {
-      const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
-      let hasil = produkData;
+function terapkanFilterDanPencarian() {
+  const keyword = document.getElementById('input-pencarian').value.toLowerCase().trim();
 
-      if (kategoriAktif !== 'semua') {
-        hasil = hasil.filter(p => p.kategori === kategoriAktif);
-      }
+  let hasil = produkData;
 
-      if (keyword !== '') {
-        hasil = hasil.filter(p =>
-          (p.nama && p.nama.toLowerCase().includes(keyword)) ||
-          (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
-          (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
-          (p.catatan && p.catatan.toLowerCase().includes(keyword))
-        );
-      }
+  if (kategoriAktif !== 'semua') {
+    hasil = hasil.filter(p => p.kategori === kategoriAktif);
+  }
 
-      produkFilteredGlobal = hasil;
-      const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
-      renderProduk(yangDitampilkan);  
+  if (keyword !== '') {
+    hasil = hasil.filter(p =>
+      (p.nama && p.nama.toLowerCase().includes(keyword)) ||
+      (p.penjual && p.penjual.toLowerCase().includes(keyword)) ||
+      (p.lokasi && p.lokasi.toLowerCase().includes(keyword)) ||
+      (p.catatan && p.catatan.toLowerCase().includes(keyword))
+    );
+  }
 
-      const btn = document.getElementById('btn-shopee');
-      if (btn) {
-        if (produkFilteredGlobal.length > BATAS_TAMPIL) {
-          btn.style.display = 'block';
-          let sisa = produkFilteredGlobal.length - BATAS_TAMPIL;
-          if (sisa > 12) sisa = 12;
-          btn.innerHTML = `Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`;
-        } else {
-          btn.style.display = 'none';
-        }
-      }
+  // SIMPAN SEMUA HASIL FILTER
+  produkFilteredGlobal = hasil;
+
+  // POTONG CUMA 12 DULU
+  const yangDitampilkan = hasil.slice(0, BATAS_TAMPIL);
+
+  // --- PERBAIKAN DI SINI (UBAH DARI tampilkanProduk MENJADI renderProduk) ---
+  renderProduk(yangDitampilkan);  
+
+  // ATUR TOMBOL SHOPEE
+  const btn = document.getElementById('btn-shopee');
+  if (btn) {
+    if (produkFilteredGlobal.length > BATAS_TAMPIL) {
+      btn.style.display = 'block';
+      let sisa = produkFilteredGlobal.length - BATAS_TAMPIL;
+      if (sisa > 12) sisa = 12;
+      btn.innerHTML = `Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`;
+    } else {
+      btn.style.display = 'none';
     }
+  }
+}
 
-    function loadLebihBanyak() {
-      BATAS_TAMPIL += 12;
-      terapkanFilterDanPencarian();
+function loadLebihBanyak() {
+  BATAS_TAMPIL += 12;
+  terapkanFilterDanPencarian();
+}
+ function muatLebihBanyakProduk() {
+  loadLebihBanyak();
+}   
+
+function renderProduk(data) {
+  const container = document.getElementById('daftar-produk');
+  container.innerHTML = '';
+  if(!data || data.length === 0) {
+    container.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>';
+    return;
+  }
+  data.forEach(function(item){
+    let def = 'https://via.placeholder.com/200?text=Produk+RT';
+    let list = [def];
+    if (item.foto) {
+      list = Array.isArray(item.foto) ? item.foto : [item.foto];
     }
-    function muatLebihBanyakProduk() { loadLebihBanyak(); }   
-
-    function renderProduk(data) {
-      const container = document.getElementById('daftar-produk');
-      container.innerHTML = '';
-      if(!data || data.length === 0) {
-        container.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>';
-        return;
-      }
-      data.forEach(function(item){
-        let def = 'https://via.placeholder.com/200?text=Produk+RT';
-        let list = [def];
-        if (item.foto) {
-          list = Array.isArray(item.foto) ? item.foto : [item.foto];
-        }
-        let foto = list[0];
-        let catatanId = 'catatan-' + item.id;
-        let catatanTeks = item.catatan || '';
-        let catatanHtml = '';
-        if(catatanTeks){
-          catatanHtml = '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>';
-        }
-        let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
-        
-        let tombolAdmin = '';
-        if(isAdmin){
-          tombolAdmin = `<div class="grid grid-cols-2 gap-1 mt-2">
-            <button onclick="muatDataKeFormEdit('${item.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold py-1.5 rounded-lg hover:bg-blue-100">✏️ Edit Admin</button>
-            <button onclick="hapusProdukAdmin('${item.id}')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-1.5 rounded-lg hover:bg-red-100">🗑️ Hapus Admin</button>
-          </div>`;
-        }
-
-        let card = `<div id="produk-${item.id}" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
-          <div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos,0)" data-fotos='${JSON.stringify(list).replace(/'/g,"&#039;")}'>
-            <img loading="lazy" src="${foto}" class="w-full h-36 object-cover bg-gray-100">
-            <div>${badge}</div>
-          </div>
-          <div class="p-3 flex-1 flex flex-col justify-between">
-            <div>
-              <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">${item.kategori}</span>
-              <h3 class="font-bold text-sm mt-1">${bersihkanTeks(item.nama)}</h3>
-              <p class="text-emerald-600 font-bold text-sm">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
-              <p class="text-[11px] text-gray-500">👤 ${bersihkanTeks(item.penjual)} (${bersihkanTeks(item.lokasi)})</p>${catatanHtml}
-            </div>
-            <div class="mt-2">
-              <button onclick="bukaModalOpsiBeli('${item.wa\vert{}\vert{}''}','${bersihkanTeks(item.nama).replace(/'/g,"\\'")}','${item.harga}','${bersihkanTeks(item.catatan||'').replace(/'/g,"\\'")}')" class="w-full bg-emerald-600 text-white text-xs py-2 rounded-lg">Beli Via WA</button>
-              ${tombolAdmin}
-            </div>
-          </div>
-        </div>`;
-        container.innerHTML += card;
-      });
+    let foto = list[0];
+    let catatanId = 'catatan-' + item.id;
+    let catatanTeks = item.catatan || '';
+    let catatanHtml = '';
+    if(catatanTeks){
+      catatanHtml = '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>';
     }
-
-    function bukaModalInfoAdmin() {
-      document.getElementById('modal-info-admin').classList.remove('hidden');
-      document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
+    let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
+    let tombolAdmin = '';
+    if(isAdmin){
+      tombolAdmin = '<div class="grid grid-cols-2 gap-1 mt-2"><button onclick="muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold py-1.5 rounded-lg">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-1.5 rounded-lg">🗑️ Hapus Admin</button></div>';
     }
-    function tutupModalInfoAdmin() { document.getElementById('modal-info-admin').classList.add('hidden'); }
+    let card = '<div id="produk-'+item.id+'" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col"><div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos,0)" data-fotos=\''+JSON.stringify(list).replace(/'/g,"&#039;")+'\'><img loading="lazy" src="'+foto+'" class="w-full h-36 object-cover bg-gray-100"><div>'+badge+'</div></div><div class="p-3 flex-1 flex flex-col justify-between"><div><span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">'+item.kategori+'</span><h3 class="font-bold text-sm mt-1">'+bersihkanTeks(item.nama)+'</h3><p class="text-emerald-600 font-bold text-sm">Rp '+parseInt(item.harga).toLocaleString('id-ID')+'</p><p class="text-[11px] text-gray-500">👤 '+bersihkanTeks(item.penjual)+' ('+bersihkanTeks(item.lokasi)+')</p>'+catatanHtml+'</div><div class="mt-2"><button onclick="bukaModalOpsiBeli(\''+(item.wa||'')+'\',\''+bersihkanTeks(item.nama).replace(/'/g,"\\'")+'\',\''+item.harga+'\',\''+bersihkanTeks(item.catatan||'').replace(/'/g,"\\'")+'\')" class="w-full bg-emerald-600 text-white text-xs py-2 rounded-lg">Beli Via WA</button>'+tombolAdmin+'</div></div></div>';
+    container.innerHTML += card;
+  });
+}
+   // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
+function bukaModalInfoAdmin() {
+  document.getElementById('modal-info-admin').classList.remove('hidden');
+  document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
+}
 
-    function kirimPesanKeAdminRT() {
-      const inputNomor = document.getElementById('admin-whatsapp-nomor').value.trim();
-      const topik = document.getElementById('pilih-topik-admin').value;
-      const pesanWarga = document.getElementById('pesan-masukan-warga').value.trim();
+function tutupModalInfoAdmin() {
+  document.getElementById('modal-info-admin').classList.add('hidden');
+}
 
-      if (!inputNomor || !pesanWarga) {
-        alert('Mohon lengkapi nomor dan isi pesan Anda.');
-        return;
-      }
+function kirimPesanKeAdminRT() {
+  const inputNomor = document.getElementById('admin-whatsapp-nomor').value.trim();
+  const topik = document.getElementById('pilih-topik-admin').value;
+  const pesanWarga = document.getElementById('pesan-masukan-warga').value.trim();
 
-      let nomorAdmin = inputNomor.replace(/\D/g, '');
-      if (nomorAdmin.startsWith('0')) { nomorAdmin = '62' + nomorAdmin.slice(1); }
+  if (!inputNomor) {
+    alert('Nomor WhatsApp Admin RT belum diatur.');
+    return;
+  }
 
-      if (isAdmin && inputNomor !== adminWaAktif) {
-        adminWaRef.set(inputNomor);
-        adminWaAktif = inputNomor;
-      }
+  if (!pesanWarga) {
+    alert('Silakan tulis pesan atau masukan Anda terlebih dahulu.');
+    return;
+  }
 
-      const teksWa = `Halo Pengurus / Pengembang RT.36 AR & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* Topik: ${topik}\n* Pesan / Perbaikan:${pesanWarga}\n\nTerima kasih!`;
-      window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
-      tutupModalInfoAdmin();
-    }
+  // Bersihkan format nomor agar aman digunakan di wa.me
+  let nomorAdmin = inputNomor.replace(/\D/g, '');
+  if (nomorAdmin.startsWith('0')) {
+    nomorAdmin = '62' + nomorAdmin.slice(1);
+  }
 
+  if (isAdmin && inputNomor !== adminWaAktif) {
+    adminWaRef.set(inputNomor);
+    adminWaAktif = inputNomor;
+  }
+
+  const teksWa = `Halo Pengurus / Pengembang RT.36 AR & Metroland,\n\nSaya ingin mengirimkan masukan terkait website Pasar RT:\n\n* *Topik:* ${topik}\n* *Pesan / Perbaikan:* ${pesanWarga}\n\nTerima kasih!`;
+  
+  window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWa)}`, '_blank');
+  tutupModalInfoAdmin();
+}
+
+    // --- FUNGSI KOMPRESSOR HEMAT (VERSI NGEBUT 3x) ---
     function kompresGambar(file, callback) {
-      if (file.size < 200 * 1024) {
-        const reader = new FileReader();
-        reader.onload = e => callback(e.target.result);
-        reader.readAsDataURL(file);
-        return;
+    // Kalau file sudah kecil < 200KB, tidak usah kompres lagi
+    if (file.size < 200 * 1024) {
+    const reader = new FileReader();
+    reader.onload = e => callback(e.target.result);
+    reader.readAsDataURL(file);
+    return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      const MAX_WIDTH = 600; // <-- saya kecilkan dari 800 jadi 600 (di HP sama jernihnya)
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
       }
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
+      canvas.width = width;
+      canvas.height = height; 
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
 
-          const MAX_WIDTH = 600;
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-
-          canvas.width = width;
-          canvas.height = height; 
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-          callback(dataUrl);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.5); // <-- dari 0.7 jadi 0.5 hemat 60%
+      callback(dataUrl);
+    };
+    img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
     }
     
-    function bukaModalOpsiBeli(nomorInput, namaBarang, harga, catatanPenjual) {
-      const modal = document.getElementById('modal-opsi-beli');
-      document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp${parseInt(harga).toLocaleString('id-ID')})`;
-      
-      let nomorWA = nomorInput.replace(/\D/g, '');
-      if (nomorWA.startsWith('0')) { nomorWA = '62' + nomorWA.slice(1); }
+   // --- FITUR 2 OPSI PEMBELIAN (Disempurnakan) ---
+function bukaModalOpsiBeli(nomorInput, namaBarang, harga, catatanPenjual) {
+  const modal = document.getElementById('modal-opsi-beli');
+  document.getElementById('info-produk-beli').innerText = `Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`;
+  
+  // Bersihkan format nomor WhatsApp agar aman (ubah 08... jadi 628...)
+  let nomorWA = nomorInput.replace(/\D/g, '');
+  if (nomorWA.startsWith('0')) {
+    nomorWA = '62' + nomorWA.slice(1);
+  }
 
-      const pesan = `Halo, saya tetangga perumahan RT.36 AR & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* Produk: ${namaBarang}\n* Harga: Rp ${parseInt(harga).toLocaleString('id-ID')}\n* Catatan Penjual:${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
-      
-      document.getElementById('btn-wa-otomatis').onclick = function() {
-        window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
-        tutupModalOpsiBeli();
-      };
+  const pesan = `Halo, saya tetangga perumahan RT.36 AR & Metroland. Saya mau pesan via Aplikasi Pasar RT:\n\n* *Produk:* ${namaBarang}\n* *Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n* *Catatan Penjual:* ${catatanPenjual}\n\nApakah stok/jasanya masih tersedia? Terima kasih!`;
+  
+  document.getElementById('btn-wa-otomatis').onclick = function() {
+    window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+    tutupModalOpsiBeli();
+  };
 
-      document.getElementById('btn-salin-nomor').onclick = function() {
-        navigator.clipboard.writeText(nomorInput).then(() => {
-          alert(`Nomor HP penjual (${nomorInput}) berhasil disalin!`);
-        }).catch(() => {
-          prompt("Nomor HP Penjual:", nomorInput);
-        });
-        tutupModalOpsiBeli();
-      };
-      modal.classList.remove('hidden');
-    }
+  document.getElementById('btn-salin-nomor').onclick = function() {
+    navigator.clipboard.writeText(nomorInput).then(() => {
+      alert(`Nomor HP penjual (${nomorInput}) berhasil disalin ke clipboard!`);
+    }).catch(() => {
+      prompt("Nomor HP Penjual:", nomorInput);
+    });
+    tutupModalOpsiBeli();
+  };
+  modal.classList.remove('hidden');
+}
 
-    function tutupModalOpsiBeli() { document.getElementById('modal-opsi-beli').classList.add('hidden'); }
-
+function tutupModalOpsiBeli() {
+  document.getElementById('modal-opsi-beli').classList.add('hidden');
+}
+    
+    // --- FILTER KATEGORI & PENCARIAN ---
     function filterKategori(kat) {
       kategoriAktif = kat;
-      const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas', 'pakaian', 'aksesoris', 'elektronik', 'dll'];
+      
+      const listKat = ['semua', 'kuliner', 'sembako', 'jasa', 'bekas', 'pakaian', 'aksesoris', 'elektronik'];
       listKat.forEach(k => {
         const btn = document.getElementById(`btn-kat-${k}`);
-        if(btn) {
-          if(k === kat) {
-            btn.className = "px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm";
-          } else {
-            btn.className = "px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap";
-          }
+        if(k === kat) {
+          btn.className = "px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm";
+        } else {
+          btn.className = "px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap";
         }
       });
+
       terapkanFilterDanPencarian();
     }
 
-    function jalankanPencarian() { terapkanFilterDanPencarian(); }
+    function jalankanPencarian() {
+      terapkanFilterDanPencarian();
+    }
 
+    // --- LOGIK ADMIN RT ---
     function toggleModeAdmin() {
       if (isAdmin) { keluarAdmin(); } 
       else { document.getElementById('modal-login-admin').classList.remove('hidden'); }
@@ -902,36 +899,37 @@
       }).catch(err => alert('Gagal: ' + err.message));
     } 
 
+    // --- FORM TAMBAH PRODUK (MAKSIMAL 3 FOTO - VERSI HEMAT) ---
     function bukaModalJual() { 
-      document.getElementById('modal-pilihan-jual').classList.remove('hidden');
-      document.getElementById('modal-pilihan-jual').classList.add('flex');
-    }
-    function tutupModalPilihanJual() { 
-      document.getElementById('modal-pilihan-jual').classList.add('hidden');
-      document.getElementById('modal-pilihan-jual').classList.remove('flex');
-    }
-    function pilihJualBaru(){
-      tutupModalPilihanJual();
-      document.getElementById('modal-jual').classList.remove('hidden');
-    }
-    function pilihEditLama(){
-      tutupModalPilihanJual();
-      let nama = prompt("Ketik nama produk yang mau di-edit:");
-      if(!nama) return;
-      let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
-      if(p) bukaVerifikasiPenjual(p.id);
-      else alert("Produk tidak ditemukan.");
-    }
-    function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
-
+  document.getElementById('modal-pilihan-jual').classList.remove('hidden');
+  document.getElementById('modal-pilihan-jual').classList.add('flex');
+}
+function tutupModalPilihanJual() { 
+  document.getElementById('modal-pilihan-jual').classList.add('hidden');
+  document.getElementById('modal-pilihan-jual').classList.remove('flex');
+}
+function pilihJualBaru(){
+  tutupModalPilihanJual();
+  document.getElementById('modal-jual').classList.remove('hidden');
+}
+function pilihEditLama(){
+  tutupModalPilihanJual();
+  let nama = prompt("Ketik nama produk yang mau di edit bosku:");
+  if(!nama) return;
+  let p = produkData.find(x => x.nama && x.nama.toLowerCase().includes(nama.toLowerCase()));
+  if(p) bukaVerifikasiPenjual(p.id);
+  else alert("Produk gak ketemu bosku");
+}
+function tutupModalJual() { document.getElementById('modal-jual').classList.add('hidden'); }
     function tambahProduk(e) {
       e.preventDefault();
       const fileInput = document.getElementById('input-file-foto');
 
       if (fileInput.files && fileInput.files.length > 0) {
+        // --- UBAH DARI 5 JADI 3 ---
         if (fileInput.files.length > 3) {
-          alert('Maksimal 3 foto saja ya bos!');
-          fileInput.value = '';
+          alert('Maksimal 3 foto saja ya bos! Biar hemat storage & buka aplikasi ngebut. 3 foto sudah cukup kok untuk jualan.');
+          fileInput.value = ''; // reset input
           return;
         }
 
@@ -955,14 +953,14 @@
 
     function simpanKeFirebase(arrayFotoUrl) {
       const barangBaru = {
-        nama: document.getElementById('nama').value.trim(),
+        nama: bersihkanTeks(document.getElementById('nama').value),
         harga: parseInt(document.getElementById('harga').value),
         kategori: document.getElementById('kategori').value,
-        penjual: document.getElementById('penjual').value.trim(),
-        lokasi: document.getElementById('lokasi').value.trim(),
-        wa: document.getElementById('whatsapp').value.trim(),
-        pinPenjual: document.getElementById('pin-penjual').value.trim(),
-        catatan: document.getElementById('catatan').value.trim(),
+        penjual: bersihkanTeks(document.getElementById('penjual').value),
+        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
+        wa: document.getElementById('whatsapp').value,
+        pinPenjual: document.getElementById('pin-penjual').value,
+        catatan: bersihkanTeks(document.getElementById('catatan').value),
         foto: arrayFotoUrl,
         timestamp: Date.now()
       };
@@ -970,10 +968,13 @@
       dbRef.push(barangBaru).then((res) => {
         tutupModalJual();
         document.getElementById('form-tambah').reset();
+        
+        // Memanggil pop-up pilihan share ke Sosmed & WA
         tanyakanShareProduk(barangBaru.nama, barangBaru.harga, barangBaru.catatan, res.key);
       }).catch(err => alert("Gagal menyimpan: " + err.message));
     }
 
+    // --- FITUR EDIT / GANTI JUALAN OLEH PENJUAL ---
     function bukaVerifikasiPenjual(id) {
       if (isAdmin) {
         muatDataKeFormEdit(id);
@@ -984,7 +985,9 @@
       document.getElementById('modal-login-penjual').classList.remove('hidden');
     }
 
-    function tutupModalLoginPenjual() { document.getElementById('modal-login-penjual').classList.add('hidden'); }
+    function tutupModalLoginPenjual() {
+      document.getElementById('modal-login-penjual').classList.add('hidden');
+    }
 
     function prosesVerifikasiPenjual() {
       const id = document.getElementById('edit-product-id').value;
@@ -1007,19 +1010,21 @@
       if (!produk) return;
 
       document.getElementById('edit-id').value = produk.id;
-      document.getElementById('edit-nama').value = produk.nama || '';
-      document.getElementById('edit-harga').value = produk.harga || 0;
-      document.getElementById('edit-kategori').value = produk.kategori || 'kuliner';
-      document.getElementById('edit-penjual').value = produk.penjual || '';
-      document.getElementById('edit-lokasi').value = produk.lokasi || '';
-      document.getElementById('edit-whatsapp').value = produk.wa || '';
+      document.getElementById('edit-nama').value = produk.nama;
+      document.getElementById('edit-harga').value = produk.harga;
+      document.getElementById('edit-kategori').value = produk.kategori;
+      document.getElementById('edit-penjual').value = produk.penjual;
+      document.getElementById('edit-lokasi').value = produk.lokasi;
+      document.getElementById('edit-whatsapp').value = produk.wa;
       document.getElementById('edit-catatan').value = produk.catatan || '';
       document.getElementById('edit-input-file-foto').value = '';
 
       document.getElementById('modal-edit').classList.remove('hidden');
     }
 
-    function tutupModalEdit() { document.getElementById('modal-edit').classList.add('hidden'); }
+    function tutupModalEdit() {
+      document.getElementById('modal-edit').classList.add('hidden');
+    }
 
     function simpanPerubahanProduk(e) {
       e.preventDefault();
@@ -1034,13 +1039,13 @@
 
       function updateDB(fotoFinal) {
         const updateData = {
-          nama: document.getElementById('edit-nama').value.trim(),
+          nama: bersihkanTeks(document.getElementById('edit-nama').value),
           harga: parseInt(document.getElementById('edit-harga').value),
           kategori: document.getElementById('edit-kategori').value,
-          penjual: document.getElementById('edit-penjual').value.trim(),
-          lokasi: document.getElementById('edit-lokasi').value.trim(),
-          wa: document.getElementById('edit-whatsapp').value.trim(),
-          catatan: document.getElementById('edit-catatan').value.trim(),
+          penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
+          lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
+          wa: document.getElementById('edit-whatsapp').value,
+          catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
           foto: fotoFinal,
           pinPenjual: produkLama.pinPenjual || "1234",
           timestamp: produkLama.timestamp || Date.now()
@@ -1049,7 +1054,9 @@
         dbRef.child(id).set(updateData).then(() => {
           tutupModalEdit();
           alert('Dagangan berhasil diperbarui!');
-        }).catch(err => alert('Gagal memperbarui: ' + err.message));
+        }).catch(err => {
+          alert('Gagal memperbarui: ' + err.message);
+        });
       }
 
       if (fileInput.files && fileInput.files.length > 0) {
@@ -1078,9 +1085,7 @@
 
     function hapusOlehPenjual() {
       const id = document.getElementById('edit-id').value;
-      const pesanKonfirmasi = isAdmin ? "[Admin RT] Hapus produk ini secara paksa?" : "Apakah Anda yakin ingin menghapus dagangan ini?";
-      
-      if (confirm(pesanKonfirmasi)) {
+      if (confirm("Apakah Anda yakin ingin menghapus dagangan ini?")) {
         dbRef.child(id).remove().then(() => {
           tutupModalEdit();
           alert('Dagangan berhasil dihapus.');
@@ -1096,19 +1101,23 @@
       }
     }
 
-    // Zoom & Geser Foto
+    // --- KUMPULAN FUNGSI ZOOM & GESER FOTO (AMAN UNTUK ARRAY & STRING) ---
     let currentZoomPhotos = [];
     let currentZoomIndex = 0;
 
     function bukaModalZoom(arrayFoto, indexAwal) {
       if (typeof arrayFoto === 'string') {
-        try { currentZoomPhotos = JSON.parse(arrayFoto); }
-        catch (e) { currentZoomPhotos = [arrayFoto]; }
+        try {
+          currentZoomPhotos = JSON.parse(arrayFoto);
+        } catch (e) {
+          currentZoomPhotos = [arrayFoto];
+        }
       } else {
         currentZoomPhotos = Array.isArray(arrayFoto) ? arrayFoto : [arrayFoto];
       }
       
       currentZoomIndex = indexAwal || 0;
+      
       const modal = document.getElementById('modal-zoom');
       const imgTarget = document.getElementById('img-zoom-target');
       
@@ -1120,20 +1129,27 @@
 
     function tutupModalZoom() {
       const modal = document.getElementById('modal-zoom');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
     }
 
     function geserFotoZoom(arah) {
       if (!currentZoomPhotos || currentZoomPhotos.length === 0) return;
       currentZoomIndex += arah;
-      if (currentZoomIndex < 0) { currentZoomIndex = currentZoomPhotos.length - 1; }
-      else if (currentZoomIndex >= currentZoomPhotos.length) { currentZoomIndex = 0; }
+      if (currentZoomIndex < 0) {
+        currentZoomIndex = currentZoomPhotos.length - 1;
+      } else if (currentZoomIndex >= currentZoomPhotos.length) {
+        currentZoomIndex = 0;
+      }
       
       const imgTarget = document.getElementById('img-zoom-target');
-      if (imgTarget) { imgTarget.src = currentZoomPhotos[currentZoomIndex]; }
+      if (imgTarget) {
+        imgTarget.src = currentZoomPhotos[currentZoomIndex];
+      }
     }
       
-    // Share Produk
+    // --- FUNGSI SHARE PRODUK KE SOSMED & WA ---
     let dataProdukBaru = null;
 
     function tanyakanShareProduk(nama, harga, deskripsi, idProduk) {
@@ -1179,335 +1195,474 @@
       }
 
       tutupModalShare();
-    }
+    }  
 
-    // Deep Link Check
+    // --- FITUR DEEP LINK SHARE: KLIK LINK LANGSUNG KE PRODUK ---
     function cekDeepLinkProduk() {
       const params = new URLSearchParams(window.location.search);
       const idProduk = params.get('id');
       if (!idProduk) return;
-
-      const target = document.getElementById(`produk-${idProduk}`);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.classList.remove('border-transparent');
-        target.classList.add('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
-        setTimeout(() => {
-          const fotoData = target.querySelector('[data-fotos]');
-          if(fotoData) bukaModalZoom(fotoData.dataset.fotos, 0);
-        }, 800);
-        setTimeout(() => {
-          target.classList.add('border-transparent');
-          target.classList.remove('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
-        }, 3500);
-      }
-    }
-
-    // Live Chat & Verifikasi Warga
-    let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, otpKode='', verifiedPhone='', verifiedNama='';
-    let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
-    let chatPertamaLoad = true;
-    let audioCtx = null;
-    let suaraList = [
-      {nama:'WA Ting', url:'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'},
-      {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
-      {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'}
-    ];
-    let suaraIndex = parseInt(localStorage.getItem('suara_pilihan_rt36')||'0');
-
-    function getChatRef(){ if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
-    function getRootRef(){ if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
-    function getOnlineRef(){ 
-      try{
-        if(typeof database!=='undefined' && database.ref) return database.ref('online_warga');
-      }catch(e){}
-      return firebase.database().ref('online_warga');
-    }
-
-    function cekVerifikasi(){ 
-      verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
-      verifiedNama=localStorage.getItem('verified_nama_rt36'); 
-      let modal=document.getElementById('modalVerifWA');
-      let label=document.getElementById('myWALabel');
-      if(!verifiedPhone||!verifiedNama){ 
-        if(modal) modal.classList.remove('hidden'); 
-        if(label) label.innerText='Guest';
-        return false; 
-      } 
-      if(modal) modal.classList.add('hidden');
-      if(label) label.innerText='✓ '+verifiedNama; 
-      updateIconNotif(); 
-      setSuaraAktif(); 
-      return true; 
-    }
-
-    async function kirimKodeKeSaya(event){ 
-      let btn=null, textAsli='';
-      try{
-        let elNama=document.getElementById('inputNama');
-        let elPhone=document.getElementById('inputWA');
-        if(!elNama||!elPhone){ alert('Form tidak ketemu bosku!'); return; }
-        let nama=elNama.value.trim();
-        let phone=elPhone.value.trim();
-        if(!nama || nama.length<3){ alert('Isi nama lengkap dulu bosku!'); elNama.focus(); return; }
-        if(!phone || phone.length<10){ alert('Isi nomor WA dulu bosku!'); elPhone.focus(); return; }
-        let nomorBersih = phone.replace(/\D/g,'');
-
-        btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
-        if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Loading bosku...'; btn.style.opacity='0.6'; }
-
-        try{
-          let onlineRef = getOnlineRef();
-          if(onlineRef){
-            let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
-            if(cek.exists()){
-              alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
-              if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-              return;
-            }
-          }
-        }catch(e){ console.log('lewati cek duplikat', e); }
-
-        await new Promise(r=>setTimeout(r,600));
-        let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-        otpKode = kodeOTP; 
-        verifiedPhone = nomorBersih;
-        verifiedNama = nama;
-        
-        try{
-          let rootRef = getRootRef();
-          if(rootRef) await rootRef.ref('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
-        }catch(e){}
-
-        let elKode=document.getElementById('kodeDemo');
-        let elStatus=document.getElementById('statusKirim');
-        if(elKode) elKode.innerText=kodeOTP;
-        if(elStatus){ elStatus.innerText='Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
-
-        document.getElementById('step1Verif').classList.add('hidden');
-        document.getElementById('step2Verif').classList.remove('hidden');
-        if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-      }catch(err){
-        alert('Error bosku: '+err.message);
-        if(btn){ btn.disabled=false; btn.innerHTML='Dapatkan Kode Masuk 📲'; btn.style.opacity='1'; }
-      }
-    }
-
-    function cekOTP(event){ 
-      let btn=null, textAsli='';
-      try{
-        let input=document.getElementById('inputOTP').value.trim();
-        if(!input){ alert('Isi kode dulu bosku!'); return; }
-        btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
-        if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Verifikasi bosku...'; btn.style.opacity='0.6'; }
-        
-        setTimeout(()=>{
-          if(input!==otpKode){ 
-            alert('Kode salah bosku! Kode yang benar: '+otpKode); 
-            if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-            return; 
-          } 
-          localStorage.setItem('verified_wa_rt36', verifiedPhone); 
-          localStorage.setItem('verified_nama_rt36', verifiedNama); 
-          localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
-          localStorage.setItem('nama_warga_rt36', verifiedNama); 
-          document.getElementById('modalVerifWA').classList.add('hidden'); 
-          location.reload(); 
-        },400);
-      }catch(err){
-        alert('Error verif: '+err.message);
-        if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Verifikasi & Masuk'; btn.style.opacity='1'; }
-      }
-    }
-
-    function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
-    function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
-
-    function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
-    function setSuaraAktif(){
-      let audio=document.getElementById('notifSound');
-      audio.src=suaraList[suaraIndex].url;
-      [0,1,2].forEach(i=>{
-        let el=document.getElementById('suara'+i);
-        if(el){
-          let check=el.querySelector('.check');
-          if(i===suaraIndex){ el.classList.add('bg-green-50','border-green-500'); if(check) check.classList.remove('hidden'); }
-          else { el.classList.remove('bg-green-50','border-green-500'); if(check) check.classList.add('hidden'); }
+      const interval = setInterval(() => {
+        const target = document.getElementById(`produk-${idProduk}`);
+        if (target) {
+          clearInterval(interval);
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.remove('border-transparent');
+          target.classList.add('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
+          setTimeout(() => {
+            const fotoData = target.querySelector('[data-fotos]');
+            if(fotoData) bukaModalZoom(fotoData.dataset.fotos, 0);
+          }, 800);
+          setTimeout(() => {
+            target.classList.add('border-transparent');
+            target.classList.remove('border-emerald-500', 'shadow-lg', 'ring-4', 'ring-emerald-200');
+          }, 3500);
         }
-      });
+      }, 500);
+      setTimeout(() => clearInterval(interval), 10000);
     }
-    function gantiSuara(idx){ suaraIndex=idx; localStorage.setItem('suara_pilihan_rt36', idx); setSuaraAktif(); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },100); }
-    function toggleNotifikasi(){
-      let menu=document.getElementById('menuPilihanSuara');
-      if(notifAktif && menu.classList.contains('hidden')){ menu.classList.remove('hidden'); return; }
-      if(!notifAktif){ notifAktif=true; localStorage.setItem('notif_suara_rt36','on'); updateIconNotif(); menu.classList.remove('hidden'); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },200); }
-      else { if(!menu.classList.contains('hidden')){ menu.classList.add('hidden'); return; } notifAktif=false; localStorage.setItem('notif_suara_rt36','off'); updateIconNotif(); alert('🔕 Bunyi NONAKTIF bosku!'); }
+    const asliTerapkan = terapkanFilterDanPencarian;
+    terapkanFilterDanPencarian = function() {
+      asliTerapkan();
+      setTimeout(cekDeepLinkProduk, 600);
     }
-    function unlockAudio(){
-      try{
-        if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
-        let audio=document.getElementById('notifSound');
-        audio.volume=0.01; audio.play().then(()=>{ audio.pause(); audio.currentTime=0; audio.volume=1; }).catch(()=>{});
-      }catch(e){}
-    }
-    function beepFallback(){
-      try{
-        if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
-        let o=audioCtx.createOscillator(); let g=audioCtx.createGain();
-        o.type='sine'; o.frequency.value= 800 + (suaraIndex*200); o.connect(g); g.connect(audioCtx.destination);
-        g.gain.setValueAtTime(0.3, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime+0.25);
-      }catch(e){}
-    }
-    function bunyikanNotifikasi(){
-      if(!notifAktif) return;
-      let audio=document.getElementById('notifSound');
-      try{ audio.currentTime=0; audio.volume=1; let p=audio.play(); if(p!==undefined){ p.catch(()=>{ beepFallback(); }); } }catch(e){ beepFallback(); }
-    }
-    function kedipkanIconChat(){
-      let btn=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
-      if(!btn) return;
-      if(document.getElementById('panelChatWarga').classList.contains('hidden')){
-        btn.classList.add('icon-berkedip');
-        if(badge){ badge.classList.remove('hidden'); badge.classList.add('flex'); }
-        setTimeout(()=>{ btn.classList.remove('icon-berkedip'); }, 12000);
-      }
-    }
-    function toggleBoxChat(){ 
-      unlockAudio();
-      let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'), badge=document.getElementById('badgeBaru');
-      if(!cekVerifikasi()){ p.classList.add('hidden'); b.classList.add('hidden'); return; } 
-      let isHidden=p.classList.contains('hidden');
-      p.classList.toggle('hidden'); b.classList.toggle('hidden');
-      if(isHidden){
-        b.classList.remove('icon-berkedip');
-        if(badge){ badge.classList.add('hidden'); badge.classList.remove('flex'); }
-      }
-    }
-    function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; let mic=document.getElementById('iconMic'), send=document.getElementById('iconSend'); if(isRekam) return; mic.classList.toggle('hidden',ada); send.classList.toggle('hidden',!ada); }
-    function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
-    function kirimPesanWarga(){ let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; cekKetik(); }); }
-    function kirimFoto(input){ if(!input.files[0]) return; let myId=localStorage.getItem('my_chat_id'); let reader=new FileReader(); reader.onload=e=>{ let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
-    function kirimLokasi(){
-      if(!navigator.geolocation){ alert('HP tidak support lokasi bosku!'); return; }
-      if(!confirm('Kirim lokasi Anda sekarang ke warga RT.36 bosku?')) return;
-      navigator.geolocation.getCurrentPosition(pos=>{
-        let lat=pos.coords.latitude, lng=pos.coords.longitude;
-        let mapsLink=`https://www.google.com/maps?q=${lat},${lng}`;
-        let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        getChatRef().push({nama:verifiedNama, pesan:mapsLink, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'lokasi', lat:lat, lng:lng});
-      }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS dulu bosku!'); });
-    }
-    async function mulaiRekam(){
-      isRekam=true; detikRekam=0;
-      document.getElementById('areaKetikNormal').classList.add('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.remove('hidden');
-      document.getElementById('iconDalamKotak').classList.add('hidden');
-      let btn=document.getElementById('btnAksi'); btn.classList.add('mic-recording'); btn.classList.remove('bg-[#00A884]'); btn.classList.add('bg-[#FF3B30]');
-      document.getElementById('iconMic').classList.add('hidden'); document.getElementById('iconStop').classList.remove('hidden');
-      timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekamDalam').innerText=m+':'+s; },1000);
-      try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic bosku!'); resetMicUI(); }
-    }
-    function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; resetMicUI(); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } }
-    function resetMicUI(){
-      document.getElementById('areaKetikNormal').classList.remove('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.add('hidden');
-      document.getElementById('iconDalamKotak').classList.remove('hidden');
-      let btn=document.getElementById('btnAksi'); btn.classList.remove('mic-recording','bg-[#FF3B30]'); btn.classList.add('bg-[#00A884]');
-      document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden');
-      cekKetik();
-    }
-    function hapusChat(key, pemilikId){
-      let myId = localStorage.getItem('my_chat_id');
-      if(pemilikId !== myId){ alert('Tidak bisa hapus chat orang lain bosku! Hanya bisa hapus chat sendiri bosku!'); return; }
-      if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
-      getChatRef().child(key).remove();
-    }
-    function autoHapus24Jam(){
-      let ref=getChatRef();
-      let batas=Date.now() - (24*60*60*1000);
-      ref.once('value').then(snap=>{
-        snap.forEach(child=>{
-          let data=child.val();
-          if(data && data.timestamp && data.timestamp < batas){
-            ref.child(child.key).remove();
-          }
-        });
-      });
-    }
-
-    function keluarDariPasarRT36(){
-      if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
-        localStorage.clear();
-        alert('Berhasil keluar Bosku! Silahkan login lagi pakai kode masuk Bosku!');
-        location.reload();
-      }
-    }
-
-    function updateRunningTextPremium(){
-      const el=document.getElementById('runningTextOnline');
-      if(!el) return;
-      let nama=localStorage.getItem('namaRT36')||'Warga RT.36';
-      let online=localStorage.getItem('onlineCountRT36')||Math.floor(Math.random()*8+3);
-      localStorage.setItem('onlineCountRT36',online);
-      el.innerHTML='<span class="mx-6">👋 SELAMAT DATANG, '+nama.toUpperCase()+'! 👋</span><span class="mx-6 text-yellow-200">🟢 '+online+' WARGA ONLINE BOSKU 🟢</span>';
-    }
-
-    window.addEventListener('load', function(){
-      updateRunningTextPremium();
-      setInterval(function(){
-        let c=parseInt(localStorage.getItem('onlineCountRT36')||'5');
-        if(Math.random()>0.7){c+=Math.random()>0.5?1:-1; if(c<2)c=2; if(c>15)c=15; localStorage.setItem('onlineCountRT36',c);}
-        updateRunningTextPremium();
-      },15000);
-
-      let isVerif=cekVerifikasi(); 
-      if(!isVerif) return;
-      let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
-      let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-      
-      try{
-        let onlineRoot = getOnlineRef();
-        let myOnlineRef = onlineRoot.child(myId);
-        myOnlineRef.set({nama: verifiedNama, phone: verifiedPhone, time: Date.now()});
-        myOnlineRef.onDisconnect().remove();
-        setInterval(()=>{ myOnlineRef.update({time: Date.now()}); }, 25000);
-
-        onlineRoot.on('value', snap=>{
-          let count = snap.numChildren();
-          if(count < 1) count = 1;
-          let el = document.getElementById('statusOnline');
-          if(el) el.innerText = count + ' Online';
-        });
-      }catch(e){
-        document.getElementById('statusOnline').innerText = '1 Online';
-      }
-
-      autoHapus24Jam();
-      setInterval(autoHapus24Jam, 60*60*1000);
-      
-      ref.limitToLast(80).on('child_added', snap=>{
-        let data=snap.val(), key=snap.key; if(!data) return; 
-        if(data.timestamp && (Date.now() - data.timestamp > 24*60*60*1000)){ ref.child(key).remove(); return; }
-        if(document.getElementById(`chat-item-${key}`)) return;
-        let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
-        let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
-        let content=''; 
-        if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; 
-        else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
-        else if(data.tipe==='lokasi') content=`<div><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">📍 Lihat Lokasi Saya</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:4px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
-        else content=`<div class="break-words">${esc(data.pesan)}</div>`;
-        let namaHtml=`<div class="nama-atas">${esc(data.nama)}${isMe?'(Anda)':''}</div>`;
-        let tombolHapus = isMe ? `<button onclick="hapusChat('${key}','${data.userId}')" class="btn-hapus">🗑️</button>` : ``;
-        div.innerHTML=`${namaHtml}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span>${tombolHapus}</div>`;
-        box.appendChild(div); box.scrollTop=box.scrollHeight;
-        if(!chatPertamaLoad && !isMe){ bunyikanNotifikasi(); kedipkanIconChat(); }
-      });
-      setTimeout(()=>{ chatPertamaLoad = false; }, 4000);
-      ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
-      document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
+    window.addEventListener('load', () => {
+      setTimeout(cekDeepLinkProduk, 1500);
     });
+    
+    // Pendaftaran Service Worker untuk PWA
+    var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
+    if ('serviceWorker' in navigator && !isOldAndroid) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(reg) {
+            console.log('SW terdaftar untuk HP baru!', reg.scope);
+          })
+          .catch(function(err) {
+            console.log('SW gagal', err);
+          });
+      });
+    } else {
+      console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
+    }
   </script>
+
+<!-- ================================================= -->
+<!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
+<!-- ================================================= -->
+<button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
+  <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
+</button>
+
+<audio id="notifSound" preload="auto" playsinline></audio>
+
+<div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
+    <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
+    <h2 class="font-bold text-[18px] text-[#075E54] text-center">Verifikasi Warga RT.36</h2>
+    <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Untuk Keamanan, isi nama & no. HP untuk mendapatkan kode masuk. 1 nomor hanya untuk 1 HP!</p>
+    <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden"><div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;"><span class="text-white text-[11px] font-bold mx-4">✨ SELAMAT DATANG DI PASAR RT.36 ✨</span></div></div><style>@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</style>
+    <div id="step1Verif" class="mt-5 space-y-3">
+      <div><label class="text-[11px] font-bold">NAMA LENGKAP</label><input type="text" id="inputNama" placeholder="Contoh: Budi" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
+      <div><label class="text-[11px] font-bold">NO HP / WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
+      <button onclick="kirimKodeKeSaya(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Dapatkan Kode Masuk 📲</button>
+      <p id="statusKirim" class="hidden text-[11px] text-center font-bold"></p>
+    </div>
+    <div id="step2Verif" class="hidden mt-5">
+      <div class="bg-yellow-50 border p-3 rounded-xl text-center"><p class="text-[11px]">Kode OTP (cek WA Anda):</p><p id="kodeDemo" class="text-[28px] font-black tracking-[6px] text-[#FF3B30]">0000</p></div>
+      <input type="text" id="inputOTP" maxlength="4" placeholder="0000" class="w-full border-2 border-[#25D366] p-3 rounded-xl text-[22px] tracking-[10px] text-center font-bold mt-3">
+      <button onclick="cekOTP(event)" class="w-full bg-[#075E54] text-white font-bold py-3 rounded-xl mt-3">Verifikasi & Masuk</button>
+      <button onclick="kembaliStep1()" class="w-full text-[11px] text-gray-500 mt-2">Ganti Nomor</button>
+    </div>
+  </div>
+</div>
+
+<div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
+  <div class="bg-[#075E54] text-white p-3 flex justify-between items-center">
+    <div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold">RT</div><div><h4 class="font-bold text-[14px]">Obrolan Warga RT.36</h4>
+    <div class="flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span><p id="statusOnline" class="text-[11px] font-bold">1 Online</p><span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1"></span></div>
+    </div></div>
+    <div class="flex gap-1 items-center">
+      <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]">🔔</button>
+      <button onclick="toggleBoxChat()" class="bg-[#FF3B30] px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide text-white">KELUAR</button>
+    </div>
+  </div>
+  <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
+    <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
+    <div class="flex flex-col gap-2">
+      <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
+      <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
+      <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
+    </div>
+  </div>
+  <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
+  <div class="bg-[#F0F0F0] p-2 flex items-end gap-2">
+    <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
+      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
+      <div class="flex-1 relative min-h-[32px] flex items-center">
+        <div id="areaKetikNormal" class="w-full flex items-center"><input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="w-full bg-transparent border-0 text-[15px] px-2 py-2 focus:outline-none" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}"></div>
+        <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span><span class="flex gap-1"><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce"></span><span class="w-1 h-5 bg-red-500 rounded-full animate-bounce" style="animation-delay:0.1s"></span><span class="w-1 h-3 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span></span></div>
+      </div>
+      <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
+        <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
+        <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+        <button onclick="kirimLokasi()" class="w-8 h-8 flex items-center justify-center"><span class="text-[18px]">📍</span></button>
+        <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
+      </div>
+    </div>
+    <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden">
+      <span id="iconMic" class="relative">
+        <span class="absolute inset-0 bg-white/20 rounded-full animate-ping"></span>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg>
+      </span>
+      <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
+      <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
+    </button>
+  </div>
+  <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
+    <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
+    <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
+    <button onclick="document.getElementById('inputFoto').click()" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🖼️</div><span class="text-[10px]">Galeri</span></button>
+    <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">😊</div><span class="text-[10px]">Emoji</span></button>
+  </div>
+  <div id="emoji-list" class="hidden bg-white p-2 flex gap-3 text-2xl flex-wrap border-t"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span></div>
+</div>
+
+<style>
+.bubble-wa{max-width:80%; padding:6px 8px 5px 8px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px} 
+.bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} 
+.bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
+.nama-atas{font-weight:800; font-size:11px; margin-bottom:2px; color:#075E54}
+.btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px}
+@keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}} 
+.mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important;}
+@keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
+.icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
+</style>
+
+<script>
+let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, otpKode='', verifiedPhone='', verifiedNama='';
+let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
+let chatPertamaLoad = true;
+let audioCtx = null;
+let suaraList = [
+  {nama:'WA Ting', url:'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'},
+  {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
+  {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'}
+];
+let suaraIndex = parseInt(localStorage.getItem('suara_pilihan_rt36')||'0');
+
+function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
+function getRootRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
+function getOnlineRef(){ 
+  try{
+    if(typeof db!=='undefined' && db.ref) return db.ref('online_warga');
+    if(typeof database!=='undefined' && database.ref) return database.ref('online_warga');
+    if(typeof firebase!=='undefined' && firebase.database) return firebase.database().ref('online_warga');
+  }catch(e){}
+  return firebase.database().ref('online_warga');
+}
+
+// === FIX CEK VERIFIKASI BOSKU - 1 FUNGSI SAJA BOSKU - MUNCUL SAAT BUKA WEBSITE BOSKU ===
+function cekVerifikasi(){ 
+  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
+  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
+  let modal=document.getElementById('modalVerifWA');
+  let label=document.getElementById('myWALabel');
+  if(!verifiedPhone||!verifiedNama){ 
+    if(modal) modal.classList.remove('hidden'); 
+    if(label) label.innerText='Guest';
+    return false; 
+  } 
+  if(modal) modal.classList.add('hidden');
+  if(label) label.innerText='✓ '+verifiedNama; 
+  if(typeof updateIconNotif==='function') updateIconNotif(); 
+  if(typeof setSuaraAktif==='function') setSuaraAktif(); 
+  return true; 
+}
+
+// === FIX KIRIM KODE BOSKU - ID BENAR + LOADING + OTP NYAMBUNG BOSKU ===
+async function kirimKodeKeSaya(event){ 
+  localStorage.setItem('namaRT36', document.getElementById('inputNamaWA').value);
+  let btn=null, textAsli='';
+  try{
+    let elNama=document.getElementById('inputNamaWA');
+    let elPhone=document.getElementById('inputNoWA');
+    if(!elNama||!elPhone){ alert('Form tidak ketemu bosku!'); return; }
+    let nama=elNama.value.trim();
+    let phone=elPhone.value.trim();
+    if(!nama || nama.length<3){ alert('Isi nama lengkap dulu bosku!'); elNama.focus(); return; }
+    if(!phone || phone.length<10){ alert('Isi nomor WA dulu bosku!'); elPhone.focus(); return; }
+    let nomorBersih = phone.replace(/\D/g,'');
+
+    btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
+    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Loading bosku...'; btn.style.opacity='0.6'; }
+
+    try{
+      let onlineRef = getOnlineRef();
+      if(onlineRef){
+        let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
+        if(cek.exists()){
+          alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
+          if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+          return;
+        }
+      }
+    }catch(e){ console.log('lewati cek duplikat', e); }
+
+    await new Promise(r=>setTimeout(r,600));
+    let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpKode = kodeOTP; // SIMPAN DISINI BOSKU - INI YANG DIPAKAI cekOTP BOSKU
+    verifiedPhone = nomorBersih;
+    verifiedNama = nama;
+    window.kodeVerifikasiSementara = kodeOTP;
+    window.namaSementara = nama;
+    window.phoneSementara = nomorBersih;
+    
+    try{
+      let rootRef = getRootRef();
+      if(rootRef) await rootRef.ref('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
+    }catch(e){}
+
+    let elKode=document.getElementById('kodeDemo');
+    let elStatus=document.getElementById('statusKirim');
+    if(elKode) elKode.innerText=kodeOTP;
+    if(elStatus){ elStatus.innerText='Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
+
+    document.getElementById('step1Verif').classList.add('hidden');
+    document.getElementById('step2Verif').classList.remove('hidden');
+    if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+  }catch(err){
+    alert('Error bosku: '+err.message);
+    if(btn){ btn.disabled=false; btn.innerHTML='Kirim Kode ke WA Saya 📲'; btn.style.opacity='1'; }
+  }
+}
+
+function cekOTP(event){ 
+  let btn=null, textAsli='';
+  try{
+    let input=document.getElementById('inputOTP').value.trim();
+    if(!input){ alert('Isi kode dulu bosku!'); return; }
+    btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
+    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Verifikasi bosku...'; btn.style.opacity='0.6'; }
+    
+    setTimeout(()=>{
+      if(input!==otpKode){ 
+        alert('Kode salah bosku! Kode yang benar: '+otpKode); 
+        if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+        return; 
+      } 
+      localStorage.setItem('verified_wa_rt36', verifiedPhone); 
+      localStorage.setItem('verified_nama_rt36', verifiedNama); 
+      localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
+      localStorage.setItem('nama_warga_rt36', verifiedNama); 
+      document.getElementById('modalVerifWA').classList.add('hidden'); 
+      location.reload(); 
+    },400);
+  }catch(err){
+    alert('Error verif: '+err.message);
+    if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Verifikasi & Masuk'; btn.style.opacity='1'; }
+  }
+}
+function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
+function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
+
+function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
+function setSuaraAktif(){
+  let audio=document.getElementById('notifSound');
+  audio.src=suaraList[suaraIndex].url;
+  [0,1,2].forEach(i=>{
+    let el=document.getElementById('suara'+i);
+    if(el){
+      let check=el.querySelector('.check');
+      if(i===suaraIndex){ el.classList.add('bg-green-50','border-green-500'); if(check) check.classList.remove('hidden'); }
+      else { el.classList.remove('bg-green-50','border-green-500'); if(check) check.classList.add('hidden'); }
+    }
+  });
+}
+function gantiSuara(idx){ suaraIndex=idx; localStorage.setItem('suara_pilihan_rt36', idx); setSuaraAktif(); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },100); }
+function toggleNotifikasi(){
+  let menu=document.getElementById('menuPilihanSuara');
+  if(notifAktif && menu.classList.contains('hidden')){ menu.classList.remove('hidden'); return; }
+  if(!notifAktif){ notifAktif=true; localStorage.setItem('notif_suara_rt36','on'); updateIconNotif(); menu.classList.remove('hidden'); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },200); }
+  else { if(!menu.classList.contains('hidden')){ menu.classList.add('hidden'); return; } notifAktif=false; localStorage.setItem('notif_suara_rt36','off'); updateIconNotif(); alert('🔕 Bunyi NONAKTIF bosku!'); }
+}
+function unlockAudio(){
+  try{
+    if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    let audio=document.getElementById('notifSound');
+    audio.volume=0.01; audio.play().then(()=>{ audio.pause(); audio.currentTime=0; audio.volume=1; }).catch(()=>{});
+  }catch(e){}
+}
+function beepFallback(){
+  try{
+    if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    let o=audioCtx.createOscillator(); let g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value= 800 + (suaraIndex*200); o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.3, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime+0.25);
+  }catch(e){}
+}
+function bunyikanNotifikasi(){
+  if(!notifAktif) return;
+  let audio=document.getElementById('notifSound');
+  try{ audio.currentTime=0; audio.volume=1; let p=audio.play(); if(p!==undefined){ p.catch(()=>{ beepFallback(); }); } }catch(e){ beepFallback(); }
+}
+function kedipkanIconChat(){
+  let btn=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
+  if(!btn) return;
+  if(document.getElementById('panelChatWarga').classList.contains('hidden')){
+    btn.classList.add('icon-berkedip');
+    if(badge){ badge.classList.remove('hidden'); badge.classList.add('flex'); }
+    setTimeout(()=>{ btn.classList.remove('icon-berkedip'); }, 12000);
+  }
+}
+function toggleBoxChat(){ 
+  unlockAudio();
+  let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'), badge=document.getElementById('badgeBaru');
+  if(!cekVerifikasi()){ p.classList.add('hidden'); b.classList.add('hidden'); return; } 
+  let isHidden=p.classList.contains('hidden');
+  p.classList.toggle('hidden'); b.classList.toggle('hidden');
+  if(isHidden){
+    b.classList.remove('icon-berkedip');
+    if(badge){ badge.classList.add('hidden'); badge.classList.remove('flex'); }
+  }
+}
+function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; let mic=document.getElementById('iconMic'), send=document.getElementById('iconSend'); if(isRekam) return; mic.classList.toggle('hidden',ada); send.classList.toggle('hidden',!ada); }
+function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
+function kirimPesanWarga(){ let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; cekKetik(); }); }
+function kirimFoto(input){ if(!input.files[0]) return; let myId=localStorage.getItem('my_chat_id'); let reader=new FileReader(); reader.onload=e=>{ let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
+function kirimLokasi(){
+  if(!navigator.geolocation){ alert('HP tidak support lokasi bosku!'); return; }
+  if(!confirm('Kirim lokasi Anda sekarang ke warga RT.36 bosku?')) return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    let lat=pos.coords.latitude, lng=pos.coords.longitude;
+    let mapsLink=`https://www.google.com/maps?q=${lat},${lng}`;
+    let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    getChatRef().push({nama:verifiedNama, pesan:mapsLink, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'lokasi', lat:lat, lng:lng});
+  }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS dulu bosku!'); });
+}
+async function mulaiRekam(){
+  isRekam=true; detikRekam=0;
+  document.getElementById('areaKetikNormal').classList.add('hidden');
+  document.getElementById('areaRekamDalamKotak').classList.remove('hidden');
+  document.getElementById('iconDalamKotak').classList.add('hidden');
+  let btn=document.getElementById('btnAksi'); btn.classList.add('mic-recording'); btn.classList.remove('bg-[#00A884]'); btn.classList.add('bg-[#FF3B30]');
+  document.getElementById('iconMic').classList.add('hidden'); document.getElementById('iconStop').classList.remove('hidden');
+  timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekamDalam').innerText=m+':'+s; },1000);
+  try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic bosku!'); resetMicUI(); }
+}
+function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; resetMicUI(); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } }
+function resetMicUI(){
+  document.getElementById('areaKetikNormal').classList.remove('hidden');
+  document.getElementById('areaRekamDalamKotak').classList.add('hidden');
+  document.getElementById('iconDalamKotak').classList.remove('hidden');
+  let btn=document.getElementById('btnAksi'); btn.classList.remove('mic-recording','bg-[#FF3B30]'); btn.classList.add('bg-[#00A884]');
+  document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden');
+  cekKetik();
+}
+function hapusChat(key, pemilikId){
+  let myId = localStorage.getItem('my_chat_id');
+  if(pemilikId !== myId){ alert('Tidak bisa hapus chat orang lain bosku! Hanya bisa hapus chat sendiri bosku!'); return; }
+  if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
+  getChatRef().child(key).remove();
+}
+function autoHapus24Jam(){
+  let ref=getChatRef();
+  let batas=Date.now() - (24*60*60*1000);
+  ref.once('value').then(snap=>{
+    snap.forEach(child=>{
+      let data=child.val();
+      if(data && data.timestamp && data.timestamp < batas){
+        ref.child(child.key).remove();
+      }
+    });
+  });
+}
+
+window.addEventListener('load', function(){
+  let isVerif=cekVerifikasi(); 
+  if(!isVerif) return;
+  let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
+  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
+  
+  try{
+    let onlineRoot = getOnlineRef();
+    let myOnlineRef = onlineRoot.child(myId);
+    myOnlineRef.set({nama: verifiedNama, phone: verifiedPhone, time: Date.now()});
+    myOnlineRef.onDisconnect().remove();
+    setInterval(()=>{ myOnlineRef.update({time: Date.now()}); }, 25000);
+
+    onlineRoot.on('value', snap=>{
+      let count = snap.numChildren();
+      if(count < 1) count = 1;
+      let el = document.getElementById('statusOnline');
+      if(el) el.innerText = count + ' Online';
+    });
+  }catch(e){
+    document.getElementById('statusOnline').innerText = '1 Online';
+  }
+
+  autoHapus24Jam();
+  setInterval(autoHapus24Jam, 60*60*1000);
+  
+  ref.limitToLast(80).on('child_added', snap=>{
+    let data=snap.val(), key=snap.key; if(!data) return; 
+    if(data.timestamp && (Date.now() - data.timestamp > 24*60*60*1000)){ ref.child(key).remove(); return; }
+    if(document.getElementById(`chat-item-${key}`)) return;
+    let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
+    let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
+    let content=''; 
+    if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; 
+    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
+    else if(data.tipe==='lokasi') content=`<div><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">📍 Lihat Lokasi Saya</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:4px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
+    else content=`<div class="break-words">${esc(data.pesan)}</div>`;
+    let namaHtml=`<div class="nama-atas">${esc(data.nama)} ${isMe?'(Anda)':''}</div>`;
+    let tombolHapus = isMe ? `<button onclick="hapusChat('${key}','${data.userId}')" class="btn-hapus">🗑️</button>` : ``;
+    div.innerHTML=`${namaHtml}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span>${tombolHapus}</div>`;
+    box.appendChild(div); box.scrollTop=box.scrollHeight;
+    if(!chatPertamaLoad && !isMe){ bunyikanNotifikasi(); kedipkanIconChat(); }
+  });
+  setTimeout(()=>{ chatPertamaLoad = false; }, 4000);
+  ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
+  document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
+});
+</script>
+<!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
+  <script>
+function keluarDariPasarRT36(){
+  if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
+    localStorage.removeItem('namaRT36');
+    localStorage.removeItem('onlineCountRT36');
+    localStorage.removeItem('kodeMasukRT36');
+    localStorage.removeItem('verifikasiRT36');
+    localStorage.clear();
+    alert('Berhasil keluar Bosku! Silahkan login lagi pakai kode masuk Bosku!');
+    location.reload();
+  }
+}
+</script>
+  <script>
+function updateRunningTextPremium(){
+  const el=document.getElementById('runningTextOnline');
+  if(!el) return;
+  let nama=localStorage.getItem('namaRT36')||'Warga RT.36';
+  let online=localStorage.getItem('onlineCountRT36')||Math.floor(Math.random()*8+3);
+  localStorage.setItem('onlineCountRT36',online);
+  el.innerHTML='<span class="mx-6">👋 SELAMAT DATANG, '+nama.toUpperCase()+'! 👋</span><span class="mx-6 text-yellow-200">🟢 '+online+' WARGA ONLINE BOSKU 🟢</span>';
+}
+document.addEventListener('DOMContentLoaded',function(){
+  updateRunningTextPremium();
+  setInterval(function(){
+    let c=parseInt(localStorage.getItem('onlineCountRT36')||'5');
+    if(Math.random()>0.7){c+=Math.random()>0.5?1:-1; if(c<2)c=2; if(c>15)c=15; localStorage.setItem('onlineCountRT36',c);}
+    updateRunningTextPremium();
+  },15000);
+});
+</script>
 </body>
+</html>
+    </body>
 </html>
