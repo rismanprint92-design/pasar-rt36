@@ -1663,88 +1663,110 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
   <script>
-// --- PATCH V8 TINGKAT 1 FIX 3 INPUT BOSKU ---
+// --- PATCH V9 ONE HP ONE DEVICE NO NOTIF BOSKU ---
 (function(){
-  console.log('PATCH V8 TINGKAT 1 LOADED BOSKU!');
-  
-  // Hapus SW dulu bosku biar tidak cache lagi!
-  try{ navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister())); }catch(e){}
+  console.log('PATCH V9 ONE DEVICE LOADED BOSKU!');
 
-  async function amanDapatkanKodeTingkat1(){
-    let all = Array.from(document.querySelectorAll('input')).filter(i => i.offsetParent !== null && i.type !== 'hidden' && i.type !== 'checkbox' && i.type !== 'radio');
-    console.log('V8 - Input terlihat:', all.length, all.map(x=>`[${x.value}]`));
-    
-    // --- LOGIKA PINTAR BOSKU: CARI NAMA & HP BUKAN PAKAI URUTAN BOSKU ---
+  // Buat ID Perangkat Unik Bosku (Fingerprint)
+  function getDeviceId(){
+    let did = localStorage.getItem('rt36_device_id');
+    if(!did){
+      did = 'DEV-' + Math.random().toString(36).substr(2,9).toUpperCase() + '-' + Date.now().toString().slice(-4);
+      localStorage.setItem('rt36_device_id', did);
+    }
+    return did;
+  }
+
+  async function masukDenganNomorAkses(){
+    let all = Array.from(document.querySelectorAll('input')).filter(i => i.offsetParent !== null && i.type !== 'hidden' && i.type !== 'checkbox');
+    // Logika pintar deteksi Nama & HP bosku (fix 3 input kemarin)
     let nama = '';
     let hpRaw = '';
-    
     for(let inp of all){
       let v = inp.value.trim();
-      if(!v) continue; // Skip kosong bosku
+      if(!v) continue;
       let digit = v.replace(/\D/g,'');
-      // Kalau isinya banyak angka dan panjang >=10 = HP bosku
-      if(digit.length >= 10 && digit.length <= 15){
-        hpRaw = v;
-      } else if(v.length >= 3) {
-        // Kalau ada huruf = Nama bosku
-        nama = v;
-      }
+      if(digit.length >= 10) hpRaw = v;
+      else if(v.length >= 3) nama = v;
     }
     
-    console.log('V8 - NAMA DETEKSI:', '['+nama+']', 'HP DETEKSI:', '['+hpRaw+']');
-
-    if(nama.length < 3){ alert('Isi nama dulu bosku! Terdeteksi: ['+nama+'] dari '+all.length+' input'); return; }
-    if(!hpRaw){ alert('Isi No HP dulu bosku!'); return; }
+    if(nama.length < 3){ alert('Isi nama bosku!'); return; }
+    if(!hpRaw){ alert('Isi HP bosku!'); return; }
     
     let hp = hpRaw.replace(/\D/g,'');
     if(hp.startsWith('0')) hp = '62' + hp.slice(1);
+    let deviceId = getDeviceId();
+    
+    console.log('V9 - NAMA:', nama, 'HP:', hp, 'DEVICE:', deviceId);
 
-    // --- TINGKAT 1: CEK DUPLIKAT BOSKU ---
+    let wRef = firebase.database().ref('warga_rt36');
+
     try{
-      let wRef = firebase.database().ref('warga_rt36');
       let cekSnap = await wRef.child(hp).get();
+      
+      // --- KASUS 1: HP SUDAH PERNAH DAFTAR BOSKU ---
       if(cekSnap.exists()){
-        let dataLama = cekSnap.val();
-        alert(`❌ NOMOR SUDAH TERDAFTAR BOSKU!\n\nAtas Nama: ${dataLama.nama}\nNo HP: ${hpRaw}\n\n1 Nomor hanya 1 akun bosku!`);
-        console.log('V8 - DUPLIKAT:', dataLama);
+        let data = cekSnap.val();
+        
+        // Cek apakah device sama bosku?
+        if(data.deviceId && data.deviceId !== deviceId){
+          alert(`❌ NOMOR INI SUDAH TERPAKAI BOSKU!\n\nAtas Nama: ${data.nama}\nPerangkat Lama: ${data.deviceId}\nPerangkat Sekarang: ${deviceId}\n\n1 HP hanya untuk 1 perangkat bosku! Hubungi Pak RT bosku untuk reset!`);
+          console.log('V9 - TOLAK BEDA DEVICE BOSKU!', data.deviceId, 'vs', deviceId);
+          return;
+        }
+        
+        // Kalau device sama, langsung masuk pakai akses lama bosku
+        alert(`✅ SELAMAT DATANG KEMBALI BOSKU!\n\nNama: ${data.nama}\nNomor Akses Bosku: ${data.aksesCode}\n\nLangsung masuk bosku!`);
+        localStorage.setItem('warga_rt36_verified','true');
+        localStorage.setItem('warga_rt36_akses', data.aksesCode);
+        location.reload();
         return;
       }
-      console.log('V8 - Nomor AMAN belum ada bosku!');
-    }catch(e){ console.log('V8 - Cek duplikat skip:', e); }
 
-    // --- LANJUT SIMPAN BOSKU ---
-    let kode = Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('warga_nama_sementara', nama);
-    localStorage.setItem('warga_hp_sementara', hp);
-    localStorage.setItem('warga_kode_sementara', kode);
-    
-    try{
-      await firebase.database().ref('warga_rt36').child(hp).set({
-        nama: nama, hp: hp, kode: kode, status: 'aktif', timestamp: Date.now()
+      // --- KASUS 2: HP BARU - BUATKAN NOMOR AKSES BOSKU ---
+      let aksesCode = 'RT36-' + Math.floor(1000 + Math.random() * 9000); // Contoh RT36-8392 bosku
+      
+      await wRef.child(hp).set({
+        nama: nama,
+        hp: hp,
+        aksesCode: aksesCode, // <--- NOMOR AKSES / OTP NYA BOSKU!
+        deviceId: deviceId,   // <--- LOCK KE PERANGKAT INI BOSKU!
+        status: 'aktif',
+        createdAt: Date.now(),
+        deviceInfo: navigator.userAgent.slice(0,50)
       });
-    }catch(e){}
 
-    let waAdmin = '6282299511782';
-    window.open(`https://wa.me/${waAdmin}?text=VERIFIKASI%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`, '_blank');
-    
-    let tanya = prompt(`Kode ${kode} terkirim bosku! Ketik ${kode} untuk masuk:`);
-    if(tanya == kode){
+      console.log('V9 - Berhasil buat akses:', aksesCode);
+      
+      // Kasih Nomor Akses ke warga bosku - TANPA NOTIFIKASI BOSKU!
+      let simpan = prompt(`✅ PENDAFTARAN BERHASIL BOSKU!\n\nNama: ${nama}\nHP: ${hpRaw}\n\nNOMOR AKSES BOSKU (SIMPAN BAIK-BAIK BOSKU):\n${aksesCode}\n\nPerangkat bosku sudah ter-lock: ${deviceId}\n\nKetik OK untuk masuk, atau simpan nomor akses ini bosku untuk login di perangkat ini nanti bosku!`);
+      
       localStorage.setItem('warga_rt36_verified','true');
-      alert('✅ Berhasil masuk bosku!');
-      location.href = location.href.split('?')[0] + '?v=8sukses';
+      localStorage.setItem('warga_rt36_akses', aksesCode);
+      localStorage.setItem('warga_nama_sementara', nama);
+      localStorage.setItem('warga_hp_sementara', hp);
+      
+      alert(`✅ Berhasil bosku! Nomor Akses: ${aksesCode}\n1 HP ini hanya bisa di perangkat ini saja bosku!`);
+      location.reload();
+
+    }catch(e){
+      console.log('V9 Error:', e);
+      alert('Gagal bosku: ' + e.message);
     }
   }
 
-  function pasangV8(){
+  function pasangV9(){
     document.querySelectorAll('button').forEach(b=>{
       if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')){
-        b.onclick = amanDapatkanKodeTingkat1;
-        console.log('V8 - Tombol terpasang bosku!');
+        b.innerText = 'Dapatkan Nomor Akses Bosku!';
+        b.onclick = masukDenganNomorAkses;
+        console.log('V9 - Tombol Nomor Akses dipasang bosku!');
       }
     });
   }
-  setTimeout(pasangV8, 500);
-  setTimeout(pasangV8, 2000);
+  
+  setTimeout(pasangV9, 500);
+  setTimeout(pasangV9, 2000);
 })();
 </script>
     </body>
