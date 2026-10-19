@@ -1663,41 +1663,60 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
   <script>
-// --- PATCH FIX FINAL ANTI CACHE BOSKU - v4 ---
+// --- PATCH v6 FINAL BOSKU - CARI INPUT LANGSUNG DI LAYAR ---
 (function(){
-  console.log('PATCH v4 LOADED BOSKU!');
-  let wRef; try{ wRef=firebase.database().ref('warga_rt36'); }catch(e){}
-  function amanDapatkanKode(){
-    // CARI SEMUA INPUT YANG KELIHATAN DI LAYAR BOSKU - ANTI ID BOSKU
-    let all = Array.from(document.querySelectorAll('input')).filter(i => i.offsetParent !== null && i.type !== 'hidden' && i.type !== 'submit');
-    console.log('v5 - Semua input terlihat:', all.map(x=>x.value));
-    let namaEl = all[0];
-    let hpEl = all[1];
+  console.log('PATCH v6 LOADED BOSKU! - ANTI 0');
+  function dapatkanKodeFinal(){
+    let semua = Array.from(document.querySelectorAll('input'));
+    console.log('v6 - Total input di halaman:', semua.length);
+    let terlihat = semua.filter(i => {
+      let style = window.getComputedStyle(i);
+      return style.display !== 'none' && style.visibility !== 'hidden' && i.type !== 'hidden';
+    });
+    console.log('v6 - Input terlihat:', terlihat.length, terlihat.map(x=>x.value));
     
-    if(!namaEl){ alert('Input nama tidak ketemu bosku!'); return; }
+    // Ambil 2 input pertama yang terlihat bosku
+    let namaEl = terlihat[0] || semua[0];
+    let hpEl = terlihat[1] || semua[1];
+    
+    if(!namaEl){ alert('Tidak ada input bosku! Total:'+semua.length); return; }
+    
     let nama = namaEl.value.trim();
     let hp = hpEl ? hpEl.value.trim().replace(/\D/g,'') : '';
-    console.log('v5 - NAMA:',nama,'HP:',hp);
-    if(nama.length<3){ alert('v5 - Nama terbaca: ['+nama+'] bosku! Minimal 3 huruf'); return; }
-    if(hp.length<10){ alert('Isi HP dulu bosku'); return; }
+    console.log('v6 - NAMA FINAL:', '['+nama+']', 'HP FINAL:', '['+hp+']');
+    
+    if(nama.length < 3){ 
+      // Jika nama kosong, coba ambil dari input lain bosku
+      for(let inp of terlihat){
+        if(inp.value.trim().length >= 3 && isNaN(inp.value.trim().charAt(0))){ nama = inp.value.trim(); namaEl = inp; break; }
+      }
+      if(nama.length < 3){
+        alert('v6 - Nama masih kosong bosku! Input yang ada: ' + terlihat.map(x=> '['+x.value+']').join(', ')); 
+        return; 
+      }
+    }
+    if(hp.length < 10){ alert('HP kurang bosku: '+hp); return; }
     if(hp.startsWith('0')) hp='62'+hp.slice(1);
+    
     let kode=Math.floor(1000+Math.random()*9000);
     localStorage.setItem('warga_nama_sementara',nama);
     localStorage.setItem('warga_hp_sementara',hp);
     localStorage.setItem('warga_kode_sementara',kode);
-    let wRef; try{ wRef=firebase.database().ref('warga_rt36'); wRef.child(hp).set({nama:nama,hp:hp,kode:kode,timestamp:Date.now()}).catch(()=>{});}catch(e){}
-    let waAdmin='6282299511782'; try{if(typeof adminWaAktif!=='undefined'&&adminWaAktif) waAdmin=adminWaAktif;}catch(e){}
-    window.open(`https://wa.me/${waAdmin}?text=VERIFIKASI%20WARGA%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`,'_blank');
-    let tanya=prompt(`Kode ${kode} sudah dikirim bosku! Ketik ${kode} untuk masuk:`);
-    if(tanya==kode){ localStorage.setItem('warga_rt36_verified','true'); let m=document.getElementById('modal-verifikasi-warga'); if(m) m.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); alert('✅ Berhasil bosku!'); location.reload(); }
+    try{ firebase.database().ref('warga_rt36').child(hp).set({nama:nama,hp:hp,kode:kode,timestamp:Date.now()}); }catch(e){}
+    let wa='6282299511782'; window.open(`https://wa.me/${wa}?text=VERIFIKASI%20WARGA%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`,'_blank');
+    let t=prompt(`Kode ${kode} dikirim bosku! Ketik ${kode}:`); if(t==kode){ localStorage.setItem('warga_rt36_verified','true'); alert('✅ Masuk bosku!'); location.reload(); }
   }
-  function pasang(){
+  function pasangTombolV6(){
     document.querySelectorAll('button').forEach(b=>{
-      if(b.innerText&&b.innerText.toLowerCase().includes('dapatkan kode')){ b.onclick=amanDapatkanKode; console.log('v4 - Tombol dipasang bosku!'); }
+      let txt = (b.innerText||'').toLowerCase();
+      if(txt.includes('dapatkan kode')){ b.onclick = dapatkanKodeFinal; console.log('v6 - Tombol dipasang bosku! Text:', b.innerText); }
     });
   }
-  setTimeout(pasang,500); setTimeout(pasang,2000);
+  setTimeout(pasangTombolV6, 300);
+  setTimeout(pasangTombolV6, 1500);
+  setTimeout(pasangTombolV6, 3000);
 })();
+</script>
 </script>
     </body>
 </html>
