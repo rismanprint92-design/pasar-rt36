@@ -205,7 +205,7 @@ button.bg-emerald-600{
       </div>
 
       <!-- Filter Kategori di dalam container agar ikut tersembunyi rapi -->
-      <div class="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs font-medium no-scrollbar">
+      <div class="flex gap-2 overflow-x-auto pt-2 pb-3 text-xs font-medium" style="scrollbar-width:none; -ms-overflow-style:none;">
         <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
         <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
         <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
@@ -1352,6 +1352,8 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
 .nama-atas{font-weight:800; font-size:11px; margin-bottom:2px; color:#075E54}
 .btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px}
+.no-scrollbar::-webkit-scrollbar{ display:none; width:0; height:0; }
+.no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
 @keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}} 
 .mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important;}
 @keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
