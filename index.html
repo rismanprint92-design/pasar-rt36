@@ -1632,6 +1632,19 @@ window.addEventListener('load', function(){
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
   <script>
+function keluarDariPasarRT36(){
+  if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
+    localStorage.removeItem('namaRT36');
+    localStorage.removeItem('onlineCountRT36');
+    localStorage.removeItem('kodeMasukRT36');
+    localStorage.removeItem('verifikasiRT36');
+    localStorage.clear();
+    alert('Berhasil keluar Bosku! Silahkan login lagi pakai kode masuk Bosku!');
+    location.reload();
+  }
+}
+</script>
+  <script>
 function updateRunningTextPremium(){
   const el=document.getElementById('runningTextOnline');
   if(!el) return;
@@ -1649,7 +1662,78 @@ document.addEventListener('DOMContentLoaded',function(){
   },15000);
 });
 </script>
-</body>
-</html>
+  <script>
+// --- PATCH FIX TOMBOL DAPATKAN KODE - TANPA UBAH FUNGSI LAIN BOSKU ---
+(function(){
+  if(typeof window.dapatkanKodeMasukPatched !== 'undefined') return;
+  window.dapatkanKodeMasukPatched = true;
+  let wRef;
+  try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
+
+  function amanDapatkanKode(){
+    let modal = document.getElementById('modal-verifikasi-warga');
+    let inputs = modal ? modal.querySelectorAll('input') : [];
+    let namaEl = inputs[0] || document.getElementById('input-nama-warga') || document.getElementById('nama-warga');
+    let hpEl = inputs[1] || document.getElementById('input-hp-warga') || document.getElementById('hp-warga');
+    let btn = document.getElementById('btn-dapatkan-kode') || document.querySelector('button');
+
+    let nama = namaEl ? namaEl.value.trim() : '';
+    let hp = hpEl ? hpEl.value.trim().replace(/\D/g,'') : '';
+
+    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); return; }
+    if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
+    if(hp.startsWith('0')) hp = '62' + hp.slice(1);
+
+    let kode = Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('warga_nama_sementara', nama);
+    localStorage.setItem('warga_hp_sementara', hp);
+    localStorage.setItem('warga_kode_sementara', kode);
+
+    if(wRef){
+      wRef.child(hp).set({nama: nama, hp: hp, kode: kode, timestamp: Date.now(), status: 'menunggu'}).catch(()=>{});
+    }
+
+    let waAdmin = '6282299511782';
+    try { if(typeof adminWaAktif !== 'undefined' && adminWaAktif) waAdmin = adminWaAktif; } catch(e){}
+
+    let pesan = `VERIFIKASI WARGA RT36%0ANama: ${nama}%0AHP: ${hp}%0AKode: ${kode}`;
+    window.open(`https://wa.me/${waAdmin}?text=${pesan}`, '_blank');
+
+    let step1 = document.getElementById('step-1-verif');
+    let step2 = document.getElementById('step-2-verif');
+    if(step1 && step2){
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+    } else {
+      let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
+      if(tanya == kode){
+        localStorage.setItem('warga_rt36_verified','true');
+        if(modal) modal.classList.add('hidden');
+        alert('✅ Berhasil masuk bosku!');
+        location.reload();
+      }
+    }
+  }
+
+  function pasangTombol(){
+    let tombol = null;
+    document.querySelectorAll('button').forEach(b=>{
+      if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')) tombol = b;
+    });
+    if(tombol){
+      tombol.onclick = amanDapatkanKode;
+      console.log('Patch tombol Dapatkan Kode Masuk TERPASANG bosku!');
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', pasangTombol);
+  } else {
+    pasangTombol();
+  }
+  setTimeout(pasangTombol, 1000);
+  setTimeout(pasangTombol, 3000);
+})();
+</script>
     </body>
 </html>
