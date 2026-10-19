@@ -1383,9 +1383,12 @@ function cekVerifikasi(){
 }
 
 async function kirimKodeKeSaya(event){  
-  // Mencari input nama dan WA berdasarkan berbagai kemungkinan ID yang ada di HTML Anda
-  let elNama = document.getElementById('inputNama') || document.getElementById('inputNamaWA') || document.querySelector('input[type="text"]');
-  let elPhone = document.getElementById('inputWA') || document.getElementById('inputNoWA') || document.querySelector('input[type="tel"]') || document.querySelector('input[type="number"]');
+  // Mengambil langsung dari input pertama (nama) dan input kedua (no hp) di dalam modal
+  let modal = document.getElementById('modalVerifWA') || document.body;
+  let inputs = modal.querySelectorAll('input');
+  
+  let elNama = inputs[0]; // Kotak input Nama Lengkap
+  let elPhone = inputs[1]; // Kotak input No HP / WA
   
   if(!elNama || !elPhone){ alert('Form tidak ketemu bosku!'); return; }
   
@@ -1446,7 +1449,6 @@ async function kirimKodeKeSaya(event){
     if(btn){ btn.disabled = false; btn.innerHTML = textAsli || 'Dapatkan Kode Masuk 📲'; btn.style.opacity = '1'; }
   }
 }
-
 function cekOTP(event){ 
   let btn=null, textAsli='';
   try{
