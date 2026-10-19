@@ -1663,73 +1663,37 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
   <script>
-// --- PATCH FIX TOMBOL DAPATKAN KODE - TANPA UBAH FUNGSI LAIN BOSKU ---
+// --- PATCH FIX FINAL ANTI CACHE BOSKU - v4 ---
 (function(){
-  if(typeof window.dapatkanKodeMasukPatched !== 'undefined') return;
-  window.dapatkanKodeMasukPatched = true;
-  let wRef;
-  try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
-
- function amanDapatkanKode(){
-    let modal = document.getElementById('modal-verifikasi-warga');
-    if(!modal){ alert('Modal tidak ada bosku'); return; }
-    let inputs = modal.querySelectorAll('input');
-    console.log('Jumlah input di modal:', inputs.length, inputs);
-    let namaEl = inputs[0];
-    let hpEl = inputs[1];
-    if(!namaEl || !hpEl){ alert('Input tidak ketemu bosku! Jumlah:'+inputs.length); return; }
-
-    let nama = namaEl.value.trim();
-    let hp = hpEl.value.trim().replace(/\D/g,'');
-
-    console.log('NAMA TERBACA:', nama, 'HP TERBACA:', hp);
-    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf - terbaca: ['+nama+']'); return; }
-    if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
-    if(hp.startsWith('0')) hp = '62' + hp.slice(1);
-
-    let kode = Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('warga_nama_sementara', nama);
-    localStorage.setItem('warga_hp_sementara', hp);
-    localStorage.setItem('warga_kode_sementara', kode);
-
-    if(wRef){
-      wRef.child(hp).set({nama: nama, hp: hp, kode: kode, timestamp: Date.now(), status: 'menunggu'}).catch(()=>{});
-    }
-
-    let waAdmin = '6282299511782';
-    try { if(typeof adminWaAktif !== 'undefined' && adminWaAktif) waAdmin = adminWaAktif; } catch(e){}
-
-    let pesan = `VERIFIKASI WARGA RT36%0ANama: ${nama}%0AHP: ${hp}%0AKode: ${kode}`;
-    window.open(`https://wa.me/${waAdmin}?text=${pesan}`, '_blank');
-
-    let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
-    if(tanya == kode){
-      localStorage.setItem('warga_rt36_verified','true');
-      modal.classList.add('hidden');
-      alert('✅ Berhasil masuk bosku!');
-      location.reload();
-    }
+  console.log('PATCH v4 LOADED BOSKU!');
+  let wRef; try{ wRef=firebase.database().ref('warga_rt36'); }catch(e){}
+  function amanDapatkanKode(){
+    let modal=document.getElementById('modal-verifikasi-warga');
+    let inputs=modal?modal.querySelectorAll('input'):[];
+    console.log('v4 - Jumlah input:',inputs.length);
+    let namaEl=inputs[0]; let hpEl=inputs[1];
+    let nama=namaEl?namaEl.value.trim():'';
+    let hp=hpEl?hpEl.value.trim().replace(/\D/g,''):'';
+    console.log('v4 - NAMA:',nama,'HP:',hp);
+    if(nama.length<3){ alert('v4 - Nama terbaca: ['+nama+'] bosku! Minimal 3 huruf'); return; }
+    if(hp.length<10){ alert('Isi HP dulu bosku'); return; }
+    if(hp.startsWith('0')) hp='62'+hp.slice(1);
+    let kode=Math.floor(1000+Math.random()*9000);
+    localStorage.setItem('warga_nama_sementara',nama);
+    localStorage.setItem('warga_hp_sementara',hp);
+    localStorage.setItem('warga_kode_sementara',kode);
+    if(wRef) wRef.child(hp).set({nama:nama,hp:hp,kode:kode,timestamp:Date.now()}).catch(()=>{});
+    let waAdmin='6282299511782'; try{if(typeof adminWaAktif!=='undefined'&&adminWaAktif) waAdmin=adminWaAktif;}catch(e){}
+    window.open(`https://wa.me/${waAdmin}?text=VERIFIKASI%20WARGA%20RT36%0ANama:%20${nama}%0AHP:%20${hp}%0AKode:%20${kode}`,'_blank');
+    let tanya=prompt(`Kode ${kode} sudah dikirim bosku! Ketik ${kode} untuk masuk:`);
+    if(tanya==kode){ localStorage.setItem('warga_rt36_verified','true'); modal.classList.add('hidden'); alert('✅ Berhasil bosku!'); location.reload(); }
   }
-  }
-
-  function pasangTombol(){
-    let tombol = null;
+  function pasang(){
     document.querySelectorAll('button').forEach(b=>{
-      if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')) tombol = b;
+      if(b.innerText&&b.innerText.toLowerCase().includes('dapatkan kode')){ b.onclick=amanDapatkanKode; console.log('v4 - Tombol dipasang bosku!'); }
     });
-    if(tombol){
-      tombol.onclick = amanDapatkanKode;
-      console.log('Patch tombol Dapatkan Kode Masuk TERPASANG bosku!');
-    }
   }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', pasangTombol);
-  } else {
-    pasangTombol();
-  }
-  setTimeout(pasangTombol, 1000);
-  setTimeout(pasangTombol, 3000);
+  setTimeout(pasang,500); setTimeout(pasang,2000);
 })();
 </script>
     </body>
