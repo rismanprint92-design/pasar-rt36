@@ -1384,20 +1384,24 @@ function cekVerifikasi(){
 
 // === FIX KIRIM KODE BOSKU - ID BENAR + LOADING + OTP NYAMBUNG BOSKU ===
 async function kirimKodeKeSaya(event){ 
-  localStorage.setItem('namaRT36', document.getElementById('inputNamaWA').value);
-  let btn=null, textAsli='';
-  try{
-    let elNama=document.getElementById('inputNamaWA');
-    let elPhone=document.getElementById('inputNoWA');
-    if(!elNama||!elPhone){ alert('Form tidak ketemu bosku!'); return; }
-    let nama=elNama.value.trim();
-    let phone=elPhone.value.trim();
-    if(!nama || nama.length<3){ alert('Isi nama lengkap dulu bosku!'); elNama.focus(); return; }
-    if(!phone || phone.length<10){ alert('Isi nomor WA dulu bosku!'); elPhone.focus(); return; }
-    let nomorBersih = phone.replace(/\D/g,'');
+  let elNama = document.getElementById('inputNama') || document.getElementById('inputNamaWA');
+  let elPhone = document.getElementById('inputWA') || document.getElementById('inputNoWA');
+  
+  if(!elNama || !elPhone){ alert('Form tidak ketemu bosku!'); return; }
+  
+  let nama = elNama.value.trim();
+  let phone = elPhone.value.trim();
+  
+  if(!nama || nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); elNama.focus(); return; }
+  if(!phone || phone.length < 10){ alert('Isi nomor WA dulu bosku dengan benar!'); elPhone.focus(); return; }
+  
+  let nomorBersih = phone.replace(/\D/g,'');
+  localStorage.setItem('namaRT36', nama);
 
+  let btn = null, textAsli = '';
+  try {
     btn = event ? event.currentTarget : document.querySelector('button[onclick*="kirimKodeKeSaya"]');
-    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Loading bosku...'; btn.style.opacity='0.6'; }
+    if(btn){ textAsli = btn.innerHTML; btn.disabled = true; btn.innerHTML = '⏳ Loading bosku...'; btn.style.opacity = '0.6'; }
 
     try{
       let onlineRef = getOnlineRef();
@@ -1405,37 +1409,41 @@ async function kirimKodeKeSaya(event){
         let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
         if(cek.exists()){
           alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
-          if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+          if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
           return;
         }
       }
     }catch(e){ console.log('lewati cek duplikat', e); }
 
-    await new Promise(r=>setTimeout(r,600));
+    await new Promise(r => setTimeout(r, 600));
     let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    otpKode = kodeOTP; // SIMPAN DISINI BOSKU - INI YANG DIPAKAI cekOTP BOSKU
+    otpKode = kodeOTP; // Disimpan agar terbaca oleh cekOTP
     verifiedPhone = nomorBersih;
     verifiedNama = nama;
+    
     window.kodeVerifikasiSementara = kodeOTP;
     window.namaSementara = nama;
     window.phoneSementara = nomorBersih;
-    
+      
     try{
       let rootRef = getRootRef();
-      if(rootRef) await rootRef.ref('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
+      if(rootRef) await rootRef.ref('verifikasi/'+nomorBersih).set({nama: nama, kode: kodeOTP, time: Date.now()});
     }catch(e){}
 
-    let elKode=document.getElementById('kodeDemo');
-    let elStatus=document.getElementById('statusKirim');
-    if(elKode) elKode.innerText=kodeOTP;
-    if(elStatus){ elStatus.innerText='Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
+    let elKode = document.getElementById('kodeDemo');
+    let elStatus = document.getElementById('statusKirim');
+    if(elKode) elKode.innerText = kodeOTP;
+    if(elStatus){ elStatus.innerText = 'Kode terkirim bosku! Kode: '+kodeOTP; elStatus.classList.remove('hidden'); }
 
-    document.getElementById('step1Verif').classList.add('hidden');
-    document.getElementById('step2Verif').classList.remove('hidden');
-    if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-  }catch(err){
+    let step1 = document.getElementById('step1Verif');
+    let step2 = document.getElementById('step2Verif');
+    if(step1) step1.classList.add('hidden');
+    if(step2) step2.classList.remove('hidden');
+    
+    if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
+  } catch(err) {
     alert('Error bosku: '+err.message);
-    if(btn){ btn.disabled=false; btn.innerHTML='Kirim Kode ke WA Saya 📲'; btn.style.opacity='1'; }
+    if(btn){ btn.disabled = false; btn.innerHTML = textAsli || 'Dapatkan Kode Masuk 📲'; btn.style.opacity = '1'; }
   }
 }
 
