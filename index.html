@@ -189,9 +189,7 @@
     </button>
   </main>
 
-  <!-- ================================================= -->
-  <!-- BAGIAN LIVE CHAT & VERIFIKASI WARGA (HTML)       -->
-  <!-- ================================================= -->
+  <!-- Live Chat & Verifikasi Warga -->
   <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
     <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
     <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -1205,9 +1203,7 @@
       }
     }
 
-    // ================================================= //
-    // LOGIKA LIVE CHAT & VERIFIKASI (JAVASCRIPT)         //
-    // ================================================= //
+    // Live Chat & Verifikasi Warga
     let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, otpKode='', verifiedPhone='', verifiedNama='';
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
     let chatPertamaLoad = true;
