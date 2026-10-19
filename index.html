@@ -1670,17 +1670,20 @@ document.addEventListener('DOMContentLoaded',function(){
   let wRef;
   try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
 
-  function amanDapatkanKode(){
+ function amanDapatkanKode(){
     let modal = document.getElementById('modal-verifikasi-warga');
-    let inputs = modal ? modal.querySelectorAll('input') : [];
-    let namaEl = inputs[0] || document.getElementById('input-nama-warga') || document.getElementById('nama-warga');
-    let hpEl = inputs[1] || document.getElementById('input-hp-warga') || document.getElementById('hp-warga');
-    let btn = document.getElementById('btn-dapatkan-kode') || document.querySelector('button');
+    if(!modal){ alert('Modal tidak ada bosku'); return; }
+    let inputs = modal.querySelectorAll('input');
+    console.log('Jumlah input di modal:', inputs.length, inputs);
+    let namaEl = inputs[0];
+    let hpEl = inputs[1];
+    if(!namaEl || !hpEl){ alert('Input tidak ketemu bosku! Jumlah:'+inputs.length); return; }
 
-    let nama = namaEl ? namaEl.value.trim() : '';
-    let hp = hpEl ? hpEl.value.trim().replace(/\D/g,'') : '';
+    let nama = namaEl.value.trim();
+    let hp = hpEl.value.trim().replace(/\D/g,'');
 
-    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); return; }
+    console.log('NAMA TERBACA:', nama, 'HP TERBACA:', hp);
+    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf - terbaca: ['+nama+']'); return; }
     if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
     if(hp.startsWith('0')) hp = '62' + hp.slice(1);
 
@@ -1699,20 +1702,14 @@ document.addEventListener('DOMContentLoaded',function(){
     let pesan = `VERIFIKASI WARGA RT36%0ANama: ${nama}%0AHP: ${hp}%0AKode: ${kode}`;
     window.open(`https://wa.me/${waAdmin}?text=${pesan}`, '_blank');
 
-    let step1 = document.getElementById('step-1-verif');
-    let step2 = document.getElementById('step-2-verif');
-    if(step1 && step2){
-      step1.classList.add('hidden');
-      step2.classList.remove('hidden');
-    } else {
-      let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
-      if(tanya == kode){
-        localStorage.setItem('warga_rt36_verified','true');
-        if(modal) modal.classList.add('hidden');
-        alert('✅ Berhasil masuk bosku!');
-        location.reload();
-      }
+    let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
+    if(tanya == kode){
+      localStorage.setItem('warga_rt36_verified','true');
+      modal.classList.add('hidden');
+      alert('✅ Berhasil masuk bosku!');
+      location.reload();
     }
+  }
   }
 
   function pasangTombol(){
