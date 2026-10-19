@@ -1250,6 +1250,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- 1. BAGIAN TAMPILAN LIVE CHAT (HTML)               -->
 <!-- ================================================= -->
+  <!-- ========== FINAL RT.36 ONLINE FIX 100% BOSKU ========== -->
 <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
   <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
   <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -1363,59 +1364,7 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 function cekVerifikasi(){ verifiedPhone=localStorage.getItem('verified_wa_rt36'); verifiedNama=localStorage.getItem('verified_nama_rt36'); if(!verifiedPhone||!verifiedNama){ document.getElementById('modalVerifWA').classList.remove('hidden'); return false; } document.getElementById('myWALabel').innerText='✓ '+verifiedNama; updateIconNotif(); setSuaraAktif(); return true; }
-function cekVerifikasi(){ 
-  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
-  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
-  if(!verifiedPhone||!verifiedNama){ 
-    document.getElementById('modalVerifWA').classList.remove('hidden'); 
-    return false; 
-  } 
-  document.getElementById('myWALabel').innerText='✓ '+verifiedNama; 
-  updateIconNotif(); 
-  setSuaraAktif(); 
-  return true; 
-}
-
-async function kirimKodeKeSaya(){ 
-  let nama=document.getElementById('inputNama').value.trim();
-  let phone=document.getElementById('inputPhone').value.trim();
-  if(!nama || !phone){ alert('Isi nama dan nomor dulu bosku!'); return; }
-  let nomorBersih = phone.replace(/\D/g,'');
-
-  // === TINGKAT 1 CEK DUPLIKAT BOSKU - VERSI AMAN BOSKU ===
-  try{
-    let onlineRef = getOnlineRef();
-    if(onlineRef){
-      let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
-      if(cek.exists()){
-        alert('MAAF BOSKU! Nomor '+nomorBersih+' sudah terdaftar bosku! Satu nomor satu warga bosku!');
-        return;
-      }
-    }
-  }catch(e){ console.log('lewati cek duplikat bosku', e); }
-  // === SELESAI CEK BOSKU ===
-
-  // === LANJUTAN CODE ASLI BIAR CHAT HIDUP LAGI BOSKU ===
-  let kodeOTP = Math.floor(1000 + Math.random() * 9000);
-  window.kodeVerifikasiSementara = kodeOTP.toString();
-  window.namaSementara = nama;
-  window.phoneSementara = nomorBersih;
-  
-  // simpan kode ke firebase (kalau ada)
-  try{
-    let rootRef = getRootRef();
-    if(rootRef) await rootRef.child('verifikasi/'+nomorBersih).set({nama:nama, kode:kodeOTP, time:Date.now()});
-  }catch(e){}
-
-  alert('Kode OTP bosku: '+kodeOTP+' (untuk tes bosku)');
-  document.getElementById('step1Verif').classList.add('hidden');
-  document.getElementById('step2Verif').classList.remove('hidden');
-} // <-- INI TUTUPNYA YANG TADI HILANG BOSKU! PENTING BOSKU!
-
-  // --- LANJUTKAN CODE LAMA BOSKU DARI SINI KE BAWAH, JANGAN DIHAPUS BOSKU ---
-
-  // lanjutkan kode lama bosku untuk kirim kode...
-  
+function kirimKodeKeSaya(){ let nama=document.getElementById('inputNamaWA').value.trim(); let no=document.getElementById('inputNoWA').value.trim().replace(/[^0-9]/g,''); if(nama.length<3){ alert('Isi nama dulu bosku!'); return; } if(no.length<10){ alert('Nomor tidak valid bosku!'); return; } if(no.startsWith('0')) no='62'+no.substring(1); otpKode=String(Math.floor(1000+Math.random()*9000)); verifiedPhone=no; verifiedNama=nama; document.getElementById('kodeDemo').innerText=otpKode; document.getElementById('statusKirim').classList.remove('hidden'); document.getElementById('statusKirim').innerText='✅ Kode dibuat! Membuka WA Anda sendiri...'; document.getElementById('step1Verif').classList.add('hidden'); document.getElementById('step2Verif').classList.remove('hidden'); let pesan=`*RT.36 KODE VERIFIKASI*\n\nHalo ${nama} bosku!\nKode Anda: *${otpKode}*\nMasukkan di website RT.36 bosku!`; setTimeout(()=>{ window.open(`https://wa.me/${no}?text=${encodeURIComponent(pesan)}`, '_blank'); },600); }
 function cekOTP(){ if(document.getElementById('inputOTP').value.trim()!==otpKode){ alert('Kode salah bosku! Kode: '+otpKode); return; } localStorage.setItem('verified_wa_rt36', verifiedPhone); localStorage.setItem('verified_nama_rt36', verifiedNama); localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); localStorage.setItem('nama_warga_rt36', verifiedNama); document.getElementById('modalVerifWA').classList.add('hidden'); location.reload(); }
 function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
@@ -1585,7 +1534,5 @@ window.addEventListener('load', function(){
 });
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
-</body>
-</html>
     </body>
 </html>
