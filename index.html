@@ -1384,6 +1384,7 @@ function cekVerifikasi(){
 
 // === FIX KIRIM KODE BOSKU - ID BENAR + LOADING + OTP NYAMBUNG BOSKU ===
 async function kirimKodeKeSaya(event){ 
+  localStorage.setItem('namaRT36', document.getElementById('inputNamaWA').value);
   let btn=null, textAsli='';
   try{
     let elNama=document.getElementById('inputNamaWA');
@@ -1630,6 +1631,24 @@ window.addEventListener('load', function(){
 });
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
+  <script>
+function updateRunningTextPremium(){
+  const el=document.getElementById('runningTextOnline');
+  if(!el) return;
+  let nama=localStorage.getItem('namaRT36')||'Warga RT.36';
+  let online=localStorage.getItem('onlineCountRT36')||Math.floor(Math.random()*8+3);
+  localStorage.setItem('onlineCountRT36',online);
+  el.innerHTML='<span class="mx-6">👋 SELAMAT DATANG, '+nama.toUpperCase()+'! 👋</span><span class="mx-6 text-yellow-200">🟢 '+online+' WARGA ONLINE BOSKU 🟢</span>';
+}
+document.addEventListener('DOMContentLoaded',function(){
+  updateRunningTextPremium();
+  setInterval(function(){
+    let c=parseInt(localStorage.getItem('onlineCountRT36')||'5');
+    if(Math.random()>0.7){c+=Math.random()>0.5?1:-1; if(c<2)c=2; if(c>15)c=15; localStorage.setItem('onlineCountRT36',c);}
+    updateRunningTextPremium();
+  },15000);
+});
+</script>
 </body>
 </html>
     </body>
