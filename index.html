@@ -190,13 +190,13 @@ button.bg-emerald-600{
   <!-- Filter & Pencarian -->
   <main class="max-w-md mx-auto p-4">
     <!-- Bar Pencarian & Tombol Bantuan Mini Berdampingan (Auto-Hide saat Scroll) -->
-    <div id="search-bar-container" class="sticky top-[56px] z-30 bg-gray-100 pt-1 pb-2">
+    <div id="search-bar-container" class="sticky top-[56px] z-30 bg-white/95 backdrop-blur-md pt-2 pb-3 px-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)] rounded-b-2xl border-b border-gray-100">
       <div class="flex gap-2 items-center">
         <div class="relative flex-1">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
             <i class="ph ph-magnifying-glass text-base"></i>
           </span>
-          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
+          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-[13px] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all border border-transparent">
         </div>
         <!-- Tombol Ikon Bantuan -->
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
