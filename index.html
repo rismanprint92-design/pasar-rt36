@@ -205,7 +205,7 @@ button.bg-emerald-600{
       </div>
 
       <!-- Filter Kategori di dalam container agar ikut tersembunyi rapi -->
-      <div class="flex gap-2 overflow-x-auto pt-2 pb-3 text-xs font-medium" style="scrollbar-width:none; -ms-overflow-style:none;">
+      <div class="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs font-medium no-scrollbar">
         <button onclick="filterKategori('semua')" id="btn-kat-semua" class="px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm">Semua</button>
         <button onclick="filterKategori('kuliner')" id="btn-kat-kuliner" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Kuliner</button>
         <button onclick="filterKategori('sembako')" id="btn-kat-sembako" class="px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap">Sembako</button>
@@ -716,45 +716,15 @@ function renderProduk(data) {
     if(catatanTeks){
       catatanHtml = '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>';
     }
-    let badge = list.length > 1 ? `<span class="absolute top-2.5 right-2.5 bg-black/55 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-full border border-white/20 pointer-events-none">${list.length} Foto</span>` : '';
+    let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
     let tombolAdmin = '';
     if(isAdmin){
-      tombolAdmin = `<div class="grid grid-cols-2 gap-1.5 mt-2"><button onclick="muatDataKeFormEdit('${item.id}')" class="bg-blue-50 text-blue-600 text-[11px] font-bold py-2 rounded-full border border-blue-100">✏️ Edit</button><button onclick="hapusProdukAdmin('${item.id}')" class="bg-red-50 text-red-600 text-[11px] font-bold py-2 rounded-full border border-red-100">🗑️ Hapus</button></div>`;
+      tombolAdmin = '<div class="grid grid-cols-2 gap-1 mt-2"><button onclick="muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold py-1.5 rounded-lg">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-1.5 rounded-lg">🗑️ Hapus Admin</button></div>';
     }
-    let fotosData = JSON.stringify(list).replace(/'/g, "&#39;");
-    let card = `<div id="produk-${item.id}" class="bg-white rounded-[18px] overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col h-full hover:shadow-[0_8px_28px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300">
-    <div class="relative aspect-[1/1] bg-gray-50 overflow-hidden cursor-pointer" onclick="bukaFotoProduk('${item.id}')" data-fotos='${fotosData}'>
-       <img src="${foto}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy">
-        ${badge}
-        <span class="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-gray-100 pointer-events-none">${(item.kategori || 'JASA').toUpperCase()}</span>
-      </div>
-      <div class="p-3 flex flex-col flex-1">
-        <h3 class="font-bold text-[13px] leading-tight line-clamp-2 min-h-[34px] text-gray-900">${item.nama}</h3>
-        <p class="text-[#ff6a00] font-extrabold text-[15px] mt-1.5">Rp ${(item.harga || 0).toLocaleString('id-ID')}</p>
-        <p class="text-[11px] text-gray-500 mt-1">👤 ${item.penjual || item.namaPenjual || ''} ${item.blok ? '('+item.blok+')' : ''}</p>
-        ${catatanHtml}
-        <div class="mt-auto pt-3">
-          <button onclick="beliViaWA('${item.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-[12.5px] font-bold py-[10px] rounded-full shadow-[0_3px_10px_rgba(16,185,129,0.3)] transition-all">💬 Beli Via WA</button>
-          ${tombolAdmin}
-        </div>
-      </div>
-    </div>`;
+    let card = '<div id="produk-'+item.id+'" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col"><div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos,0)" data-fotos=\''+JSON.stringify(list).replace(/'/g,"&#039;")+'\'><img loading="lazy" src="'+foto+'" class="w-full h-36 object-cover bg-gray-100"><div>'+badge+'</div></div><div class="p-3 flex-1 flex flex-col justify-between"><div><span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">'+item.kategori+'</span><h3 class="font-bold text-sm mt-1">'+bersihkanTeks(item.nama)+'</h3><p class="text-emerald-600 font-bold text-sm">Rp '+parseInt(item.harga).toLocaleString('id-ID')+'</p><p class="text-[11px] text-gray-500">👤 '+bersihkanTeks(item.penjual)+' ('+bersihkanTeks(item.lokasi)+')</p>'+catatanHtml+'</div><div class="mt-2"><button onclick="bukaModalOpsiBeli(\''+(item.wa||'')+'\',\''+bersihkanTeks(item.nama).replace(/'/g,"\\'")+'\',\''+item.harga+'\',\''+bersihkanTeks(item.catatan||'').replace(/'/g,"\\'")+'\')" class="w-full bg-emerald-600 text-white text-xs py-2 rounded-lg">Beli Via WA</button>'+tombolAdmin+'</div></div></div>';
     container.innerHTML += card;
   });
 }
-
-// --- FIX FOTO BISA DI KLIK - JEMBATAN KE MODAL ZOOM BOSKU ---
-function bukaFotoProduk(id){
-  let produk = produkData.find(p => p.id === id);
-  if(!produk) return;
-  let fotos = produk.foto ? (Array.isArray(produk.foto) ? produk.foto : [produk.foto]) : [];
-  if(fotos.length === 0) return;
-  bukaModalZoom(fotos, 0);
-}
-function hapusProduk(id){
-  hapusProdukAdmin(id);
-}
-
    // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
 function bukaModalInfoAdmin() {
   document.getElementById('modal-info-admin').classList.remove('hidden');
@@ -1366,8 +1336,6 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
 .nama-atas{font-weight:800; font-size:11px; margin-bottom:2px; color:#075E54}
 .btn-hapus{background:rgba(0,0,0,0.08); border:0; border-radius:12px; padding:2px 6px; font-size:10px; margin-left:6px}
-.no-scrollbar::-webkit-scrollbar{ display:none; width:0; height:0; }
-.no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
 @keyframes pulseRed {0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7)}70%{box-shadow:0 0 0 15px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}} 
 .mic-recording{background:#FF3B30 !important; animation:pulseRed 1.2s infinite !important;}
 @keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
