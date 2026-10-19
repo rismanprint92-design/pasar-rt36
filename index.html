@@ -716,16 +716,17 @@ function renderProduk(data) {
     if(catatanTeks){
       catatanHtml = '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>';
     }
-   let badge = list.length > 1 ? `<span class="absolute top-2.5 right-2.5 bg-black/55 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-full border border-white/20">${list.length} Foto</span>` : '';
+    let badge = list.length > 1 ? `<span class="absolute top-2.5 right-2.5 bg-black/55 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-full border border-white/20 pointer-events-none">${list.length} Foto</span>` : '';
     let tombolAdmin = '';
     if(isAdmin){
-      tombolAdmin = `<div class="grid grid-cols-2 gap-1.5 mt-2"><button onclick="muatDataKeFormEdit('${item.id}')" class="bg-blue-50 text-blue-600 text-[11px] font-bold py-2 rounded-full border border-blue-100">✏️ Edit</button><button onclick="hapusProduk('${item.id}')" class="bg-red-50 text-red-600 text-[11px] font-bold py-2 rounded-full border border-red-100">🗑️ Hapus</button></div>`;
+      tombolAdmin = `<div class="grid grid-cols-2 gap-1.5 mt-2"><button onclick="muatDataKeFormEdit('${item.id}')" class="bg-blue-50 text-blue-600 text-[11px] font-bold py-2 rounded-full border border-blue-100">✏️ Edit</button><button onclick="hapusProdukAdmin('${item.id}')" class="bg-red-50 text-red-600 text-[11px] font-bold py-2 rounded-full border border-red-100">🗑️ Hapus</button></div>`;
     }
+    let fotosData = JSON.stringify(list).replace(/'/g, "&#39;");
     let card = `<div id="produk-${item.id}" class="bg-white rounded-[18px] overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col h-full hover:shadow-[0_8px_28px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300">
-      <div class="relative aspect-[1/1] bg-gray-50 overflow-hidden">
-        <img src="${foto}" class="w-full h-full object-cover" loading="lazy">
+    <div class="relative aspect-[1/1] bg-gray-50 overflow-hidden cursor-pointer" onclick="bukaFotoProduk('${item.id}')" data-fotos='${fotosData}'>
+       <img src="${foto}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy">
         ${badge}
-        <span class="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-gray-100">${(item.kategori || 'JASA').toUpperCase()}</span>
+        <span class="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-gray-100 pointer-events-none">${(item.kategori || 'JASA').toUpperCase()}</span>
       </div>
       <div class="p-3 flex flex-col flex-1">
         <h3 class="font-bold text-[13px] leading-tight line-clamp-2 min-h-[34px] text-gray-900">${item.nama}</h3>
@@ -741,6 +742,19 @@ function renderProduk(data) {
     container.innerHTML += card;
   });
 }
+
+// --- FIX FOTO BISA DI KLIK - JEMBATAN KE MODAL ZOOM BOSKU ---
+function bukaFotoProduk(id){
+  let produk = produkData.find(p => p.id === id);
+  if(!produk) return;
+  let fotos = produk.foto ? (Array.isArray(produk.foto) ? produk.foto : [produk.foto]) : [];
+  if(fotos.length === 0) return;
+  bukaModalZoom(fotos, 0);
+}
+function hapusProduk(id){
+  hapusProdukAdmin(id);
+}
+
    // --- FUNGSI MODAL INFO & MASUKAN PERBAIKAN WEBSITE ---
 function bukaModalInfoAdmin() {
   document.getElementById('modal-info-admin').classList.remove('hidden');
