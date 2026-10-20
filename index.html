@@ -1582,31 +1582,53 @@ function kembaliStep1() {
   if(step1) step1.classList.remove('hidden');
 }
   
-function cekOTP(event){ 
-  let btn=null, textAsli='';
-  try{
-    let input=document.getElementById('inputOTP').value.trim();
-    if(!input){ alert('Isi kode dulu bosku!'); return; }
-    btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
-    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Verifikasi bosku...'; btn.style.opacity='0.6'; }
-    
-    setTimeout(()=>{
-      if(input!==otpKode){ 
-        alert('Kode salah bosku! Kode yang benar: '+otpKode); 
-        if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-        return; 
-      } 
-      localStorage.setItem('verified_wa_rt36', verifiedPhone); 
-      localStorage.setItem('verified_nama_rt36', verifiedNama); 
-      localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
-      localStorage.setItem('nama_warga_rt36', verifiedNama); 
-      document.getElementById('modalVerifWA').classList.add('hidden'); 
-      location.reload(); 
-    },400);
-  }catch(err){
-    alert('Error verif: '+err.message);
-    if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Verifikasi & Masuk'; btn.style.opacity='1'; }
+function cekOTP(event) {
+  let inputEl = document.getElementById('inputOTP');
+  if(!inputEl) return;
+  let input = inputEl.value.trim();
+  
+  if(!input || input.length < 4) {
+    alert('Masukkan 4 digit kode dengan benar bosku!');
+    return;
   }
+  
+  // Ambil kode asli yang tertera di kotak kuning tampilan (elemen kodeDemo) secara langsung agar tidak meleset
+  let elKodeDemo = document.getElementById('kodeDemo');
+  let kodeAsli = elKodeDemo ? elKodeDemo.innerText.trim() : otpKodeSimpan;
+  
+  let btn = event ? event.currentTarget : null;
+  let textAsli = btn ? btn.innerHTML : '';
+  
+  if(btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Memeriksa...';
+    btn.style.opacity = '0.6';
+  }
+  
+  setTimeout(() => {
+    if(input !== kodeAsli) {
+      alert('Kode salah bosku! Kode yang benar: ' + kodeAsli);
+      if(btn) {
+        btn.disabled = false;
+        btn.innerHTML = textAsli || 'Verifikasi & Masuk';
+        btn.style.opacity = '1';
+      }
+      return;
+    }
+    
+    // Simpan data login ke localStorage browser
+    localStorage.setItem('verified_wa_rt36', verifiedPhone);
+    localStorage.setItem('verified_nama_rt36', verifiedNama);
+    localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now());
+    localStorage.setItem('nama_warga_rt36', verifiedNama);
+    
+    let modal = document.getElementById('modalVerifWA');
+    if(modal) modal.classList.add('hidden');
+    
+    alert('🎉 Berhasil masuk bosku!');
+    location.reload();
+  }, 400);
+ }
 }
 function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
