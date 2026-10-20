@@ -1243,40 +1243,18 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     });
     
 function keluarDariPasarRT36() {
-  let hpAktif = localStorage.getItem('verified_wa_rt36') || localStorage.getItem('verified_nama_rt36') || '';
-  
-  // 1. Kotak Konfirmasi
-  let konfirmasi = confirm("Apakah Anda yakin ingin keluar dari akun Pasar RT.36?");
-  if (!konfirmasi) return;
+  if (!confirm("Apakah Anda yakin ingin keluar dari akun Pasar RT.36?")) return;
 
-  // 2. Minta konfirmasi Nomor HP untuk keamanan keluar
   let inputKonfirmasi = prompt("Masukkan Nomor HP Anda untuk konfirmasi keluar:");
   if (inputKonfirmasi === null) return;
 
-  let inputBersih = inputKonfirmasi.replace(/\D/g, '');
-  let hpBersih = hpAktif.replace(/\D/g, '');
-
-  if (hpBersih && inputBersih !== hpBersih && inputKonfirmasi.trim() !== '1234') {
-    alert("⚠️ Nomor HP tidak cocok! Gagal keluar.");
-    return;
-  }
-
-  // 3. Hapus data sesi login dari localStorage
-  localStorage.removeItem('verified_wa_rt36');
-  localStorage.removeItem('verified_nama_rt36');
-  localStorage.removeItem('nama_warga_rt36');
-  localStorage.removeItem('my_chat_id');
+  // Hapus semua data penyimpanan login
   localStorage.clear();
-
+  
   alert("✅ Berhasil keluar bosku!");
 
-  // 4. Langsung tampilkan kembali modal verifikasi (login page) tanpa perlu reload total
-  let modalVerif = document.getElementById('modalVerifWA');
-  if (modalVerif) {
-    modalVerif.classList.remove('hidden');
-  } else {
-    location.reload(); // Cadangan jika modal tidak ditemukan
-  }
+  // Reload bersih tanpa cache agar modal login muncul dari awal
+  window.location.href = window.location.pathname + '?logout=' + Date.now();
 }
 
     // --- FUNGSI POPUP MENU UTAMA HEADER ---
@@ -1748,11 +1726,17 @@ function autoHapus24Jam(){
 }
 
 window.addEventListener('load', function(){
-  let isVerif = cekVerifikasi ? cekVerifikasi() : localStorage.getItem('verified_wa_rt36');
+  let isVerif = localStorage.getItem('verified_wa_rt36') || localStorage.getItem('verified_wa');
   let modalVerif = document.getElementById('modalVerifWA');
   
-  if(!isVerif) {
-    if(modalVerif) modalVerif.classList.remove('hidden');
+  if (!isVerif) {
+    if (modalVerif) {
+      modalVerif.classList.remove('hidden');
+      let step1 = document.getElementById('step-1-verif') || document.getElementById('step1Verif');
+      let step2 = document.getElementById('step-2-verif') || document.getElementById('step2Verif');
+      if (step1) step1.classList.remove('hidden');
+      if (step2) step2.classList.add('hidden');
+    }
     return;
   }
   
