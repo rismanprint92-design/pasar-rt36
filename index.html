@@ -1213,9 +1213,19 @@
     }
 
     window.addEventListener('load', function(){
-      // Web utama langsung dimuat tanpa memicu modal verifikasi di awal.
+      // Jika login dimatikan, buatkan identitas tamu otomatis di awal
+      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
+        if (!localStorage.getItem('verified_nama_rt36')) {
+          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
+          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
+        }
+      }
+
       let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-      if(verifiedPhone) {
+      let verifiedNama = localStorage.getItem('verified_nama_rt36');
+      
+      // Jalankan chat jika login aktif DAN sudah terverifikasi, ATAU jika login sedang dimatikan (false)
+      if (verifiedPhone || (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT)) {
         inisialisasiChatLive();
       }
     });
