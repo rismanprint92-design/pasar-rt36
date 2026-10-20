@@ -1242,41 +1242,41 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
       setTimeout(cekDeepLinkProduk, 1500);
     });
     
-// --- KELUAR DARI PASAR ---
-    function keluarDariPasarRT36() {
-  let hpAktif = localStorage.getItem('verified_wa_rt36') || localStorage.getItem('verified_wa') || '';
-  let namaAktif = localStorage.getItem('verified_nama_rt36') || localStorage.getItem('namaRT36') || 'Warga';
-
-  // 1. Kotak Konfirmasi Pertama
-  let konfirmasi = confirm(`Halo ${namaAktif}, apakah Anda yakin ingin keluar dari Pasar RT.36?`);
+function keluarDariPasarRT36() {
+  let hpAktif = localStorage.getItem('verified_wa_rt36') || localStorage.getItem('verified_nama_rt36') || '';
+  
+  // 1. Kotak Konfirmasi
+  let konfirmasi = confirm("Apakah Anda yakin ingin keluar dari akun Pasar RT.36?");
   if (!konfirmasi) return;
 
-  // 2. Minta masukan Nomor HP atau Kode Verifikasi untuk Keamanan Keluar
-  let inputKonfirmasi = prompt("Untuk keamanan, masukkan Nomor HP / WA Anda untuk mengonfirmasi keluar:");
-  if (inputKonfirmasi === null) return; // Jika klik Batal
+  // 2. Minta konfirmasi Nomor HP untuk keamanan keluar
+  let inputKonfirmasi = prompt("Masukkan Nomor HP Anda untuk konfirmasi keluar:");
+  if (inputKonfirmasi === null) return;
 
   let inputBersih = inputKonfirmasi.replace(/\D/g, '');
   let hpBersih = hpAktif.replace(/\D/g, '');
 
-  // 3. Cek apakah nomor yang dimasukkan cocok dengan sesi login saat ini
   if (hpBersih && inputBersih !== hpBersih && inputKonfirmasi.trim() !== '1234') {
-    alert("⚠️ Nomor HP / Kode konfirmasi tidak cocok! Anda gagal keluar.");
+    alert("⚠️ Nomor HP tidak cocok! Gagal keluar.");
     return;
   }
 
-  // 4. Hapus seluruh data sesi login lokal jika nomor sesuai
+  // 3. Hapus data sesi login dari localStorage
   localStorage.removeItem('verified_wa_rt36');
   localStorage.removeItem('verified_nama_rt36');
   localStorage.removeItem('nama_warga_rt36');
   localStorage.removeItem('my_chat_id');
-  localStorage.removeItem('namaRT36');
-  localStorage.removeItem('onlineCountRT36');
-  localStorage.removeItem('kodeMasukRT36');
-  localStorage.removeItem('verifikasiRT36');
   localStorage.clear();
 
-  alert("✅ Berhasil keluar dari Pasar RT.36, bosku! Sampai jumpa kembali.");
-  location.reload();
+  alert("✅ Berhasil keluar bosku!");
+
+  // 4. Langsung tampilkan kembali modal verifikasi (login page) tanpa perlu reload total
+  let modalVerif = document.getElementById('modalVerifWA');
+  if (modalVerif) {
+    modalVerif.classList.remove('hidden');
+  } else {
+    location.reload(); // Cadangan jika modal tidak ditemukan
+  }
 }
 
     // --- FUNGSI POPUP MENU UTAMA HEADER ---
