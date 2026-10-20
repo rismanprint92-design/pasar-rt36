@@ -1748,8 +1748,14 @@ function autoHapus24Jam(){
 }
 
 window.addEventListener('load', function(){
-  let isVerif=cekVerifikasi(); 
-  if(!isVerif) return;
+  let isVerif = cekVerifikasi ? cekVerifikasi() : localStorage.getItem('verified_wa_rt36');
+  let modalVerif = document.getElementById('modalVerifWA');
+  
+  if(!isVerif) {
+    if(modalVerif) modalVerif.classList.remove('hidden');
+    return;
+  }
+  
   let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
   let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
   
