@@ -160,19 +160,31 @@ button.bg-emerald-600{
 <body class="bg-gray-100 pb-24 font-sans">
 
   <!-- Header Utama -->
-  <header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
-    <div class="flex justify-between items-center max-w-md mx-auto">
+<header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
+    <div class="flex justify-between items-center max-w-md mx-auto relative">
       <div>
         <h1 class="font-bold text-sm sm:text-base">Pasar RT. 36 AR & Metroland</h1>
         <p class="text-[10px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
       </div>
-      <div class="flex gap-1.5">
+      <div class="flex gap-1.5 items-center relative">
         <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
           + Jual
         </button>
-        <button onclick="toggleModeAdmin()" id="btn-admin" class="bg-emerald-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center gap-1">
-          <i class="ph ph-shield-check text-xs"></i> <span id="label-admin">Admin</span>
+
+        <!-- Tombol Ikon Menu Utama -->
+        <button onclick="toggleMenuUtama(event)" class="bg-emerald-800 text-white w-8 h-8 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center justify-center text-base shadow">
+          <i class="ph ph-dots-three-vertical font-bold"></i>
         </button>
+
+        <!-- Popup Menu Melayang (Dropdown) -->
+        <div id="dropdown-menu-utama" class="hidden absolute right-0 top-10 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 text-xs py-1 text-gray-700">
+          <button onclick="toggleModeAdmin(); tutupMenuUtama();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium text-gray-700">
+            <i class="ph ph-shield-check text-emerald-600 text-sm"></i> <span id="label-admin">Mode Admin RT</span>
+          </button>
+          <button onclick="keluarDariPasarRT36(); tutupMenuUtama();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium">
+            <i class="ph ph-sign-out text-sm"></i> Keluar Akun
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -1230,6 +1242,63 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
       setTimeout(cekDeepLinkProduk, 1500);
     });
     
+// --- KELUAR DARI PASAR ---
+    function keluarDariPasarRT36() {
+  let hpAktif = localStorage.getItem('verified_wa_rt36') || localStorage.getItem('verified_wa') || '';
+  let namaAktif = localStorage.getItem('verified_nama_rt36') || localStorage.getItem('namaRT36') || 'Warga';
+
+  // 1. Kotak Konfirmasi Pertama
+  let konfirmasi = confirm(`Halo ${namaAktif}, apakah Anda yakin ingin keluar dari Pasar RT.36?`);
+  if (!konfirmasi) return;
+
+  // 2. Minta masukan Nomor HP atau Kode Verifikasi untuk Keamanan Keluar
+  let inputKonfirmasi = prompt("Untuk keamanan, masukkan Nomor HP / WA Anda untuk mengonfirmasi keluar:");
+  if (inputKonfirmasi === null) return; // Jika klik Batal
+
+  let inputBersih = inputKonfirmasi.replace(/\D/g, '');
+  let hpBersih = hpAktif.replace(/\D/g, '');
+
+  // 3. Cek apakah nomor yang dimasukkan cocok dengan sesi login saat ini
+  if (hpBersih && inputBersih !== hpBersih && inputKonfirmasi.trim() !== '1234') {
+    alert("⚠️ Nomor HP / Kode konfirmasi tidak cocok! Anda gagal keluar.");
+    return;
+  }
+
+  // 4. Hapus seluruh data sesi login lokal jika nomor sesuai
+  localStorage.removeItem('verified_wa_rt36');
+  localStorage.removeItem('verified_nama_rt36');
+  localStorage.removeItem('nama_warga_rt36');
+  localStorage.removeItem('my_chat_id');
+  localStorage.removeItem('namaRT36');
+  localStorage.removeItem('onlineCountRT36');
+  localStorage.removeItem('kodeMasukRT36');
+  localStorage.removeItem('verifikasiRT36');
+  localStorage.clear();
+
+  alert("✅ Berhasil keluar dari Pasar RT.36, bosku! Sampai jumpa kembali.");
+  location.reload();
+}
+
+    // --- FUNGSI POPUP MENU UTAMA HEADER ---
+function toggleMenuUtama(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('dropdown-menu-utama');
+  if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+function tutupMenuUtama() {
+  const dropdown = document.getElementById('dropdown-menu-utama');
+  if (dropdown) dropdown.classList.add('hidden');
+}
+
+// Tutup menu otomatis jika mengklik di luar menu
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('dropdown-menu-utama');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+});
+
     // Pendaftaran Service Worker untuk PWA
     var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
     if ('serviceWorker' in navigator && !isOldAndroid) {
