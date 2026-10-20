@@ -965,6 +965,8 @@
     }
 
     // --- LOGIKA LIVE CHAT & LOGIN BERDASARKAN KETIK/AKSES CHAT ---
+   // --- LOGIKA LIVE CHAT & LOGIN ---
+    let AKTIFKAN_LOGIN_CHAT = false; // <-- PASANG DISINI (false = mati, true = aktif)
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
     let chatPertamaLoad = true;
