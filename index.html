@@ -159,8 +159,10 @@ button.bg-emerald-600{
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
 
-  <!-- Header Utama -->
- <header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center relative">
+  <!-- ================================================= -->
+<!-- BAGIAN HEADER UTAMA (DIPERBAIKI POSISI DROPDOWN)   -->
+<!-- ================================================= -->
+<header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center relative">
   <div>
     <h1 class="font-bold text-[16px] md:text-[18px]">Pasar RT. 36 AR & Metroland</h1>
     <p class="text-[11px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
@@ -170,13 +172,13 @@ button.bg-emerald-600{
       + Jual
     </button>
     
-    <!-- IKON ADMIN DIGANTI IKON GERIGI (PENGATURAN) -->
+    <!-- TOMBOL GERIGI PENGATURAN -->
     <button onclick="toggleMenuPengaturan()" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow">
       <i class="ph ph-gear text-base"></i>
     </button>
 
-    <!-- MENU DROPDOWN GERIGI (ADMIN & LOGOUT) -->
-    <div id="dropdown-pengaturan" class="hidden absolute right-0 top-10 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50 text-xs">
+    <!-- MENU DROPDOWN GERIGI (POSISI DIBAWAH TOMBOL GERIGI) -->
+    <div id="dropdown-pengaturan" class="hidden absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[9999] text-xs">
       <button onclick="toggleModeAdmin(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2 border-b">
         <i class="ph ph-shield-check text-base text-emerald-600"></i>
         <span id="label-admin">Mode Admin RT</span>
