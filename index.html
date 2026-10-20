@@ -1364,7 +1364,16 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 
-// === FIX CEK VERIFIKASI BOSKU - 1 FUNGSI SAJA BOSKU - MUNCUL SAAT BUKA WEBSITE BOSKU ===
+// === FIX LOGIN TANPA WA BOSKU - LANGSUNG MUNCUL KODE 4 ANGKA BOSKU ===
+let otpKodeSimpan = '';
+let dataWargaSementara = null;
+let verifiedPhone = '';
+let verifiedNama = '';
+
+function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
+function getOnlineRef(){ try{ if(typeof db!=='undefined' && db.ref) return db.ref('online_warga'); if(typeof database!=='undefined' && database.ref) return database.ref('online_warga'); return firebase.database().ref('online_warga'); }catch(e){} return firebase.database().ref('online_warga'); }
+function getWargaRef(){ try{ return firebase.database().ref('warga_rt36'); }catch(e){ return null; } }
+
 function cekVerifikasi(){ 
   verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
   verifiedNama=localStorage.getItem('verified_nama_rt36'); 
@@ -1377,265 +1386,124 @@ function cekVerifikasi(){
   } 
   if(modal) modal.classList.add('hidden');
   if(label) label.innerText='✓ '+verifiedNama; 
-  if(typeof updateIconNotif==='function') updateIconNotif(); 
-  if(typeof setSuaraAktif==='function') setSuaraAktif(); 
   return true; 
 }
 
-async function kirimKodeKeWhatsApp(event){  
-  let modal = document.getElementById('modalVerifWA') || document.body;
-  let inputs = modal.querySelectorAll('input');
-  
-  let elNama = inputs[0]; // Input Nama
-  let elPhone = inputs[1]; // Input No HP / WA
-  
+async function kirimKodeKeSaya(event){
+  let modal = document.getElementById('modalVerifWA');
+  let elNama = document.getElementById('inputNama');
+  let elPhone = document.getElementById('inputWA');
   if(!elNama || !elPhone){ alert('Form tidak ditemukan bosku!'); return; }
-  
   let nama = elNama.value.trim();
   let phone = elPhone.value.trim();
-  
   if(!nama || nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); elNama.focus(); return; }
   if(!phone || phone.length < 10){ alert('Isi nomor WA dulu bosku dengan benar!'); elPhone.focus(); return; }
-  
   let nomorBersih = phone.replace(/\D/g,'');
+  if(nomorBersih.startsWith('0')) nomorBersih = '62' + nomorBersih.slice(1);
 
   let btn = event ? event.currentTarget : null;
   let textAsli = btn ? btn.innerHTML : '';
-  
   try {
-    if(btn){ btn.disabled = true; btn.innerHTML = '⏳ Mengecek nomor...'; btn.style.opacity = '0.6'; }
+    if(btn){ btn.disabled=true; btn.innerHTML='⏳ Mengecek bosku...'; btn.style.opacity='0.6'; }
 
-    // 1. CEK APAKAH NOMOR WA SUDAH PERNAH TERDAFTAR DI PERANGKAT LAIN (FIREBASE)
+    // CEK 1 HP 1 DEVICE BOSKU
     try {
       let onlineRef = getOnlineRef();
       if(onlineRef){
         let cek = await onlineRef.orderByChild('phone').equalTo(nomorBersih).once('value');
         if(cek.exists()){
-          alert('⚠️ MAAF BOSKU! Nomor WhatsApp '+nomorBersih+' sudah terdaftar dan aktif di perangkat lain! Satu nomor hanya untuk satu perangkat.');
-          if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
-          return;
+          let sudahAda = false;
+          cek.forEach(child=>{
+            let v = child.val();
+            if(v.phone === nomorBersih && v.nama !== nama) sudahAda = true;
+          });
+          // Kalau nomor sama tapi nama beda, atau sudah online, tolak
+          // Kecuali ini HP sendiri yang sudah login sebelumnya (cek localStorage)
+          if(sudahAda && localStorage.getItem('verified_wa_rt36') !== nomorBersih){
+            alert('⚠️ Nomor '+nomorBersih+' sudah aktif di perangkat lain bosku! 1 nomor hanya untuk 1 HP!');
+            if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+            return;
+          }
         }
       }
-    } catch(e) { console.log('Lewati cek duplikat', e); }
+    } catch(e){ console.log('lewati cek online',e); }
 
-    await new Promise(r => setTimeout(r, 500));
-
-    // 2. GENERATE KODE OTP LANGSUNG DI LAYAR (TANPA BUKA WHATSAPP)
+    // GENERATE 4 ANGKA ACAK BOSKU - TANPA WA BOSKU
     let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
     otpKodeSimpan = kodeOTP;
     dataWargaSementara = { nama: nama, phone: nomorBersih };
+    verifiedPhone = nomorBersih;
+    verifiedNama = nama;
 
-    // Tampilkan kode OTP langsung di kotak kuning modal
+    // SIMPAN KE FIREBASE BOSKU
+    try{
+      let wargaRef = getWargaRef();
+      if(wargaRef) await wargaRef.child(nomorBersih).set({nama: nama, phone: nomorBersih, kode: kodeOTP, timestamp: Date.now(), status: 'menunggu_verif'});
+    }catch(e){}
+
+    // TAMPILKAN LANGSUNG DI WEBSITE BOSKU - TIDAK BUKA WA BOSKU
     let elKode = document.getElementById('kodeDemo');
     let elStatus = document.getElementById('statusKirim');
     if(elKode) elKode.innerText = kodeOTP;
-    if(elStatus){ 
-      elStatus.innerText = '✅ Kode OTP Berhasil Dibuat!'; 
-      elStatus.classList.remove('hidden'); 
-    }
+    if(elStatus){ elStatus.innerText = '✅ Kode berhasil dibuat! Masukkan di bawah bosku!'; elStatus.classList.remove('hidden'); elStatus.style.color='green'; }
 
-    // 3. PINDAH KE MENU INPUT OTP (STEP 2)
     let step1 = document.getElementById('step1Verif');
     let step2 = document.getElementById('step2Verif');
     if(step1) step1.classList.add('hidden');
     if(step2) step2.classList.remove('hidden');
     
-    if(btn){ btn.disabled = false; btn.innerHTML = textAsli; btn.style.opacity = '1'; }
+    if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
   } catch(err) {
     alert('Error bosku: '+err.message);
-    if(btn){ btn.disabled = false; btn.innerHTML = textAsli || 'Dapatkan Kode Masuk 📲'; btn.style.opacity = '1'; }
+    if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Dapatkan Kode Masuk 📲'; btn.style.opacity='1'; }
   }
 }
-function cekOTP(event){ 
-  let btn=null, textAsli='';
+
+function cekOTP(event){
   try{
-    let input=document.getElementById('inputOTP').value.trim();
+    let inputEl = document.getElementById('inputOTP');
+    let input = inputEl ? inputEl.value.trim() : '';
     if(!input){ alert('Isi kode dulu bosku!'); return; }
-    btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
-    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Verifikasi bosku...'; btn.style.opacity='0.6'; }
-    
-    setTimeout(()=>{
-      if(input!==otpKode){ 
-        alert('Kode salah bosku! Kode yang benar: '+otpKode); 
+    let btn = event ? event.currentTarget : null;
+    let textAsli = btn ? btn.innerHTML : '';
+    if(btn){ btn.disabled=true; btn.innerHTML='⏳ Verifikasi...'; btn.style.opacity='0.6'; }
+
+    setTimeout(async ()=>{
+      if(input !== otpKodeSimpan){
+        alert('Kode salah bosku! Kode yang benar: '+otpKodeSimpan);
         if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
-        return; 
-      } 
-      localStorage.setItem('verified_wa_rt36', verifiedPhone); 
-      localStorage.setItem('verified_nama_rt36', verifiedNama); 
-      localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
-      localStorage.setItem('nama_warga_rt36', verifiedNama); 
-      document.getElementById('modalVerifWA').classList.add('hidden'); 
-      location.reload(); 
+        return;
+      }
+      // BERHASIL BOSKU
+      localStorage.setItem('verified_wa_rt36', dataWargaSementara.phone);
+      localStorage.setItem('verified_nama_rt36', dataWargaSementara.nama);
+      localStorage.setItem('my_chat_id', 'warga_'+dataWargaSementara.phone.slice(-4)+'_'+Date.now());
+      localStorage.setItem('nama_warga_rt36', dataWargaSementara.nama);
+      localStorage.setItem('warga_rt36_verified','true');
+
+      // Update status di Firebase jadi verified
+      try{
+        let wargaRef = getWargaRef();
+        if(wargaRef) await wargaRef.child(dataWargaSementara.phone).update({status:'verified', verified_at: Date.now()});
+      }catch(e){}
+
+      document.getElementById('modalVerifWA').classList.add('hidden');
+      alert('✅ Berhasil masuk bosku! Selamat datang '+dataWargaSementara.nama+'!');
+      location.reload();
     },400);
   }catch(err){
     alert('Error verif: '+err.message);
-    if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Verifikasi & Masuk'; btn.style.opacity='1'; }
   }
-}
-function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
-function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
-
-function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
-function setSuaraAktif(){
-  let audio=document.getElementById('notifSound');
-  audio.src=suaraList[suaraIndex].url;
-  [0,1,2].forEach(i=>{
-    let el=document.getElementById('suara'+i);
-    if(el){
-      let check=el.querySelector('.check');
-      if(i===suaraIndex){ el.classList.add('bg-green-50','border-green-500'); if(check) check.classList.remove('hidden'); }
-      else { el.classList.remove('bg-green-50','border-green-500'); if(check) check.classList.add('hidden'); }
-    }
-  });
-}
-function gantiSuara(idx){ suaraIndex=idx; localStorage.setItem('suara_pilihan_rt36', idx); setSuaraAktif(); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },100); }
-function toggleNotifikasi(){
-  let menu=document.getElementById('menuPilihanSuara');
-  if(notifAktif && menu.classList.contains('hidden')){ menu.classList.remove('hidden'); return; }
-  if(!notifAktif){ notifAktif=true; localStorage.setItem('notif_suara_rt36','on'); updateIconNotif(); menu.classList.remove('hidden'); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },200); }
-  else { if(!menu.classList.contains('hidden')){ menu.classList.add('hidden'); return; } notifAktif=false; localStorage.setItem('notif_suara_rt36','off'); updateIconNotif(); alert('🔕 Bunyi NONAKTIF bosku!'); }
-}
-function unlockAudio(){
-  try{
-    if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
-    let audio=document.getElementById('notifSound');
-    audio.volume=0.01; audio.play().then(()=>{ audio.pause(); audio.currentTime=0; audio.volume=1; }).catch(()=>{});
-  }catch(e){}
-}
-function beepFallback(){
-  try{
-    if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
-    let o=audioCtx.createOscillator(); let g=audioCtx.createGain();
-    o.type='sine'; o.frequency.value= 800 + (suaraIndex*200); o.connect(g); g.connect(audioCtx.destination);
-    g.gain.setValueAtTime(0.3, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime+0.25);
-  }catch(e){}
-}
-function bunyikanNotifikasi(){
-  if(!notifAktif) return;
-  let audio=document.getElementById('notifSound');
-  try{ audio.currentTime=0; audio.volume=1; let p=audio.play(); if(p!==undefined){ p.catch(()=>{ beepFallback(); }); } }catch(e){ beepFallback(); }
-}
-function kedipkanIconChat(){
-  let btn=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
-  if(!btn) return;
-  if(document.getElementById('panelChatWarga').classList.contains('hidden')){
-    btn.classList.add('icon-berkedip');
-    if(badge){ badge.classList.remove('hidden'); badge.classList.add('flex'); }
-    setTimeout(()=>{ btn.classList.remove('icon-berkedip'); }, 12000);
-  }
-}
-function toggleBoxChat(){ 
-  unlockAudio();
-  let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'), badge=document.getElementById('badgeBaru');
-  if(!cekVerifikasi()){ p.classList.add('hidden'); b.classList.add('hidden'); return; } 
-  let isHidden=p.classList.contains('hidden');
-  p.classList.toggle('hidden'); b.classList.toggle('hidden');
-  if(isHidden){
-    b.classList.remove('icon-berkedip');
-    if(badge){ badge.classList.add('hidden'); badge.classList.remove('flex'); }
-  }
-}
-function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; let mic=document.getElementById('iconMic'), send=document.getElementById('iconSend'); if(isRekam) return; mic.classList.toggle('hidden',ada); send.classList.toggle('hidden',!ada); }
-function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
-function kirimPesanWarga(){ let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; cekKetik(); }); }
-function kirimFoto(input){ if(!input.files[0]) return; let myId=localStorage.getItem('my_chat_id'); let reader=new FileReader(); reader.onload=e=>{ let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
-function kirimLokasi(){
-  if(!navigator.geolocation){ alert('HP tidak support lokasi bosku!'); return; }
-  if(!confirm('Kirim lokasi Anda sekarang ke warga RT.36 bosku?')) return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    let lat=pos.coords.latitude, lng=pos.coords.longitude;
-    let mapsLink=`https://www.google.com/maps?q=${lat},${lng}`;
-    let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    getChatRef().push({nama:verifiedNama, pesan:mapsLink, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'lokasi', lat:lat, lng:lng});
-  }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS dulu bosku!'); });
-}
-async function mulaiRekam(){
-  isRekam=true; detikRekam=0;
-  document.getElementById('areaKetikNormal').classList.add('hidden');
-  document.getElementById('areaRekamDalamKotak').classList.remove('hidden');
-  document.getElementById('iconDalamKotak').classList.add('hidden');
-  let btn=document.getElementById('btnAksi'); btn.classList.add('mic-recording'); btn.classList.remove('bg-[#00A884]'); btn.classList.add('bg-[#FF3B30]');
-  document.getElementById('iconMic').classList.add('hidden'); document.getElementById('iconStop').classList.remove('hidden');
-  timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekamDalam').innerText=m+':'+s; },1000);
-  try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic bosku!'); resetMicUI(); }
-}
-function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; resetMicUI(); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } }
-function resetMicUI(){
-  document.getElementById('areaKetikNormal').classList.remove('hidden');
-  document.getElementById('areaRekamDalamKotak').classList.add('hidden');
-  document.getElementById('iconDalamKotak').classList.remove('hidden');
-  let btn=document.getElementById('btnAksi'); btn.classList.remove('mic-recording','bg-[#FF3B30]'); btn.classList.add('bg-[#00A884]');
-  document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden');
-  cekKetik();
-}
-function hapusChat(key, pemilikId){
-  let myId = localStorage.getItem('my_chat_id');
-  if(pemilikId !== myId){ alert('Tidak bisa hapus chat orang lain bosku! Hanya bisa hapus chat sendiri bosku!'); return; }
-  if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
-  getChatRef().child(key).remove();
-}
-function autoHapus24Jam(){
-  let ref=getChatRef();
-  let batas=Date.now() - (24*60*60*1000);
-  ref.once('value').then(snap=>{
-    snap.forEach(child=>{
-      let data=child.val();
-      if(data && data.timestamp && data.timestamp < batas){
-        ref.child(child.key).remove();
-      }
-    });
-  });
 }
 
-window.addEventListener('load', function(){
-  let isVerif=cekVerifikasi(); 
-  if(!isVerif) return;
-  let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
-  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
+function kembaliStep1(){ 
+  document.getElementById('step2Verif').classList.add('hidden'); 
+  document.getElementById('step1Verif').classList.remove('hidden'); 
+  let st = document.getElementById('statusKirim');
+  if(st) st.classList.add('hidden');
+}
+function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); if(i){ i.value+=e; i.focus(); } }
   
-  try{
-    let onlineRoot = getOnlineRef();
-    let myOnlineRef = onlineRoot.child(myId);
-    myOnlineRef.set({nama: verifiedNama, phone: verifiedPhone, time: Date.now()});
-    myOnlineRef.onDisconnect().remove();
-    setInterval(()=>{ myOnlineRef.update({time: Date.now()}); }, 25000);
-
-    onlineRoot.on('value', snap=>{
-      let count = snap.numChildren();
-      if(count < 1) count = 1;
-      let el = document.getElementById('statusOnline');
-      if(el) el.innerText = count + ' Online';
-    });
-  }catch(e){
-    document.getElementById('statusOnline').innerText = '1 Online';
-  }
-
-  autoHapus24Jam();
-  setInterval(autoHapus24Jam, 60*60*1000);
-  
-  ref.limitToLast(80).on('child_added', snap=>{
-    let data=snap.val(), key=snap.key; if(!data) return; 
-    if(data.timestamp && (Date.now() - data.timestamp > 24*60*60*1000)){ ref.child(key).remove(); return; }
-    if(document.getElementById(`chat-item-${key}`)) return;
-    let isMe=data.userId===myId; let div=document.createElement('div'); div.id=`chat-item-${key}`; div.className=isMe?'bubble-wa bubble-me':'bubble-wa bubble-other';
-    let esc=t=>t?String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'';
-    let content=''; 
-    if(data.tipe==='foto') content=`<img src="${data.pesan}" class="rounded-lg max-w-full max-h-60">`; 
-    else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
-    else if(data.tipe==='lokasi') content=`<div><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">📍 Lihat Lokasi Saya</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:4px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
-    else content=`<div class="break-words">${esc(data.pesan)}</div>`;
-    let namaHtml=`<div class="nama-atas">${esc(data.nama)} ${isMe?'(Anda)':''}</div>`;
-    let tombolHapus = isMe ? `<button onclick="hapusChat('${key}','${data.userId}')" class="btn-hapus">🗑️</button>` : ``;
-    div.innerHTML=`${namaHtml}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span>${tombolHapus}</div>`;
-    box.appendChild(div); box.scrollTop=box.scrollHeight;
-    if(!chatPertamaLoad && !isMe){ bunyikanNotifikasi(); kedipkanIconChat(); }
-  });
-  setTimeout(()=>{ chatPertamaLoad = false; }, 4000);
-  ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
-  document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
-});
 </script>
 <!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
   <script>
