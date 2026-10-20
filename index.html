@@ -1767,27 +1767,23 @@ document.addEventListener('DOMContentLoaded',function(){
       wRef.child(hp).set({nama: nama, hp: hp, kode: kode, timestamp: Date.now(), status: 'menunggu'}).catch(()=>{});
     }
 
-    let waAdmin = '6282299511782';
-    try { if(typeof adminWaAktif !== 'undefined' && adminWaAktif) waAdmin = adminWaAktif; } catch(e){}
+   let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpKodeSimpan = kodeOTP;
+    verifiedPhone = hp;
+    verifiedNama = nama;
 
-    let pesan = `VERIFIKASI WARGA RT36%0ANama: ${nama}%0AHP: ${hp}%0AKode: ${kode}`;
-    window.open(`https://wa.me/${waAdmin}?text=${pesan}`, '_blank');
-
-    let step1 = document.getElementById('step-1-verif');
-    let step2 = document.getElementById('step-2-verif');
-    if(step1 && step2){
-      step1.classList.add('hidden');
-      step2.classList.remove('hidden');
-    } else {
-      let tanya = prompt(`Kode ${kode} sudah dikirim ke Admin RT.36 bosku!\n\nMasukkan kode untuk masuk (coba ketik ${kode}):`);
-      if(tanya == kode){
-        localStorage.setItem('warga_rt36_verified','true');
-        if(modal) modal.classList.add('hidden');
-        alert('✅ Berhasil masuk bosku!');
-        location.reload();
-      }
+    let elKode = document.getElementById('kodeDemo');
+    let elStatus = document.getElementById('statusKirim');
+    if(elKode) elKode.innerText = kodeOTP;
+    if(elStatus) { 
+      elStatus.innerText = '✅ Kode Masuk Berhasil Dibuat!'; 
+      elStatus.classList.remove('hidden'); 
     }
-  }
+
+    let step1 = document.getElementById('step-1-verif') || document.getElementById('step1Verif');
+    let step2 = document.getElementById('step-2-verif') || document.getElementById('step2Verif');
+    if(step1) step1.classList.add('hidden');
+    if(step2) step2.classList.remove('hidden');
 
   function pasangTombol(){
     let tombol = null;
