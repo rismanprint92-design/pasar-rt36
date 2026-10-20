@@ -1610,5 +1610,50 @@ document.addEventListener('DOMContentLoaded',function(){
   setTimeout(pasangTombol, 3000);
 })();
 </script>
-    </body>
+  <!-- MODAL VERIF WARGA RT.36 TANPA WA BOSKU -->
+<div id="modalVerifWA" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-[9999] p-4">
+  <div class="bg-white w-full max-w-sm p-5 rounded-2xl shadow-2xl">
+    <div id="step1Verif">
+      <h3 class="font-bold text-center text-gray-800 text-sm mb-1">Verifikasi Warga RT.36</h3>
+      <p class="text-[11px] text-gray-500 text-center mb-4">Masuk untuk belanja & jualan bosku</p>
+      <input id="inputNama" type="text" placeholder="Nama Lengkap" class="w-full border p-3 rounded-xl mb-2 text-sm focus:outline-emerald-500">
+      <input id="inputWA" type="number" placeholder="No WA 08xxxxxxxxxx" class="w-full border p-3 rounded-xl mb-3 text-sm focus:outline-emerald-500">
+      <button onclick="kirimKodeKeSaya(event)" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700">Dapatkan Kode Masuk 📲</button>
+      <p id="statusKirim" class="hidden text-[11px] text-center mt-2 font-bold"></p>
+    </div>
+    <div id="step2Verif" class="hidden">
+      <h3 class="font-bold text-center text-gray-800 text-sm mb-1">Masukkan Kode 4 Angka</h3>
+      <p class="text-[11px] text-gray-500 text-center mb-2">Kode muncul di bawah ini bosku, tidak ke WA bosku</p>
+      <div class="bg-yellow-100 border border-yellow-300 p-3 rounded-xl text-center mb-3">
+        <p class="text-[10px] text-gray-600">KODE OTP ANDA BOSKU:</p>
+        <p id="kodeDemo" class="font-black text-3xl tracking-[8px] text-gray-800">----</p>
+      </div>
+      <input id="inputOTP" type="number" maxlength="4" placeholder="0000" class="w-full border p-3 rounded-xl mb-3 text-center text-xl font-bold tracking-widest focus:outline-emerald-500">
+      <button onclick="cekOTP(event)" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 mb-2">Verifikasi & Masuk ✅</button>
+      <button onclick="kembaliStep1()" class="w-full bg-gray-100 text-gray-600 py-2 rounded-xl text-xs">Kembali</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+window.addEventListener('load', ()=>{
+  if(typeof cekVerifikasi==='function') cekVerifikasi();
+});
+</script>
+
+<script>
+function keluarDariPasarRT36(){
+  if(confirm('Mau keluar dari Pasar RT.36 bosku?')){
+    localStorage.removeItem('verified_wa_rt36');
+    localStorage.removeItem('verified_nama_rt36');
+    localStorage.removeItem('nama_warga_rt36');
+    localStorage.removeItem('warga_rt36_verified');
+    localStorage.removeItem('my_chat_id');
+    location.reload();
+  }
+}
+</script>
+
+</body>
 </html>
