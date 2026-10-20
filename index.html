@@ -1810,4 +1810,27 @@ window.addEventListener('load', function(){
   document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
 });
 </script>
+  <script>
+// Skrip Pemaksa Muncul Modal Login Selepas Logout
+document.addEventListener("DOMContentLoaded", function() {
+  let isLogged = localStorage.getItem('verified_wa_rt36');
+  let modal = document.getElementById('modalVerifWA');
+  
+  if (!isLogged || window.location.search.includes('logout')) {
+    if (modal) {
+      // Paksa hapus kelas hidden dan ubah gaya CSS agar tampil di depan
+      modal.classList.remove('hidden');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('z-index', '99999', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      
+      let step1 = document.getElementById('step1Verif');
+      let step2 = document.getElementById('step2Verif');
+      if (step1) { step1.classList.remove('hidden'); step1.style.display = 'block'; }
+      if (step2) { step2.classList.add('hidden'); step2.style.display = 'none'; }
+    }
+  }
+});
+</script>
 </html>
