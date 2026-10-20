@@ -1008,19 +1008,18 @@
 
     // Cek verifikasi login warga (Hanya dipicu saat chat dibuka/diketik)
    function cekVerifikasiChat() {
-  // Jika saklar dimatikan (false), langsung anggap lolos tanpa perlu login/nomor HP
+  // Jika saklar dimatikan (false), langsung otomatis buat identitas tamu & anggap lolos
   if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
-    // Berikan nama default jika belum ada
     if (!localStorage.getItem('verified_nama_rt36')) {
       localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
       localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
     }
     let modal = document.getElementById('modalVerifWA');
     if (modal) modal.classList.add('hidden');
-    return true;
+    return true; // Langsung loloskan agar bisa kirim chat
   }
 
-  // Jika saklar AKTIF (true), jalankan normal seperti biasa
+  // Jika saklar aktif (true), cek apakah sudah login atau belum
   let verifiedPhone = localStorage.getItem('verified_wa_rt36');
   let verifiedNama = localStorage.getItem('verified_nama_rt36');
   let modal = document.getElementById('modalVerifWA');
@@ -1031,7 +1030,6 @@
   if (modal) modal.classList.add('hidden');
   return true;
 }
-
     function prosesLoginLangsung(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
