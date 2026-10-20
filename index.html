@@ -160,36 +160,34 @@ button.bg-emerald-600{
 <body class="bg-gray-100 pb-24 font-sans">
 
   <!-- ================================================= -->
-<!-- BAGIAN HEADER UTAMA (DIPERBAIKI POSISI DROPDOWN)   -->
-<!-- ================================================= -->
 <header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center relative">
   <div>
     <h1 class="font-bold text-[16px] md:text-[18px]">Pasar RT. 36 AR & Metroland</h1>
     <p class="text-[11px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
   </div>
-  <div class="flex gap-1.5 items-center relative">
+  <div class="flex gap-1.5 items-center">
     <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
       + Jual
     </button>
     
     <!-- TOMBOL GERIGI PENGATURAN -->
-    <button onclick="toggleMenuPengaturan()" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow">
+    <button onclick="toggleMenuPengaturan(event)" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow">
       <i class="ph ph-gear text-base"></i>
     </button>
-
-    <!-- MENU DROPDOWN GERIGI (POSISI DIBAWAH TOMBOL GERIGI) -->
-    <div id="dropdown-pengaturan" class="hidden absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[9999] text-xs">
-      <button onclick="toggleModeAdmin(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2 border-b">
-        <i class="ph ph-shield-check text-base text-emerald-600"></i>
-        <span id="label-admin">Mode Admin RT</span>
-      </button>
-      <button onclick="keluarDariPasarRT36(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2">
-        <i class="ph ph-sign-out text-base text-red-600"></i>
-        <span>Keluar Akun (Logout)</span>
-      </button>
-    </div>
   </div>
 </header>
+
+<!-- MENU DROPDOWN GERIGI (POSISI FIXED DI ATAS SEGALA ELEMEN) -->
+<div id="dropdown-pengaturan" class="hidden fixed w-48 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-gray-100 py-1 z-[99999] text-xs">
+  <button onclick="toggleModeAdmin(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
+    <i class="ph ph-shield-check text-lg text-emerald-600"></i>
+    <span id="label-admin">Mode Admin RT</span>
+  </button>
+  <button onclick="keluarDariPasarRT36(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2.5">
+    <i class="ph ph-sign-out text-lg text-red-600"></i>
+    <span>Keluar Akun (Logout)</span>
+  </button>
+</div>
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
@@ -1263,10 +1261,8 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 
   
 <!-- ================================================= -->
-<!-- ================================================= -->
-<!-- ================================================= -->
-<!-- ================================================= -->
-<!-- GABUNGAN BAGIAN 3 & 4: LIVE CHAT & SISTEM LOGIN    -->
+<<!-- ================================================= -->
+<!-- GABUNGAN BAGIAN 3 & 4: LIVE CHAT, LOGIN & DROPDOWN -->
 <!-- ================================================= -->
 
 <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH -->
@@ -1276,6 +1272,18 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 </button>
 
 <audio id="notifSound" preload="auto" playsinline></audio>
+
+<!-- MENU DROPDOWN GERIGI (POSISI FIXED AGAR TIDAK TERTUTUP PENCARIAN) -->
+<div id="dropdown-pengaturan" class="hidden fixed w-48 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-gray-100 py-1 z-[99999] text-xs">
+  <button onclick="toggleModeAdmin(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
+    <i class="ph ph-shield-check text-lg text-emerald-600"></i>
+    <span id="label-admin">Mode Admin RT</span>
+  </button>
+  <button onclick="keluarDariPasarRT36(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2.5">
+    <i class="ph ph-sign-out text-lg text-red-600"></i>
+    <span>Keluar Akun (Logout)</span>
+  </button>
+</div>
 
 <!-- MODAL LOGIN / VERIFIKASI WARGA -->
 <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -1391,9 +1399,22 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 
-function toggleMenuPengaturan() {
+// Fungsi Toggle Menu Pengaturan dengan Kalkulasi Koordinat Fixed
+function toggleMenuPengaturan(event) {
+  if (event) event.stopPropagation();
   let menu = document.getElementById('dropdown-pengaturan');
-  if (menu) menu.classList.toggle('hidden');
+  let btn = document.getElementById('btn-pengaturan');
+  
+  if (menu && btn) {
+    if (menu.classList.contains('hidden')) {
+      let rect = btn.getBoundingClientRect();
+      menu.style.top = (rect.bottom + 8) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      menu.classList.remove('hidden');
+    } else {
+      menu.classList.add('hidden');
+    }
+  }
 }
 
 document.addEventListener('click', function(e) {
