@@ -705,9 +705,9 @@ button.bg-emerald-600{
 let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0;
 let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
 let chatPertamaLoad = true;
-let kodeLoginAktif_RT36 = '';
-let waktuKode_RT36 = null;
-let dataWargaSementara = null;
+var kodeLoginAktif_RT36 = typeof kodeLoginAktif_RT36 !== 'undefined' ? kodeLoginAktif_RT36 : '';
+var waktuKode_RT36 = typeof waktuKode_RT36 !== 'undefined' ? waktuKode_RT36 : null;
+var dataWargaSementara = typeof dataWargaSementara !== 'undefined' ? dataWargaSementara : null;
 
 function getChatRef(){ if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
 function getOnlineRef(){ try{ return firebase.database().ref('online_warga'); }catch(e){ return null; } }
