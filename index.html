@@ -1721,6 +1721,54 @@ function keluarDariPasarRT36(){
   setTimeout(pasangTombolLogin, 3000);
 })();
 </script>
+<!-- KUNCI LOGIN RT36 BOSKU - Tempel di paling bawah sebelum </body> -->
+<script>
+// === Cek sudah login apa belum bosku ===
+function sudahLoginRT36() {
+  return localStorage.getItem('warga_rt36_verified') === 'true' || 
+         localStorage.getItem('rt36_nama') !== null;
+}
 
+// === Kalau belum login, pindah ke halaman login bosku ===
+function paksaLoginRT36() {
+  document.getElementById('modalVerifWA').classList.remove('hidden');
+  document.getElementById('modalVerifWA').classList.add('flex');
+  // kasih getaran biar tau harus login
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// === SIMPAN FUNGSI ASLI BOSKU (JANGAN DIHAPUS) ===
+const _asli_bukaModalJual = window.bukaModalJual;
+const _asli_bukaModalOpsiBeli = window.bukaModalOpsiBeli;
+const _asli_toggleBoxChat = window.toggleBoxChat;
+
+// === 1. KUNCI UNTUK JUAL PRODUK BOSKU ===
+window.bukaModalJual = function() {
+  if (!sudahLoginRT36()) {
+    paksaLoginRT36();
+    return; // STOP, pindah ke login
+  }
+  // Kalau sudah login, jalankan fungsi lama bosku
+  _asli_bukaModalJual();
+}
+
+// === 2. KUNCI UNTUK BELI PRODUK / BELI VIA WA BOSKU ===
+window.bukaModalOpsiBeli = function(nomor, nama, harga, catatan) {
+  if (!sudahLoginRT36()) {
+    paksaLoginRT36();
+    return; // STOP, pindah ke login
+  }
+  _asli_bukaModalOpsiBeli(nomor, nama, harga, catatan);
+}
+
+// === 3. KUNCI UNTUK CHAT LIVE BOSKU ===
+window.toggleBoxChat = function() {
+  if (!sudahLoginRT36()) {
+    paksaLoginRT36();
+    return; // STOP, pindah ke login
+  }
+  _asli_toggleBoxChat();
+}
+</script>
 </body>
 </html>
