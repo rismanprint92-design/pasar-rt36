@@ -160,30 +160,34 @@ button.bg-emerald-600{
 <body class="bg-gray-100 pb-24 font-sans">
 
   <!-- Header Utama -->
-  <header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
-    <div class="flex gap-1.5 items-center relative">
-  <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
-    + Jual
-  </button>
-  
-  <!-- TOMBOL GERIGI PENGATURAN -->
-  <button onclick="toggleMenuPengaturan()" id="btn-pengaturan" class="bg-emerald-800 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center justify-center shadow">
-    <i class="ph ph-gear text-base"></i>
-  </button>
-      
-  <!-- MENU DROPDOWN GERIGI (ADMIN & LOGOUT) -->
-  <div id="dropdown-pengaturan" class="hidden absolute right-0 top-10 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50 text-xs">
-    <button onclick="toggleModeAdmin(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2 border-b">
-      <i class="ph ph-shield-check text-base text-emerald-600"></i>
-      <span id="label-admin">Mode Admin RT</span>
-    </button>
-    <button onclick="keluarDariPasarRT36(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2">
-      <i class="ph ph-sign-out text-base text-red-600"></i>
-      <span>Keluar Akun (Logout)</span>
-    </button>
+ <header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center relative">
+  <div>
+    <h1 class="font-bold text-[16px] md:text-[18px]">Pasar RT. 36 AR & Metroland</h1>
+    <p class="text-[11px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
   </div>
-</div>
-  </header>
+  <div class="flex gap-1.5 items-center relative">
+    <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
+      + Jual
+    </button>
+    
+    <!-- IKON ADMIN DIGANTI IKON GERIGI (PENGATURAN) -->
+    <button onclick="toggleMenuPengaturan()" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow">
+      <i class="ph ph-gear text-base"></i>
+    </button>
+
+    <!-- MENU DROPDOWN GERIGI (ADMIN & LOGOUT) -->
+    <div id="dropdown-pengaturan" class="hidden absolute right-0 top-10 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50 text-xs">
+      <button onclick="toggleModeAdmin(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2 border-b">
+        <i class="ph ph-shield-check text-base text-emerald-600"></i>
+        <span id="label-admin">Mode Admin RT</span>
+      </button>
+      <button onclick="keluarDariPasarRT36(); toggleMenuPengaturan();" class="w-full text-left px-3 py-2.5 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2">
+        <i class="ph ph-sign-out text-base text-red-600"></i>
+        <span>Keluar Akun (Logout)</span>
+      </button>
+    </div>
+  </div>
+</header>
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
@@ -1259,6 +1263,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 <!-- ================================================= -->
 <!-- ================================================= -->
 <!-- ================================================= -->
+<!-- ================================================= -->
 <!-- GABUNGAN BAGIAN 3 & 4: LIVE CHAT & SISTEM LOGIN    -->
 <!-- ================================================= -->
 
@@ -1277,6 +1282,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
     <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk langsung masuk. 1 nomor HP hanya untuk 1 perangkat!</p>
     
+    <!-- TULISAN BERJALAN DI HALAMAN LOGIN -->
     <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden">
       <div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;">
         <span class="text-white text-[11px] font-bold mx-4">✨ SELAMAT DATANG DI PASAR RT.36 ✨</span>
@@ -1337,7 +1343,7 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     </button>
   </div>
   <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
-    <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran.classList.add(\'hidden\')')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
+    <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
     <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
     <button onclick="document.getElementById('inputFoto').click()" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🖼️</div><span class="text-[10px]">Galeri</span></button>
     <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">😊</div><span class="text-[10px]">Emoji</span></button>
@@ -1357,7 +1363,9 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
 .icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
 </style>
 
-<!-- LOGIKA JAVASCRIPT LIVE CHAT & VERIFIKASI -->
+<!-- ================================================= -->
+<!-- LOGIKA JAVASCRIPT BAGIAN 3 & 4                    -->
+<!-- ================================================= -->
 <script>
 let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, verifiedPhone='', verifiedNama='';
 let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1633,9 +1641,7 @@ window.addEventListener('load', function(){
   ref.on('child_removed', snap=>{ let el=document.getElementById(`chat-item-${snap.key}`); if(el) el.remove(); });
   document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
 });
-</script>
 
-<script>
 function updateRunningTextOnlineModal(){
   const el = document.getElementById('runningTextOnline');
   if(!el) return;
@@ -1666,9 +1672,7 @@ function keluarDariPasarRT36(){
     window.location.href = window.location.origin + window.location.pathname;
   }
 }
-</script>
 
-<script>
 (function(){
   if(typeof window.loginLangsungPatched !== 'undefined') return;
   window.loginLangsungPatched = true;
