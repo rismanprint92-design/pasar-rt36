@@ -160,31 +160,19 @@ button.bg-emerald-600{
 <body class="bg-gray-100 pb-24 font-sans">
 
   <!-- Header Utama -->
-<header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
-    <div class="flex justify-between items-center max-w-md mx-auto relative">
+  <header class="bg-emerald-600 text-white px-3 py-2.5 sticky top-0 z-40 shadow-md">
+    <div class="flex justify-between items-center max-w-md mx-auto">
       <div>
         <h1 class="font-bold text-sm sm:text-base">Pasar RT. 36 AR & Metroland</h1>
         <p class="text-[10px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
       </div>
-      <div class="flex gap-1.5 items-center relative">
+      <div class="flex gap-1.5">
         <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
           + Jual
         </button>
-
-        <!-- Tombol Ikon Menu Utama -->
-        <button onclick="toggleMenuUtama(event)" class="bg-emerald-800 text-white w-8 h-8 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center justify-center text-base shadow">
-          <i class="ph ph-dots-three-vertical font-bold"></i>
+        <button onclick="toggleModeAdmin()" id="btn-admin" class="bg-emerald-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-emerald-500 hover:bg-emerald-900 flex items-center gap-1">
+          <i class="ph ph-shield-check text-xs"></i> <span id="label-admin">Admin</span>
         </button>
-
-        <!-- Popup Menu Melayang (Dropdown) -->
-        <div id="dropdown-menu-utama" class="hidden absolute right-0 top-10 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 text-xs py-1 text-gray-700">
-          <button onclick="toggleModeAdmin(); tutupMenuUtama();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium text-gray-700">
-            <i class="ph ph-shield-check text-emerald-600 text-sm"></i> <span id="label-admin">Mode Admin RT</span>
-          </button>
-          <button onclick="keluarDariPasarRT36(); tutupMenuUtama();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium">
-            <i class="ph ph-sign-out text-sm"></i> Keluar Akun
-          </button>
-        </div>
       </div>
     </div>
   </header>
@@ -1242,41 +1230,6 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
       setTimeout(cekDeepLinkProduk, 1500);
     });
     
-function keluarDariPasarRT36() {
-  if (!confirm("Apakah Anda yakin ingin keluar dari akun Pasar RT.36?")) return;
-
-  let inputKonfirmasi = prompt("Masukkan Nomor HP Anda untuk konfirmasi keluar:");
-  if (inputKonfirmasi === null) return;
-
-  // Hapus semua data penyimpanan login
-  localStorage.clear();
-  
-  alert("✅ Berhasil keluar bosku!");
-
-  // Reload bersih tanpa cache agar modal login muncul dari awal
-  window.location.href = window.location.pathname + '?logout=' + Date.now();
-}
-
-    // --- FUNGSI POPUP MENU UTAMA HEADER ---
-function toggleMenuUtama(e) {
-  if (e) e.stopPropagation();
-  const dropdown = document.getElementById('dropdown-menu-utama');
-  if (dropdown) dropdown.classList.toggle('hidden');
-}
-
-function tutupMenuUtama() {
-  const dropdown = document.getElementById('dropdown-menu-utama');
-  if (dropdown) dropdown.classList.add('hidden');
-}
-
-// Tutup menu otomatis jika mengklik di luar menu
-document.addEventListener('click', function(e) {
-  const dropdown = document.getElementById('dropdown-menu-utama');
-  if (dropdown && !dropdown.classList.contains('hidden')) {
-    dropdown.classList.add('hidden');
-  }
-});
-
     // Pendaftaran Service Worker untuk PWA
     var isOldAndroid = /Android [1-8]\./.test(navigator.userAgent);
     if ('serviceWorker' in navigator && !isOldAndroid) {
@@ -1411,104 +1364,101 @@ function getOnlineRef(){
   return firebase.database().ref('online_warga');
 }
 
-<script>
-let mediaRecorder=null, micStream=null, audioChunks=[], isRekam=false, timerInterval=null, detikRekam=0, otpKode='', verifiedPhone='', verifiedNama='';
-let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
-let chatPertamaLoad = true;
-let audioCtx = null;
-let suaraList = [
-  {nama:'WA Ting', url:'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'},
-  {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
-  {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'}
-];
-let suaraIndex = parseInt(localStorage.getItem('suara_pilihan_rt36')||'0');
-
-function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pesan_warga'); if(typeof database!=='undefined'&&database.ref) return database.ref('pesan_warga'); return firebase.database().ref('pesan_warga'); }
-function getRootRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db; if(typeof database!=='undefined'&&database.ref) return database; return firebase.database(); }
-function getOnlineRef(){ 
-  try{
-    if(typeof db!=='undefined' && db.ref) return db.ref('online_warga');
-    if(typeof database!=='undefined' && database.ref) return database.ref('online_warga');
-    if(typeof firebase!=='undefined' && firebase.database) return firebase.database().ref('online_warga');
-  }catch(e){}
-  return firebase.database().ref('online_warga');
-}
-
-// === CEK VERIFIKASI WARGA ===
+// === FIX CEK VERIFIKASI BOSKU - 1 FUNGSI SAJA BOSKU - MUNCUL SAAT BUKA WEBSITE BOSKU ===
 function cekVerifikasi(){ 
-  verifiedPhone = localStorage.getItem('verified_wa_rt36'); 
-  verifiedNama = localStorage.getItem('verified_nama_rt36'); 
-  let modal = document.getElementById('modalVerifWA');
-  let label = document.getElementById('myWALabel');
-  
-  if(!verifiedPhone || !verifiedNama){ 
-    if(modal) {
-      modal.classList.remove('hidden'); 
-      modal.style.display = 'flex';
-    }
-    if(label) label.innerText = 'Guest';
+  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
+  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
+  let modal=document.getElementById('modalVerifWA');
+  let label=document.getElementById('myWALabel');
+  if(!verifiedPhone||!verifiedNama){ 
+    if(modal) modal.classList.remove('hidden'); 
+    if(label) label.innerText='Guest';
     return false; 
   } 
-  
-  if(modal) {
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
-  }
-  if(label) label.innerText = '✓ ' + verifiedNama; 
-  if(typeof updateIconNotif === 'function') updateIconNotif(); 
-  if(typeof setSuaraAktif === 'function') setSuaraAktif(); 
+  if(modal) modal.classList.add('hidden');
+  if(label) label.innerText='✓ '+verifiedNama; 
+  if(typeof updateIconNotif==='function') updateIconNotif(); 
+  if(typeof setSuaraAktif==='function') setSuaraAktif(); 
   return true; 
 }
 
-// --- LOGIKA VERIFIKASI WARGA ---
+// --- LOGIKA VERIFIKASI WARGA TANPA WHATSAPP EKSTERNAL ---
 let otpKodeSimpan = '';
+let dataWargaSementara = { nama: '', phone: '' };
 
 function kirimKodeKeSaya(event) {
-  if (event) event.preventDefault();
-
+  let modal = document.getElementById('modalVerifWA');
+  if(!modal) return;
+  
   let elNama = document.getElementById('inputNama');
   let elPhone = document.getElementById('inputWA');
-
-  let nama = elNama ? elNama.value.trim() : '';
-  let phone = elPhone ? elPhone.value.trim().replace(/\D/g,'') : '';
-
-  if (!nama || nama.length < 3) {
-    alert('Isi nama lengkap dulu bosku! Minimal 3 huruf.');
-    if (elNama) elNama.focus();
-    return;
-  }
-  if (!phone || phone.length < 10) {
-    alert('Isi nomor HP / WhatsApp dengan benar bosku!');
-    if (elPhone) elPhone.focus();
-    return;
-  }
-
-  // Buat kode OTP 4 digit
-  let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-  otpKodeSimpan = kodeOTP;
-  verifiedPhone = phone;
-  verifiedNama = nama;
-
-  // Tampilkan Kode OTP di Kotak Kuning
-  let elKode = document.getElementById('kodeDemo');
-  let elStatus = document.getElementById('statusKirim');
-  if (elKode) elKode.innerText = kodeOTP;
-  if (elStatus) { 
-    elStatus.innerText = '✅ Kode Masuk Berhasil Dibuat!'; 
-    elStatus.classList.remove('hidden'); 
-  }
-
-  // Pindah dari Step 1 ke Step 2 (Memasukkan Kode)
-  let step1 = document.getElementById('step1Verif');
-  let step2 = document.getElementById('step2Verif');
   
-  if (step1) {
-    step1.classList.add('hidden');
-    step1.style.display = 'none';
+  if(!elNama || !elPhone) {
+    alert('Form input tidak ditemukan bosku!');
+    return;
   }
-  if (step2) {
-    step2.classList.remove('hidden');
-    step2.style.display = 'block';
+  
+  let nama = elNama.value.trim();
+  let phone = elPhone.value.trim();
+  
+  if(!nama || nama.length < 3) {
+    alert('Isi nama lengkap dulu bosku! Minimal 3 huruf.');
+    elNama.focus();
+    return;
+  }
+  if(!phone || phone.length < 10) {
+    alert('Isi nomor HP / WhatsApp dengan benar bosku!');
+    elPhone.focus();
+    return;
+  }
+  
+  let nomorBersih = phone.replace(/\D/g,'');
+  let btn = event ? event.currentTarget : null;
+  let textAsli = btn ? btn.innerHTML : '';
+  
+  try {
+    if(btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Menyiapkan Kode...';
+      btn.style.opacity = '0.6';
+    }
+
+    // Generate kode OTP 4 digit langsung di layar
+    let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpKodeSimpan = kodeOTP;
+    verifiedPhone = nomorBersih;
+    verifiedNama = nama;
+
+    // Tampilkan kode OTP langsung di kotak kuning modal
+    let elKode = document.getElementById('kodeDemo');
+    let elStatus = document.getElementById('statusKirim');
+    if(elKode) elKode.innerText = kodeOTP;
+    if(elStatus) { 
+      elStatus.innerText = '✅ Kode Masuk Berhasil Dibuat!'; 
+      elStatus.classList.remove('hidden'); 
+    }
+
+    // Pindah ke tampilan Step 2 (Masukkan Kode)
+    setTimeout(() => {
+      let step1 = document.getElementById('step1Verif');
+      let step2 = document.getElementById('step2Verif');
+      if(step1) step1.classList.add('hidden');
+      if(step2) step2.classList.remove('hidden');
+      
+      if(btn) {
+        btn.disabled = false;
+        btn.innerHTML = textAsli;
+        btn.style.opacity = '1';
+      }
+    }, 400);
+
+  } catch(err) {
+    alert('Terjadi kesalahan bosku: '+err.message);
+    if(btn) {
+      btn.disabled = false;
+      btn.innerHTML = textAsli || 'Dapatkan Kode Masuk 📲';
+      btn.style.opacity = '1';
+    }
   }
 }
 
@@ -1522,9 +1472,6 @@ function cekOTP(event) {
     return;
   }
   
-  let elKodeDemo = document.getElementById('kodeDemo');
-  let kodeAsli = elKodeDemo ? elKodeDemo.innerText.trim() : otpKodeSimpan;
-  
   let btn = event ? event.currentTarget : null;
   let textAsli = btn ? btn.innerHTML : '';
   
@@ -1535,8 +1482,8 @@ function cekOTP(event) {
   }
   
   setTimeout(() => {
-    if(input !== kodeAsli) {
-      alert('Kode salah bosku! Kode yang benar: ' + kodeAsli);
+    if(input !== otpKodeSimpan) {
+      alert('Kode salah bosku! Silakan cek kembali kode di atas.');
       if(btn) {
         btn.disabled = false;
         btn.innerHTML = textAsli || 'Verifikasi & Masuk';
@@ -1545,18 +1492,16 @@ function cekOTP(event) {
       return;
     }
     
+    // Simpan data login ke localStorage browser
     localStorage.setItem('verified_wa_rt36', verifiedPhone);
     localStorage.setItem('verified_nama_rt36', verifiedNama);
     localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now());
     localStorage.setItem('nama_warga_rt36', verifiedNama);
     
     let modal = document.getElementById('modalVerifWA');
-    if(modal) {
-      modal.classList.add('hidden');
-      modal.style.display = 'none';
-    }
+    if(modal) modal.classList.add('hidden');
     
-    alert('🎉 Berhasil masuk bosku!');
+    alert('🎉 Verifikasi Berhasil! Selamat datang di Pasar RT.36 bosku.');
     location.reload();
   }, 400);
 }
@@ -1567,13 +1512,40 @@ function kembaliStep1() {
   if(step2) step2.classList.add('hidden');
   if(step1) step1.classList.remove('hidden');
 }
-
+  
+function cekOTP(event){ 
+  let btn=null, textAsli='';
+  try{
+    let input=document.getElementById('inputOTP').value.trim();
+    if(!input){ alert('Isi kode dulu bosku!'); return; }
+    btn = event ? event.currentTarget : document.querySelector('button[onclick*="cekOTP"]');
+    if(btn){ textAsli=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Verifikasi bosku...'; btn.style.opacity='0.6'; }
+    
+    setTimeout(()=>{
+      if(input!==otpKode){ 
+        alert('Kode salah bosku! Kode yang benar: '+otpKode); 
+        if(btn){ btn.disabled=false; btn.innerHTML=textAsli; btn.style.opacity='1'; }
+        return; 
+      } 
+      localStorage.setItem('verified_wa_rt36', verifiedPhone); 
+      localStorage.setItem('verified_nama_rt36', verifiedNama); 
+      localStorage.setItem('my_chat_id', 'warga_'+verifiedPhone.slice(-4)+'_'+Date.now()); 
+      localStorage.setItem('nama_warga_rt36', verifiedNama); 
+      document.getElementById('modalVerifWA').classList.add('hidden'); 
+      location.reload(); 
+    },400);
+  }catch(err){
+    alert('Error verif: '+err.message);
+    if(btn){ btn.disabled=false; btn.innerHTML=textAsli||'Verifikasi & Masuk'; btn.style.opacity='1'; }
+  }
+}
+function kembaliStep1(){ document.getElementById('step2Verif').classList.add('hidden'); document.getElementById('step1Verif').classList.remove('hidden'); }
 function tambahEmoji(e){ let i=document.getElementById('teksPesanWarga'); i.value+=e; i.focus(); cekKetik(); }
-function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
 
+function updateIconNotif(){ let btn=document.getElementById('btnToggleNotif'); if(btn) btn.innerText = notifAktif ? '🔔' : '🔕'; }
 function setSuaraAktif(){
   let audio=document.getElementById('notifSound');
-  if(audio) audio.src=suaraList[suaraIndex].url;
+  audio.src=suaraList[suaraIndex].url;
   [0,1,2].forEach(i=>{
     let el=document.getElementById('suara'+i);
     if(el){
@@ -1583,7 +1555,6 @@ function setSuaraAktif(){
     }
   });
 }
-
 function gantiSuara(idx){ suaraIndex=idx; localStorage.setItem('suara_pilihan_rt36', idx); setSuaraAktif(); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },100); }
 function toggleNotifikasi(){
   let menu=document.getElementById('menuPilihanSuara');
@@ -1591,18 +1562,14 @@ function toggleNotifikasi(){
   if(!notifAktif){ notifAktif=true; localStorage.setItem('notif_suara_rt36','on'); updateIconNotif(); menu.classList.remove('hidden'); unlockAudio(); setTimeout(()=>{ bunyikanNotifikasi(); },200); }
   else { if(!menu.classList.contains('hidden')){ menu.classList.add('hidden'); return; } notifAktif=false; localStorage.setItem('notif_suara_rt36','off'); updateIconNotif(); alert('🔕 Bunyi NONAKTIF bosku!'); }
 }
-
 function unlockAudio(){
   try{
     if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
     let audio=document.getElementById('notifSound');
-    if(audio) {
-      audio.volume=0.01; audio.play().then(()=>{ audio.pause(); audio.currentTime=0; audio.volume=1; }).catch(()=>{});
-    }
+    audio.volume=0.01; audio.play().then(()=>{ audio.pause(); audio.currentTime=0; audio.volume=1; }).catch(()=>{});
   }catch(e){}
 }
-
 function beepFallback(){
   try{
     if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -1612,13 +1579,11 @@ function beepFallback(){
     g.gain.setValueAtTime(0.3, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime+0.25);
   }catch(e){}
 }
-
 function bunyikanNotifikasi(){
   if(!notifAktif) return;
   let audio=document.getElementById('notifSound');
   try{ audio.currentTime=0; audio.volume=1; let p=audio.play(); if(p!==undefined){ p.catch(()=>{ beepFallback(); }); } }catch(e){ beepFallback(); }
 }
-
 function kedipkanIconChat(){
   let btn=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
   if(!btn) return;
@@ -1628,7 +1593,6 @@ function kedipkanIconChat(){
     setTimeout(()=>{ btn.classList.remove('icon-berkedip'); }, 12000);
   }
 }
-
 function toggleBoxChat(){ 
   unlockAudio();
   let p=document.getElementById('panelChatWarga'), b=document.getElementById('btnBukaChat'), badge=document.getElementById('badgeBaru');
@@ -1640,12 +1604,10 @@ function toggleBoxChat(){
     if(badge){ badge.classList.add('hidden'); badge.classList.remove('flex'); }
   }
 }
-
 function cekKetik(){ let ada=document.getElementById('teksPesanWarga').value.trim()!==''; let mic=document.getElementById('iconMic'), send=document.getElementById('iconSend'); if(isRekam) return; mic.classList.toggle('hidden',ada); send.classList.toggle('hidden',!ada); }
 function handleAksi(){ let txt=document.getElementById('teksPesanWarga').value.trim(); if(txt!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
 function kirimPesanWarga(){ let pesan=document.getElementById('teksPesanWarga').value.trim(); if(!pesan) return; let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'teks'}).then(()=>{ document.getElementById('teksPesanWarga').value=''; cekKetik(); }); }
 function kirimFoto(input){ if(!input.files[0]) return; let myId=localStorage.getItem('my_chat_id'); let reader=new FileReader(); reader.onload=e=>{ let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'foto'}); }; reader.readAsDataURL(input.files[0]); input.value=''; }
-
 function kirimLokasi(){
   if(!navigator.geolocation){ alert('HP tidak support lokasi bosku!'); return; }
   if(!confirm('Kirim lokasi Anda sekarang ke warga RT.36 bosku?')) return;
@@ -1656,7 +1618,6 @@ function kirimLokasi(){
     getChatRef().push({nama:verifiedNama, pesan:mapsLink, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'lokasi', lat:lat, lng:lng});
   }, err=>{ alert('Gagal ambil lokasi bosku! Aktifkan GPS dulu bosku!'); });
 }
-
 async function mulaiRekam(){
   isRekam=true; detikRekam=0;
   document.getElementById('areaKetikNormal').classList.add('hidden');
@@ -1667,7 +1628,6 @@ async function mulaiRekam(){
   timerInterval=setInterval(()=>{ detikRekam++; let m=String(Math.floor(detikRekam/60)).padStart(2,'0'); let s=String(detikRekam%60).padStart(2,'0'); document.getElementById('timerRekamDalam').innerText=m+':'+s; },1000);
   try{ micStream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(micStream); audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=()=>{ if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; } let blob=new Blob(audioChunks,{type:'audio/webm'}); let reader=new FileReader(); reader.onload=e=>{ let myId=localStorage.getItem('my_chat_id'); let jam=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); getChatRef().push({nama:verifiedNama, pesan:e.target.result, waktu:jam, userId:myId, timestamp:Date.now(), tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(err){ alert('Izinkan mic bosku!'); resetMicUI(); }
 }
-
 function stopRekam(){ if(!isRekam) return; clearInterval(timerInterval); isRekam=false; resetMicUI(); if(mediaRecorder && mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); } }
 function resetMicUI(){
   document.getElementById('areaKetikNormal').classList.remove('hidden');
@@ -1677,14 +1637,12 @@ function resetMicUI(){
   document.getElementById('iconMic').classList.remove('hidden'); document.getElementById('iconStop').classList.add('hidden'); document.getElementById('iconSend').classList.add('hidden');
   cekKetik();
 }
-
 function hapusChat(key, pemilikId){
   let myId = localStorage.getItem('my_chat_id');
   if(pemilikId !== myId){ alert('Tidak bisa hapus chat orang lain bosku! Hanya bisa hapus chat sendiri bosku!'); return; }
   if(!confirm('Yakin hapus chat Anda sendiri ini bosku?')) return;
   getChatRef().child(key).remove();
 }
-
 function autoHapus24Jam(){
   let ref=getChatRef();
   let batas=Date.now() - (24*60*60*1000);
@@ -1698,51 +1656,11 @@ function autoHapus24Jam(){
   });
 }
 
-// --- FUNGSI KELUAR AKUN SINKRON ---
-function keluarDariPasarRT36(){
-  if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku?')){
-    localStorage.clear();
-    // Arahkan langsung dengan parameter force login
-    window.location.href = window.location.pathname + '?force_login=true';
-  }
-}
-
-// --- INISIALISASI HALAMAN UTAMA ---
 window.addEventListener('load', function(){
-  let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-  let verifiedNama = localStorage.getItem('verified_nama_rt36');
-  let modalVerif = document.getElementById('modalVerifWA');
-  let label = document.getElementById('myWALabel');
-
-  // Jika BELUM login / KELUAR akun, paksa buka modal verifikasi
-  if (!verifiedPhone || !verifiedNama) {
-    if (modalVerif) {
-      modalVerif.classList.remove('hidden');
-      modalVerif.style.display = 'flex';
-      
-      let step1 = document.getElementById('step1Verif');
-      let step2 = document.getElementById('step2Verif');
-      if (step1) step1.classList.remove('hidden');
-      if (step2) step2.classList.add('hidden');
-    }
-    if (label) label.innerText = 'Guest';
-    return;
-  }
-
-  // Jika SUDAH login
-  if (modalVerif) {
-    modalVerif.classList.add('hidden');
-    modalVerif.style.display = 'none';
-  }
-  if (label) label.innerText = '✓ ' + verifiedNama;
-
-  let ref = getChatRef();
-  let box = document.getElementById('boxChatWarga');
-  let myId = localStorage.getItem('my_chat_id');
-  if(!myId){
-    myId = 'warga_' + verifiedPhone.slice(-4) + '_' + Date.now();
-    localStorage.setItem('my_chat_id', myId);
-  }
+  let isVerif=cekVerifikasi(); 
+  if(!isVerif) return;
+  let ref=getChatRef(); let box=document.getElementById('boxChatWarga');
+  let myId=localStorage.getItem('my_chat_id'); if(!myId){ myId='warga_'+verifiedPhone.slice(-4)+'_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
   
   try{
     let onlineRoot = getOnlineRef();
@@ -1758,7 +1676,7 @@ window.addEventListener('load', function(){
       if(el) el.innerText = count + ' Online';
     });
   }catch(e){
-    if(document.getElementById('statusOnline')) document.getElementById('statusOnline').innerText = '1 Online';
+    document.getElementById('statusOnline').innerText = '1 Online';
   }
 
   autoHapus24Jam();
@@ -1775,10 +1693,10 @@ window.addEventListener('load', function(){
     else if(data.tipe==='voice') content=`<audio controls src="${data.pesan}" class="max-w-[200px] h-8"></audio>`; 
     else if(data.tipe==='lokasi') content=`<div><a href="${data.pesan}" target="_blank" class="text-blue-600 underline">📍 Lihat Lokasi Saya</a><br><iframe width="200" height="120" style="border:0; border-radius:8px; margin-top:4px" loading="lazy" src="https://maps.google.com/maps?q=${data.lat},${data.lng}&z=15&output=embed"></iframe></div>`;
     else content=`<div class="break-words">${esc(data.pesan)}</div>`;
-    let namaHtml=`<div class="nama-atas">${esc(data.nama)}${isMe?'(Anda)':''}</div>`;
+    let namaHtml=`<div class="nama-atas">${esc(data.nama)} ${isMe?'(Anda)':''}</div>`;
     let tombolHapus = isMe ? `<button onclick="hapusChat('${key}','${data.userId}')" class="btn-hapus">🗑️</button>` : ``;
     div.innerHTML=`${namaHtml}${content}<div class="text-right text-[10px] text-gray-500 mt-1 flex justify-end items-center"><span>${data.waktu} ${isMe?'✓✓':''}</span>${tombolHapus}</div>`;
-    if(box) { box.appendChild(div); box.scrollTop=box.scrollHeight; }
+    box.appendChild(div); box.scrollTop=box.scrollHeight;
     if(!chatPertamaLoad && !isMe){ bunyikanNotifikasi(); kedipkanIconChat(); }
   });
   setTimeout(()=>{ chatPertamaLoad = false; }, 4000);
@@ -1786,27 +1704,106 @@ window.addEventListener('load', function(){
   document.body.addEventListener('click', function firstClick(){ unlockAudio(); document.body.removeEventListener('click', firstClick); }, {once:true});
 });
 </script>
+<!-- ========== SELESAI ONLINE FIX BOSKU ========== -->
   <script>
-// Skrip Pemaksa Muncul Modal Login Selepas Logout
-document.addEventListener("DOMContentLoaded", function() {
-  let isLogged = localStorage.getItem('verified_wa_rt36');
-  let modal = document.getElementById('modalVerifWA');
-  
-  if (!isLogged || window.location.search.includes('logout')) {
-    if (modal) {
-      // Paksa hapus kelas hidden dan ubah gaya CSS agar tampil di depan
-      modal.classList.remove('hidden');
-      modal.style.setProperty('display', 'flex', 'important');
-      modal.style.setProperty('z-index', '99999', 'important');
-      modal.style.setProperty('opacity', '1', 'important');
-      modal.style.setProperty('visibility', 'visible', 'important');
-      
-      let step1 = document.getElementById('step1Verif');
-      let step2 = document.getElementById('step2Verif');
-      if (step1) { step1.classList.remove('hidden'); step1.style.display = 'block'; }
-      if (step2) { step2.classList.add('hidden'); step2.style.display = 'none'; }
-    }
+function keluarDariPasarRT36(){
+  if(confirm('Yakin mau keluar dari Pasar RT.36 Bosku? Nanti harus masukkan kode lagi Bosku!')){
+    localStorage.removeItem('namaRT36');
+    localStorage.removeItem('onlineCountRT36');
+    localStorage.removeItem('kodeMasukRT36');
+    localStorage.removeItem('verifikasiRT36');
+    localStorage.clear();
+    alert('Berhasil keluar Bosku! Silahkan login lagi pakai kode masuk Bosku!');
+    location.reload();
   }
+}
+</script>
+  <script>
+function updateRunningTextPremium(){
+  const el=document.getElementById('runningTextOnline');
+  if(!el) return;
+  let nama=localStorage.getItem('namaRT36')||'Warga RT.36';
+  let online=localStorage.getItem('onlineCountRT36')||Math.floor(Math.random()*8+3);
+  localStorage.setItem('onlineCountRT36',online);
+  el.innerHTML='<span class="mx-6">👋 SELAMAT DATANG, '+nama.toUpperCase()+'! 👋</span><span class="mx-6 text-yellow-200">🟢 '+online+' WARGA ONLINE BOSKU 🟢</span>';
+}
+document.addEventListener('DOMContentLoaded',function(){
+  updateRunningTextPremium();
+  setInterval(function(){
+    let c=parseInt(localStorage.getItem('onlineCountRT36')||'5');
+    if(Math.random()>0.7){c+=Math.random()>0.5?1:-1; if(c<2)c=2; if(c>15)c=15; localStorage.setItem('onlineCountRT36',c);}
+    updateRunningTextPremium();
+  },15000);
 });
 </script>
+  <script>
+// --- PATCH FIX TOMBOL DAPATKAN KODE - TANPA UBAH FUNGSI LAIN BOSKU ---
+(function(){
+  if(typeof window.dapatkanKodeMasukPatched !== 'undefined') return;
+  window.dapatkanKodeMasukPatched = true;
+  let wRef;
+  try { wRef = firebase.database().ref('warga_rt36'); } catch(e){ wRef = null; }
+
+  function amanDapatkanKode(){
+    let modal = document.getElementById('modalVerifWA');
+    let inputs = modal ? modal.querySelectorAll('input') : [];
+    let namaEl = inputs[0] || document.getElementById('input-nama-warga') || document.getElementById('nama-warga');
+    let hpEl = inputs[1] || document.getElementById('input-hp-warga') || document.getElementById('hp-warga');
+    let btn = document.getElementById('btn-dapatkan-kode') || document.querySelector('button');
+
+    let nama = namaEl ? namaEl.value.trim() : '';
+    let hp = hpEl ? hpEl.value.trim().replace(/\D/g,'') : '';
+
+    if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); return; }
+    if(hp.length < 10){ alert('Isi No HP dulu bosku!'); return; }
+    if(hp.startsWith('0')) hp = '62' + hp.slice(1);
+
+    let kode = Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('warga_nama_sementara', nama);
+    localStorage.setItem('warga_hp_sementara', hp);
+    localStorage.setItem('warga_kode_sementara', kode);
+
+    if(wRef){
+      wRef.child(hp).set({nama: nama, hp: hp, kode: kode, timestamp: Date.now(), status: 'menunggu'}).catch(()=>{});
+    }
+
+   let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpKodeSimpan = kodeOTP;
+    verifiedPhone = hp;
+    verifiedNama = nama;
+
+    let elKode = document.getElementById('kodeDemo');
+    let elStatus = document.getElementById('statusKirim');
+    if(elKode) elKode.innerText = kodeOTP;
+    if(elStatus) { 
+      elStatus.innerText = '✅ Kode Masuk Berhasil Dibuat!'; 
+      elStatus.classList.remove('hidden'); 
+    }
+
+    let step1 = document.getElementById('step-1-verif') || document.getElementById('step1Verif');
+    let step2 = document.getElementById('step-2-verif') || document.getElementById('step2Verif');
+    if(step1) step1.classList.add('hidden');
+    if(step2) step2.classList.remove('hidden');
+
+  function pasangTombol(){
+    let tombol = null;
+    document.querySelectorAll('button').forEach(b=>{
+      if(b.innerText && b.innerText.toLowerCase().includes('dapatkan kode')) tombol = b;
+    });
+    if(tombol){
+      tombol.onclick = amanDapatkanKode;
+      console.log('Patch tombol Dapatkan Kode Masuk TERPASANG bosku!');
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', pasangTombol);
+  } else {
+    pasangTombol();
+  }
+  setTimeout(pasangTombol, 1000);
+  setTimeout(pasangTombol, 3000);
+})();
+</script>
+    </body>
 </html>
