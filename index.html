@@ -1464,28 +1464,20 @@ function cekVerifikasi(){
 let otpKodeSimpan = '';
 
 function kirimKodeKeSaya(event) {
-  let modal = document.getElementById('modalVerifWA');
-  if(!modal) return;
-  
   let elNama = document.getElementById('inputNama');
   let elPhone = document.getElementById('inputWA');
   
-  if(!elNama || !elPhone) {
-    alert('Form input tidak ditemukan bosku!');
-    return;
-  }
-  
-  let nama = elNama.value.trim();
-  let phone = elPhone.value.trim();
+  let nama = elNama ? elNama.value.trim() : '';
+  let phone = elPhone ? elPhone.value.trim() : '';
   
   if(!nama || nama.length < 3) {
     alert('Isi nama lengkap dulu bosku! Minimal 3 huruf.');
-    elNama.focus();
+    if(elNama) elNama.focus();
     return;
   }
   if(!phone || phone.length < 10) {
     alert('Isi nomor HP / WhatsApp dengan benar bosku!');
-    elPhone.focus();
+    if(elPhone) elPhone.focus();
     return;
   }
   
@@ -1500,11 +1492,13 @@ function kirimKodeKeSaya(event) {
       btn.style.opacity = '0.6';
     }
 
+    // Generate kode OTP 4 digit
     let kodeOTP = Math.floor(1000 + Math.random() * 9000).toString();
     otpKodeSimpan = kodeOTP;
     verifiedPhone = nomorBersih;
     verifiedNama = nama;
 
+    // Tampilkan kode ke kotak kuning (Step 2)
     let elKode = document.getElementById('kodeDemo');
     let elStatus = document.getElementById('statusKirim');
     if(elKode) elKode.innerText = kodeOTP;
@@ -1513,11 +1507,12 @@ function kirimKodeKeSaya(event) {
       elStatus.classList.remove('hidden'); 
     }
 
+    // Pindah tampilan dari Step 1 ke Step 2
     setTimeout(() => {
       let step1 = document.getElementById('step1Verif');
       let step2 = document.getElementById('step2Verif');
-      if(step1) step1.classList.add('hidden');
-      if(step2) step2.classList.remove('hidden');
+      if(step1) { step1.classList.add('hidden'); step1.style.display = 'none'; }
+      if(step2) { step2.classList.remove('hidden'); step2.style.display = 'block'; }
       
       if(btn) {
         btn.disabled = false;
