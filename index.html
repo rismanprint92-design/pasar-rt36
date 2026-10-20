@@ -1374,19 +1374,67 @@ function getChatRef(){ if(typeof db!=='undefined'&&db&&db.ref) return db.ref('pe
 function getOnlineRef(){ try{ if(typeof db!=='undefined' && db.ref) return db.ref('online_warga'); if(typeof database!=='undefined' && database.ref) return database.ref('online_warga'); return firebase.database().ref('online_warga'); }catch(e){} return firebase.database().ref('online_warga'); }
 function getWargaRef(){ try{ return firebase.database().ref('warga_rt36'); }catch(e){ return null; } }
 
-function cekVerifikasi(){ 
-  verifiedPhone=localStorage.getItem('verified_wa_rt36'); 
-  verifiedNama=localStorage.getItem('verified_nama_rt36'); 
-  let modal=document.getElementById('modalVerifWA');
-  let label=document.getElementById('myWALabel');
-  if(!verifiedPhone||!verifiedNama){ 
-    if(modal) modal.classList.remove('hidden'); 
-    if(label) label.innerText='Guest';
-    return false; 
-  } 
+let kodeLoginAktif_RT36 = '';
+let waktuKode_RT36 = null;
+
+function kirimKodeKeSaya(){
+  let namaInput = document.getElementById('namaWargaInput');
+  let waInput = document.getElementById('waWargaInput');
+  if(!namaInput || !waInput) return;
+  let nama = namaInput.value.trim();
+  let wa = waInput.value.trim();
+  if(nama.length < 3){ alert('Nama minimal 3 huruf bosku!'); return; }
+  if(wa.length < 10){ alert('No WA minimal 10 angka bosku!'); return; }
+  
+  kodeLoginAktif_RT36 = Math.floor(1000 + Math.random()*9000).toString();
+  waktuKode_RT36 = Date.now();
+  
+  let areaKode = document.getElementById('areaKodeLogin');
+  let tampilKode = document.getElementById('tampilKodeOTP');
+  if(areaKode) areaKode.classList.remove('hidden');
+  if(tampilKode) tampilKode.innerText = kodeLoginAktif_RT36;
+  
+  document.getElementById('btnKirimKode').innerHTML = 'Kode Terkirim ✅';
+  document.getElementById('btnKirimKode').disabled = true;
+  
+  let inputKode = document.getElementById('kodeOTPInput');
+  if(inputKode) inputKode.focus();
+}
+
+function cekVerifikasi(){
+  let verifiedPhone = localStorage.getItem('verified_wa_rt36');
+  let verifiedNama = localStorage.getItem('verified_nama_rt36');
+  let modal = document.getElementById('modalVerifWA');
+  let label = document.getElementById('myWALabel');
+  if(!verifiedPhone || !verifiedNama){
+    if(modal) modal.classList.remove('hidden');
+    if(label) label.innerText = 'Guest';
+    return false;
+  }
   if(modal) modal.classList.add('hidden');
-  if(label) label.innerText='✓ '+verifiedNama; 
-  return true; 
+  if(label) label.innerText = '✓ '+verifiedNama;
+  localStorage.setItem('nama_warga_rt36', verifiedNama);
+  return true;
+}
+
+function konfirmasiKodeLogin(){
+  let kodeInput = document.getElementById('kodeOTPInput');
+  let namaInput = document.getElementById('namaWargaInput');
+  let waInput = document.getElementById('waWargaInput');
+  if(!kodeInput || !namaInput || !waInput) return;
+  let kode = kodeInput.value.trim();
+  if(kode !== kodeLoginAktif_RT36){ alert('Kode salah bosku! Cek lagi di atas bosku!'); return; }
+  if(Date.now() - waktuKode_RT36 > 300000){ alert('Kode kadaluarsa bosku! Klik Dapatkan Kode lagi bosku!'); return; }
+  let nama = namaInput.value.trim();
+  let wa = waInput.value.trim();
+  localStorage.setItem('verified_wa_rt36', wa);
+  localStorage.setItem('verified_nama_rt36', nama);
+  localStorage.setItem('nama_warga_rt36', nama);
+  localStorage.setItem('warga_rt36_verified', 'true');
+  document.getElementById('modalVerifWA').classList.add('hidden');
+  document.getElementById('myWALabel').innerText = '✓ '+nama;
+  alert('Berhasil masuk bosku! Selamat belanja di Pasar RT.36 bosku! ✅');
+  location.reload();
 }
 
 async function kirimKodeKeSaya(event){
