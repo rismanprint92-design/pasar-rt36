@@ -1733,15 +1733,39 @@ function keluarDariPasarRT36(){
 
 // --- INISIALISASI HALAMAN UTAMA ---
 window.addEventListener('load', function(){
-  let statusVerif = cekVerifikasi();
-  if(!statusVerif) return;
-  
-  let ref = getChatRef(); 
+  let verifiedPhone = localStorage.getItem('verified_wa_rt36');
+  let verifiedNama = localStorage.getItem('verified_nama_rt36');
+  let modalVerif = document.getElementById('modalVerifWA');
+  let label = document.getElementById('myWALabel');
+
+  // Jika BELUM login / KELUAR akun, paksa buka modal verifikasi
+  if (!verifiedPhone || !verifiedNama) {
+    if (modalVerif) {
+      modalVerif.classList.remove('hidden');
+      modalVerif.style.display = 'flex';
+      
+      let step1 = document.getElementById('step1Verif');
+      let step2 = document.getElementById('step2Verif');
+      if (step1) step1.classList.remove('hidden');
+      if (step2) step2.classList.add('hidden');
+    }
+    if (label) label.innerText = 'Guest';
+    return;
+  }
+
+  // Jika SUDAH login
+  if (modalVerif) {
+    modalVerif.classList.add('hidden');
+    modalVerif.style.display = 'none';
+  }
+  if (label) label.innerText = '✓ ' + verifiedNama;
+
+  let ref = getChatRef();
   let box = document.getElementById('boxChatWarga');
-  let myId = localStorage.getItem('my_chat_id'); 
-  if(!myId){ 
-    myId = 'warga_' + verifiedPhone.slice(-4) + '_' + Date.now(); 
-    localStorage.setItem('my_chat_id', myId); 
+  let myId = localStorage.getItem('my_chat_id');
+  if(!myId){
+    myId = 'warga_' + verifiedPhone.slice(-4) + '_' + Date.now();
+    localStorage.setItem('my_chat_id', myId);
   }
   
   try{
