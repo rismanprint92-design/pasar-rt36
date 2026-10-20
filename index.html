@@ -1259,7 +1259,55 @@ function tutupModalJual() { document.getElementById('modal-jual').classList.add(
     }
   </script>
 
+  } else {
+      console.log('HP lama terdeteksi, SW tidak didaftarkan biar tidak crash');
+    }
+  </script>
+
+<!-- KUNCI FINAL RT36 - TEMPEL DI SINI BOSKU -->
+<script>
+function cekSudahLoginRT36() {
+  return localStorage.getItem('verified_wa_rt36') && localStorage.getItem('verified_nama_rt36');
+}
+function pindahKeLoginRT36() {
+  let modal = document.getElementById('modalVerifWA');
+  if(modal){
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+}
+let _jual_asli = window.bukaModalJual;
+let _beli_asli = window.bukaModalOpsiBeli;
+let _chat_asli = window.toggleBoxChat;
+
+window.bukaModalJual = function() {
+  if(!cekSudahLoginRT36()){
+    pindahKeLoginRT36();
+    return;
+  }
+  _jual_asli();
+}
+window.bukaModalOpsiBeli = function(nomor, nama, harga, catatan) {
+  if(!cekSudahLoginRT36()){
+    pindahKeLoginRT36();
+    return;
+  }
+  _beli_asli(nomor, nama, harga, catatan);
+}
+window.toggleBoxChat = function() {
+  if(!cekSudahLoginRT36()){
+    pindahKeLoginRT36();
+    return;
+  }
+  _chat_asli();
+}
+</script>
+<!-- END KUNCI FINAL -->
+
   
+<!-- ================================================= -->
+<<!-- ================================================= -->
+<!-- GABUNGAN BAGIAN 3 & 4: LIVE CHAT, LOGIN & DROPDOWN -->
 <!-- ================================================= -->
 <<!-- ================================================= -->
 <!-- GABUNGAN BAGIAN 3 & 4: LIVE CHAT, LOGIN & DROPDOWN -->
