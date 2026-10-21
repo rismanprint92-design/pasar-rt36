@@ -1751,6 +1751,21 @@
       perbaruiInfoProfilUI();
       tutupChatPribadi(); // Memastikan awal masuk selalu ke Grup Chat RT
       
+      document.addEventListener("DOMContentLoaded", function() {
+      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
+      let verifiedNama = localStorage.getItem('verified_nama_rt36');
+      let modalVerif = document.getElementById('modalVerifWA');
+
+      if (verifiedPhone && verifiedNama) {
+        if (modalVerif) modalVerif.classList.add('hidden');
+        perbaruiInfoProfilUI();
+        if (typeof inisialisasiChatLive === 'function') {
+          inisialisasiChatLive();
+        }
+      } else {
+        if (modalVerif) modalVerif.classList.remove('hidden');
+      }
+
       let urlParams = new URLSearchParams(window.location.search);
       let approveToken = urlParams.get('approve');
       if (approveToken) {
