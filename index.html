@@ -1361,43 +1361,21 @@
       }
     }
 
-    function handleAksi() {
+    function handleAksi(){
       if (!cekVerifikasiChat()) return;
-      
+
       let teksInput = document.getElementById('teksPesanWarga');
       if (!teksInput) return;
-      let pesanTeks = teksInput.value.trim();
-      if (pesanTeks === '') return;
-
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-      let refKirim = targetChatPribadiId ? database.ref('chat_pribadi/' + [myId, targetChatPribadiId].sort().join('_')) : database.ref('pesan_warga');
-      let dataKirim = targetChatPribadiId ? {
-        senderId: myId,
-        senderName: verifiedNama,
-        receiverId: targetChatPribadiId,
-        receiverName: targetChatPribadiNama,
-        pesan: pesanTeks,
-        waktu: jam,
-        timestamp: Date.now()
-      } : {
-        nama: verifiedNama,
-        fotoProfil: verifiedFoto,
-        pesan: pesanTeks,
-        waktu: jam,
-        userId: myId,
-        timestamp: Date.now(),
-        tipe: 'teks'
-      };
-
-      refKirim.push(dataKirim).then(() => {
-        teksInput.value = '';
-        cekKetik();
-        tutupSemuaMenuSub();
-      });
+      let txt = teksInput.value.trim();
+      if(txt !== ''){ 
+        kirimPesanWarga(); 
+        return; 
+      } 
+      if(!isRekam){ 
+        mulaiRekam(); 
+      } else { 
+        stopRekam(); 
+      }
     }
 
     function mulaiBalasPesan(nama, isiPesan) {
@@ -1751,21 +1729,6 @@
       perbaruiInfoProfilUI();
       tutupChatPribadi(); // Memastikan awal masuk selalu ke Grup Chat RT
       
-      document.addEventListener("DOMContentLoaded", function() {
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-      let verifiedNama = localStorage.getItem('verified_nama_rt36');
-      let modalVerif = document.getElementById('modalVerifWA');
-
-      if (verifiedPhone && verifiedNama) {
-        if (modalVerif) modalVerif.classList.add('hidden');
-        perbaruiInfoProfilUI();
-        if (typeof inisialisasiChatLive === 'function') {
-          inisialisasiChatLive();
-        }
-      } else {
-        if (modalVerif) modalVerif.classList.remove('hidden');
-      }
-
       let urlParams = new URLSearchParams(window.location.search);
       let approveToken = urlParams.get('approve');
       if (approveToken) {
