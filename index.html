@@ -979,10 +979,10 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & LOGIKA SENYAP HAPUS CHAT ---
+    // --- SAKLAR UTAMA LIVE CHAT & FITUR NOTIFIKASI BALASAN + AUTO SCROLL ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
-    let isProsesHapus = false; // FLAG KHUSUS UNTUK MEMATIKAN SUARA SAAT HAPUS PESAN
+    let isProsesHapus = false; 
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1081,6 +1081,14 @@
         p.classList.remove('hidden');
         b.classList.add('hidden');
         b.classList.remove('icon-goyang');
+        
+        // AUTO SCROLL KETIKA DIBUKA KE PESAN TERBARU & TANDAI SUDAH DIBACA
+        let box = document.getElementById('boxChatWarga');
+        if(box) {
+          box.scrollTop = box.scrollHeight;
+        }
+        localStorage.setItem('last_read_chat_rt36', Date.now());
+
         window.history.pushState({ chatOpen: true }, "");
       } else {
         p.classList.add('hidden');
@@ -1247,7 +1255,6 @@
       document.getElementById('iconDalamKotak').classList.remove('hidden');
     }
 
-    // FUNGSI BUNYI DENGAN PROTEKSI MULTI-PERANGKAT
     function bunyikanNotifikasi(){
       if(isProsesHapus || suaraIndex === 'off' || chatPertamaLoad) return; 
       try{ 
@@ -1292,7 +1299,7 @@
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
         if (confirm('Hapus pesan ini?')) {
-          isProsesHapus = true; // Aktifkan kunci senyap
+          isProsesHapus = true; 
           getChatRef().child(keyPesan).remove().then(() => {
             setTimeout(() => { isProsesHapus = false; }, 2000);
           }).catch(err => {
@@ -1432,8 +1439,11 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        // BISA BUNYI HANYA JIKA BUKAN PROSES HAPUS & BUKAN PESAN PERTAMA & BUKAN DARI DIRI SENDIRI
-        if(!chatPertamaLoad && !isMe && !isProsesHapus) {
+        // DETEKSI PESAN MASUK / BALASAN KE KITA: BUNYI & GOYANG ICON CHAT
+        if(!chatPertamaLoad && !isMe) {
+          let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
+          
+          // Bunyikan notifikasi untuk semua pesan masuk atau prioritas khusus balasan
           bunyikanNotifikasi();
           
           let panelChat = document.getElementById('panelChatWarga');
@@ -1454,7 +1464,6 @@
         }
       });
 
-      // EVENT HAPUS PESAN: DIJAMIN SENYAP TOTAL DI SEMUA PERANGKAT
       ref.on('child_removed', snap => {
         isProsesHapus = true;
         let key = snap.key;
