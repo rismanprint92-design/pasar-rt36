@@ -520,12 +520,13 @@
         <button onclick="toggleBoxChat()" class="bg-[#FF3B30] px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide text-white">TUTUP</button>
       </div>
     </div>
-    <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
+   <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
       <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
       <div class="flex flex-col gap-2">
         <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
         <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
         <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
+        <button onclick="gantiSuara('off')" id="suaraOff" class="text-left text-[12px] p-2 rounded-lg border border-red-200 bg-red-50 text-red-700 flex justify-between items-center"><span>🔕 4. Matikan Suara (Nonaktif)</span><span class="check hidden">✔️</span></button>
       </div>
     </div>
     <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
@@ -964,8 +965,8 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + REPLY / BALAS CHAT ---
-    let AKTIFKAN_LOGIN_CHAT = false; // Ubah ke true jika ingin mengaktifkan halaman login kembali
+    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + MUTE NOTIFIKASI ---
+    let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
@@ -977,7 +978,7 @@
       {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
       {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'}
     ];
-    let suaraIndex = parseInt(localStorage.getItem('suara_pilihan_rt36')||'0');
+    let suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
 
     function getChatRef(){ return database.ref('pesan_warga'); }
     function getRootRef(){ return database.ref(); }
@@ -1232,7 +1233,7 @@
     }
 
     function bunyikanNotifikasi(){
-      if(!notifAktif) return;
+      if(suaraIndex === 'off') return; // Jika diset off / mati, jangan bunyikan suara
       try{ 
         let audio = document.getElementById('notifSound');
         if(audio) {
@@ -1251,15 +1252,23 @@
       suaraIndex = idx;
       localStorage.setItem('suara_pilihan_rt36', idx);
       let audio = document.getElementById('notifSound');
-      if(audio && suaraList[idx]) {
-        audio.src = suaraList[idx].url;
-        audio.load();
-        audio.play().catch(()=>{});
+      
+      if(idx !== 'off') {
+        if(audio && suaraList[idx]) {
+          audio.src = suaraList[idx].url;
+          audio.load();
+          audio.play().catch(()=>{});
+        }
       }
-      [0,1,2].forEach(i => {
+
+      // Update tanda centang (✔️) pada menu suara
+      [0, 1, 2].forEach(i => {
         let check = document.querySelector(`#suara${i} .check`);
         if(check) check.classList.toggle('hidden', i !== idx);
       });
+      let checkOff = document.querySelector(`#suaraOff .check`);
+      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
+
       let m = document.getElementById('menuPilihanSuara');
       if(m) m.classList.add('hidden');
     }
@@ -1311,9 +1320,17 @@
       if(lbl) lbl.innerText = verifiedPhone === 'tamu' ? 'Tamu' : ('+ ' + verifiedPhone);
 
       let audio = document.getElementById('notifSound');
-      if(audio && suaraList[suaraIndex]) {
+      if(suaraIndex !== 'off' && suaraList[suaraIndex]) {
         audio.src = suaraList[suaraIndex].url;
       }
+
+      // Set centang awal sesuai memori
+      [0, 1, 2].forEach(i => {
+        let check = document.querySelector(`#suara${i} .check`);
+        if(check) check.classList.toggle('hidden', String(i) !== String(suaraIndex));
+      });
+      let checkOff = document.querySelector(`#suaraOff .check`);
+      if(checkOff) checkOff.classList.toggle('hidden', suaraIndex !== 'off');
 
       let ref = getChatRef();
       let box = document.getElementById('boxChatWarga');
