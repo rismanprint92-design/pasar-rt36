@@ -1007,29 +1007,29 @@
     });
 
     // Cek verifikasi login warga (Hanya dipicu saat chat dibuka/diketik)
-   function cekVerifikasiChat() {
-  // Jika saklar dimatikan (false), langsung otomatis buat identitas tamu & anggap lolos
-  if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
-    if (!localStorage.getItem('verified_nama_rt36')) {
-      localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
-      localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
-    }
-    let modal = document.getElementById('modalVerifWA');
-    if (modal) modal.classList.add('hidden');
-    return true; // Langsung loloskan agar bisa kirim chat
-  }
+  function cekVerifikasiChat() {
+      // Jika saklar dimatikan (false), selalu loloskan tanpa syarat
+      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
+        if (!localStorage.getItem('verified_nama_rt36')) {
+          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
+          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
+        }
+        let modal = document.getElementById('modalVerifWA');
+        if (modal) modal.classList.add('hidden');
+        return true;
+      }
 
-  // Jika saklar aktif (true), cek apakah sudah login atau belum
-  let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-  let verifiedNama = localStorage.getItem('verified_nama_rt36');
-  let modal = document.getElementById('modalVerifWA');
-  if (!verifiedPhone || !verifiedNama) {
-    if (modal) modal.classList.remove('hidden');
-    return false;
-  }
-  if (modal) modal.classList.add('hidden');
-  return true;
-}
+      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
+      let verifiedNama = localStorage.getItem('verified_nama_rt36');
+      let modal = document.getElementById('modalVerifWA');
+      if (!verifiedPhone || !verifiedNama) {
+        if (modal) modal.classList.remove('hidden');
+        return false;
+      }
+      if (modal) modal.classList.add('hidden');
+      return true;
+    }
+    
     function prosesLoginLangsung(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
