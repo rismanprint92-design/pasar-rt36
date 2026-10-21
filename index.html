@@ -1286,10 +1286,11 @@
       if(m) m.classList.add('hidden');
     }
 
-    function hapusPesanWarga(keyPesan, idPengirim) {
+   function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
         if (confirm('Hapus pesan ini?')) {
+          // Hapus langsung dari database tanpa memicu efek suara/notifikasi
           getChatRef().child(keyPesan).remove().catch(err => {
             alert('Gagal menghapus pesan: ' + err.message);
           });
