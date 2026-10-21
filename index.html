@@ -966,7 +966,7 @@
 
     // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + REPLY / BALAS CHAT ---
     let AKTIFKAN_LOGIN_CHAT = false; // Ubah ke true jika ingin mengaktifkan halaman login kembali
-    let pesanBalasanData = null; // Menyimpan data pesan yang sedang dibalas
+    let pesanBalasanData = null;
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1060,13 +1060,11 @@
 
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
-      let badge = document.getElementById('badgeBaru');
 
       if (p.classList.contains('hidden')) {
         p.classList.remove('hidden');
         b.classList.add('hidden');
         b.classList.remove('icon-berkedip');
-        if (badge) badge.classList.add('hidden');
         window.history.pushState({ chatOpen: true }, "");
       } else {
         p.classList.add('hidden');
@@ -1113,11 +1111,8 @@
       }
     }
 
-    // FUNGSI MEMULAI BALAS CHAT (REPLY)
     function mulaiBalasPesan(nama, isiPesan) {
       pesanBalasanData = { nama: nama, pesan: isiPesan };
-      
-      // Buat atau tampilkan kotak preview balasan di atas input chat
       let chatInputArea = document.getElementById('kotakInputPutih').parentNode;
       let existingPreview = document.getElementById('previewBalasChat');
       if(existingPreview) existingPreview.remove();
@@ -1161,7 +1156,6 @@
         tipe: 'teks'
       };
 
-      // Jika sedang membalas pesan, sertakan data balasan
       if (pesanBalasanData) {
         dataKirim.replyTo = pesanBalasanData.nama;
         dataKirim.replyContent = pesanBalasanData.pesan;
@@ -1347,11 +1341,9 @@
         div.className = isMe ? 'bubble-wa bubble-me' : 'bubble-wa bubble-other';
         div.id = 'msg_' + key;
         
-        // Tambahkan tombol klik untuk membalas pesan ini
         div.style.cursor = 'pointer';
         div.title = 'Ketuk untuk membalas pesan ini';
         div.onclick = function(e) {
-          // Jangan picu balasan jika yang diklik adalah tombol edit atau hapus
           if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
           mulaiBalasPesan(data.nama, data.tipe === 'teks' ? data.pesan : '[Media/Lokasi]');
         };
@@ -1367,7 +1359,6 @@
           isiPesan = `<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`;
         }
 
-        // Tampilkan kotak kutipan balasan jika pesan ini merupakan balasan
         let replyHtml = '';
         if (data.replyTo && data.replyContent) {
           replyHtml = `
@@ -1411,11 +1402,9 @@
           
           let panelChat = document.getElementById('panelChatWarga');
           let btnBuka = document.getElementById('btnBukaChat');
-          let badge = document.getElementById('badgeBaru');
 
           if(panelChat && panelChat.classList.contains('hidden')) {
             if(btnBuka) btnBuka.classList.add('icon-berkedip');
-            if(badge) badge.classList.remove('hidden');
           }
         }
       });
