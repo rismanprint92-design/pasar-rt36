@@ -694,8 +694,6 @@
     let menuSubAktif = null;
     let targetChatPribadiId = null;
     let targetChatPribadiNama = '';
-    let currentChatRef = null;
-    let chatEventListener = null;
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false;
     let chatPertamaLoad = true;
@@ -1160,15 +1158,15 @@
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
-      let refKirim = targetChatPribadiId ? database.ref('chat_pribadi/' + [myId, targetChatPribadiId].sort().join('_')) : database.ref('pesan_warga');
-      let dataKirim = targetChatPribadiId ? {
-        senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
-        pesan: `⭐ [STIKER] ${teksStiker}`, waktu: jam, timestamp: Date.now()
-      } : {
-        nama: verifiedNama, fotoProfil: verifiedFoto, pesan: `⭐ [STIKER] ${teksStiker}`, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'teks'
-      };
-
-      refKirim.push(dataKirim);
+      database.ref('pesan_warga').push({
+        nama: verifiedNama,
+        fotoProfil: verifiedFoto,
+        pesan: `⭐ [STIKER] ${teksStiker}`,
+        waktu: jam,
+        userId: myId,
+        timestamp: Date.now(),
+        tipe: 'teks'
+      });
       tutupSemuaMenuSub();
     }
 
@@ -1346,7 +1344,6 @@
       if (!cekVerifikasiChat()) return;
       
       let teksInput = document.getElementById('teksPesanWarga');
-      if (!teksInput) return;
       let ada = teksInput.value.trim() !== '';
       let mic = document.getElementById('iconMic');
       let send = document.getElementById('iconSend');
@@ -1364,9 +1361,7 @@
     function handleAksi(){
       if (!cekVerifikasiChat()) return;
 
-      let teksInput = document.getElementById('teksPesanWarga');
-      if (!teksInput) return;
-      let txt = teksInput.value.trim();
+      let txt = document.getElementById('teksPesanWarga').value.trim();
       if(txt !== ''){ 
         kirimPesanWarga(); 
         return; 
@@ -1415,6 +1410,7 @@
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
+      // Jika sedang berada dalam mode halaman chat pribadi
       if (targetChatPribadiId) {
         let roomKey = [myId, targetChatPribadiId].sort().join('_');
         database.ref('chat_pribadi/' + roomKey).push({
@@ -1634,15 +1630,12 @@
         audio.src = suaraList[suaraIndex].url;
       }
 
-      if (currentChatRef) {
-        currentChatRef.off();
-      }
-
+      let ref;
       if (targetChatPribadiId) {
         let roomKey = [myId, targetChatPribadiId].sort().join('_');
-        currentChatRef = database.ref('chat_pribadi/' + roomKey);
+        ref = database.ref('chat_pribadi/' + roomKey);
       } else {
-        currentChatRef = database.ref('pesan_warga');
+        ref = database.ref('pesan_warga');
       }
 
       let box = document.getElementById('boxChatWarga');
@@ -1650,7 +1643,7 @@
 
       box.innerHTML = '';
 
-      currentChatRef.limitToLast(80).on('child_added', snap => {
+      ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
 
@@ -1727,7 +1720,7 @@
 
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
-      tutupChatPribadi(); // Memastikan awal masuk selalu ke Grup Chat RT
+      inisialisasiChatLive();
       
       let urlParams = new URLSearchParams(window.location.search);
       let approveToken = urlParams.get('approve');
