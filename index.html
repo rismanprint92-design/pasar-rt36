@@ -515,7 +515,7 @@
     <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
       <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk verifikasi ke Admin RT[cite: 1].</p>
+      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk verifikasi ke Admin RT.</p>
       
       <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden">
         <div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;">
@@ -523,7 +523,7 @@
         </div>
       </div>
       <style>@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</style>
-      
+
       <div id="step1Verif" class="mt-5 space-y-3">
         <div><label class="text-[11px] font-bold">NAMA / BLOK RUMAH</label><input type="text" id="inputNama" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
         <div><label class="text-[11px] font-bold">NO HP / WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
@@ -540,7 +540,7 @@
       <div class="flex items-center gap-3">
         <div id="headerAvatar" class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden">RT</div>
         <div>
-          <h4 class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
+          <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
           <div class="flex items-center gap-1.5 mt-0.5">
             <span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span>
             <p id="statusOnline" class="text-[11px] font-bold">1 Online</p>
@@ -660,11 +660,8 @@
     }
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
-  
- <!-- MODAL LOGIN ADMIN UNTUK PERSETUJUAN (APPROVE) -->
-  <!-- (Pastikan elemen modal login admin di HTML Anda sudah tersedia, atau script di bawah ini menangani proses tokennya) -->
 
- <!-- LOGIKA JAVASCRIPT APLIKASI -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -1030,6 +1027,7 @@
       else { document.getElementById('modal-login-admin').classList.remove('hidden'); }
     }
     function tutupModalAdmin() { document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value = ''; }
+    
     function verifikasiAdmin() {
       if (document.getElementById('pin-admin').value === pinAdminAktif) {
         isAdmin = true;
@@ -1039,24 +1037,25 @@
         terapkanFilterDanPencarian();
 
         let urlParams = new URLSearchParams(window.location.search);
-        let approveToken = urlParams.get('approve');
-        let approveNama = urlParams.get('nama');
-        let approveWa = urlParams.get('wa');
-        if (approveToken && approveNama) {
-          if (confirm(`Setujui pendaftaran warga "${approveNama}" (${approveWa})?`)) {
-            pendingWargaRef.child(approveToken).set({
-              nama: approveNama,
-              wa: approveWa,
+        let verifyToken = urlParams.get('verify');
+        let verifyNama = urlParams.get('nama');
+        let verifyWa = urlParams.get('wa');
+        if (verifyToken && verifyNama) {
+          if (confirm(`Setujui nomor warga aktif "${verifyNama}" (${verifyWa})?`)) {
+            pendingWargaRef.child(verifyToken).set({
+              nama: verifyNama,
+              wa: verifyWa,
               status: 'approved',
               approvedAt: Date.now()
             }).then(() => {
-              alert(`Berhasil! Warga ${approveNama} telah disetujui.`);
+              alert(`Berhasil! Nomor WA warga ${verifyNama} telah dikonfirmasi dan disetujui.`);
               window.history.replaceState({}, document.title, window.location.pathname);
             });
           }
         }
       } else { alert('PIN Admin RT Salah!'); }
     }
+
     function keluarAdmin() {
       isAdmin = false;
       document.getElementById('banner-admin').classList.add('hidden');
@@ -1227,6 +1226,7 @@
       return true;
     }
     
+    // --- Alur Baru: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
@@ -1255,13 +1255,14 @@
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      let linkPersetujuan = `${window.location.origin}${window.location.pathname}?approve=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
-      let teksWaAdmin = `Halo Admin RT.36,\n\nAda warga baru yang mendaftar ke Live Chat:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link di bawah untuk masuk ke Mode Admin & menyetujui:\n${linkPersetujuan}`;
+      // Link verifikasi aktif warga yang langsung mengarah ke halaman login/persetujuan admin
+      let linkVerifikasiWarga = `${window.location.origin}${window.location.pathname}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
+      let teksWaAdmin = `Halo Admin RT.36,\n\nWarga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link verifikasi di bawah ini untuk menyetujui dan masuk otomatis ke halaman login Admin:\n${linkVerifikasiWarga}`;
 
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
       
       document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('Permintaan verifikasi terkirim ke WhatsApp Admin!');
+      alert('Link verifikasi nomor aktif telah dikirim ke WhatsApp Admin!');
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
     }
@@ -1410,7 +1411,6 @@
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
-      // Jika sedang berada dalam mode halaman chat pribadi
       if (targetChatPribadiId) {
         let roomKey = [myId, targetChatPribadiId].sort().join('_');
         database.ref('chat_pribadi/' + roomKey).push({
@@ -1723,8 +1723,9 @@
       inisialisasiChatLive();
       
       let urlParams = new URLSearchParams(window.location.search);
-      let approveToken = urlParams.get('approve');
-      if (approveToken) {
+      let verifyToken = urlParams.get('verify');
+      if (verifyToken) {
+        // Otomatis buka modal login admin saat admin mengklik link verifikasi warga dari WhatsApp
         document.getElementById('modal-login-admin').classList.remove('hidden');
       }
     });
