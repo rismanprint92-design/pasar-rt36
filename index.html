@@ -553,7 +553,7 @@
       <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
         <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
         <div class="flex-1 relative min-h-[32px] flex items-center">
-          <div id="areaKetikNormal" class="w-full flex items-center"><input type="text" id="teksPesanWarga" placeholder="Ketik pesan" class="w-full bg-transparent border-0 text-[15px] px-2 py-2 focus:outline-none" oninput="cekKetik()" onkeydown="if(event.key==='Enter'){kirimPesanWarga()}"></div>
+          <div id="areaKetikNormal" class="w-full flex items-center"><textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea></div>
           <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
         </div>
         <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
@@ -579,10 +579,19 @@
   </div>
 
   <style>
-    .bubble-wa{max-width:80%; padding:6px 8px 5px 8px; border-radius:8px; box-shadow:0 1px .5px rgba(0,0,0,.13); font-size:14px} 
-    .bubble-me{background:#DCF8C6; align-self:flex-end; border-top-right-radius:0} 
-    .bubble-other{background:white; align-self:flex-start; border-top-left-radius:0}
-    .nama-atas{font-weight:800; font-size:11px; margin-bottom:2px; color:#075E54}
+    .bubble-wa {
+      max-width: 80%; 
+      padding: 6px 8px 5px 8px; 
+      border-radius: 8px; 
+      box-shadow: 0 1px .5px rgba(0,0,0,.13); 
+      font-size: 14px;
+      word-break: break-word;     /* Mencegah teks panjang keluar dari balon chat */
+      overflow-wrap: break-word;   /* Memastikan teks terbungkus rapi di dalam kotak */
+    } 
+    .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } 
+    .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
+    .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }
+    
     @keyframes goyangHalus {
       0% { transform: rotate(0deg); }
       25% { transform: rotate(-5deg); }
