@@ -979,7 +979,7 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT + AUTO HAPUS CHAT 24 JAM ---
+    // --- SAKLAR UTAMA LIVE CHAT + KONTROL NOTIFIKASI BALASAN & MERAH ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     let isProsesHapus = false; 
@@ -1081,6 +1081,8 @@
         p.classList.remove('hidden');
         b.classList.add('hidden');
         b.classList.remove('icon-goyang');
+        b.classList.remove('bg-red-600');
+        b.classList.add('bg-emerald-600'); // Kembali normal saat dibuka
         
         let box = document.getElementById('boxChatWarga');
         if(box) {
@@ -1359,7 +1361,7 @@
       let box = document.getElementById('boxChatWarga');
       if(!box) return;
 
-      // PEMBERSIHAN OTOMATIS: Hapus chat lama yang umurnya > 24 jam
+      // Hapus otomatis chat > 24 jam
       const SEKARANG = Date.now();
       const BATAS_24_JAM = 24 * 60 * 60 * 1000;
       ref.once('value', snap => {
@@ -1451,14 +1453,23 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
+        // HANYA BUNYI & BERUBAH WARNA MERAH JIKA ADA YANG MEMBALAS/MENGUTIP CHAT KITA
         if(!chatPertamaLoad && !isMe && !isProsesHapus) {
-          bunyikanNotifikasi();
+          let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
           
-          let panelChat = document.getElementById('panelChatWarga');
-          let btnBuka = document.getElementById('btnBukaChat');
+          if (apakahBalasanKeSaya) {
+            bunyikanNotifikasi();
+            
+            let panelChat = document.getElementById('panelChatWarga');
+            let btnBuka = document.getElementById('btnBukaChat');
 
-          if(panelChat && panelChat.classList.contains('hidden')) {
-            if(btnBuka) btnBuka.classList.add('icon-goyang');
+            if(panelChat && panelChat.classList.contains('hidden')) {
+              if(btnBuka) {
+                btnBuka.classList.add('icon-goyang');
+                btnBuka.classList.remove('bg-emerald-600');
+                btnBuka.classList.add('bg-red-600'); // Berubah jadi warna merah mencolok
+              }
+            }
           }
         }
       });
@@ -1472,7 +1483,6 @@
         }
       });
 
-      // EVENT HAPUS PESAN: DIJAMIN SENYAP TOTAL DI SEMUA PERANGKAT
       ref.on('child_removed', snap => {
         isProsesHapus = true;
         let key = snap.key;
