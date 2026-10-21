@@ -979,7 +979,7 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + ANIMASI GOYANG HALUS ---
+    // --- SAKLAR UTAMA LIVE CHAT & SEMUA FITUR TERBARU ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     
@@ -1286,7 +1286,6 @@
       if(m) m.classList.add('hidden');
     }
 
-   // Fungsi Hapus Pesan (Murni menghapus data tanpa suara)
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
@@ -1448,6 +1447,7 @@
         }
       });
 
+      // Hapus pesan murni senyap di semua perangkat (tanpa suara/goyang)
       ref.on('child_removed', snap => {
         let key = snap.key;
         let el = document.getElementById('msg_' + key);
