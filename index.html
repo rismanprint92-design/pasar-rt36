@@ -548,31 +548,35 @@
    <!-- AREA BUBBLE CHAT -->
     <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
-    <!-- FOOTER INPUT CHAT WA (TERURUT RAPI & SEJAJAR SEPERTI WHATSAPP) -->
+   <!-- FOOTER INPUT CHAT WA (LENGKAP DENGAN AUTO-HIDDEN IKON & PREVIEW DI ATAS) -->
     <div class="bg-[#F0F0F0] p-2 flex flex-col justify-end gap-1">
       
       <!-- TEMPAT PRATINJAU BALASAN (Muncul di ATAS secara rapi jika sedang membalas) -->
       <div id="containerPreviewBalas"></div>
 
-      <!-- BARIS UTAMA KOTAK KETIK & TOMBOL AKSI SEJAJAR DI SAMPING -->
+      <!-- BARIS UTAMA KOTAK KETIK & TOMBOL AKSI SEJAJAR -->
       <div class="flex items-end gap-2">
         <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-          <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button> 
+          <!-- Tombol Emoji -->
+          <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
+          
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
             <div id="areaKetikNormal" class="w-full flex items-center">
               <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
             </div>
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
           </div>
-          <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
+
+          <!-- Wadah Ikon (Kamera, Maps, Lampiran) yang otomatis ter-hidden saat mengetik agar lebih lega -->
+          <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5 transition-all duration-200">
             <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
             <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
             <button onclick="kirimLokasi()" class="w-8 h-8 flex items-center justify-center"><span class="text-[18px]">📍</span></button>
             <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
           </div>
         </div>
-        
-        <!-- Tombol Aksi (Mic / Kirim) Sekarang Berada Sejajar di Samping Kanan -->
+
+        <!-- Tombol Aksi (Mic / Kirim) -->
         <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden text-white">
           <span id="iconMic" class="relative"><svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg></span>
           <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
@@ -1141,11 +1145,21 @@
         document.getElementById('teksPesanWarga').blur();
         return;
       }
-      let ada = document.getElementById('teksPesanWarga').value.trim() !== '';
-      let mic = document.getElementById('iconMic'), send = document.getElementById('iconSend');
+      let teksInput = document.getElementById('teksPesanWarga');
+      let ada = teksInput.value.trim() !== '';
+      let mic = document.getElementById('iconMic');
+      let send = document.getElementById('iconSend');
+      let iconDalamKotak = document.getElementById('iconDalamKotak');
+
       if(isRekam) return;
+      
       mic.classList.toggle('hidden', ada);
       send.classList.toggle('hidden', !ada);
+
+      // Otomatis hidden ikon kamera & maps saat mengetik agar kotak teks lebih lega
+      if (iconDalamKotak) {
+        iconDalamKotak.classList.toggle('hidden', ada);
+      }
     }
 
     function handleAksi(){
