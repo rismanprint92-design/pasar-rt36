@@ -572,7 +572,21 @@
     @keyframes blinkChatIcon {0%,100%{transform:scale(1); box-shadow:0 0 0 0 rgba(37,211,102,0.7)} 50%{transform:scale(1.15); box-shadow:0 0 0 15px rgba(37,211,102,0)}}
     .icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
   </style>
-
+  
+<style>
+    /* Animasi bergerak/bergetar halus tanpa berkedip warna */
+    @keyframes goyangHalus {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+      75% { transform: rotate(-5deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .icon-goyang {
+      animation: goyangHalus 0.5s infinite ease-in-out;
+    }
+  </style>
+  
 <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
@@ -965,7 +979,7 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + MUTE NOTIFIKASI ---
+    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + ANIMASI GOYANG HALUS ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     
@@ -1065,7 +1079,7 @@
       if (p.classList.contains('hidden')) {
         p.classList.remove('hidden');
         b.classList.add('hidden');
-        b.classList.remove('icon-berkedip');
+        b.classList.remove('icon-goyang');
         window.history.pushState({ chatOpen: true }, "");
       } else {
         p.classList.add('hidden');
@@ -1233,7 +1247,7 @@
     }
 
     function bunyikanNotifikasi(){
-      if(suaraIndex === 'off') return; // Jika diset off / mati, jangan bunyikan suara
+      if(suaraIndex === 'off') return; 
       try{ 
         let audio = document.getElementById('notifSound');
         if(audio) {
@@ -1261,7 +1275,6 @@
         }
       }
 
-      // Update tanda centang (✔️) pada menu suara
       [0, 1, 2].forEach(i => {
         let check = document.querySelector(`#suara${i} .check`);
         if(check) check.classList.toggle('hidden', i !== idx);
@@ -1324,7 +1337,6 @@
         audio.src = suaraList[suaraIndex].url;
       }
 
-      // Set centang awal sesuai memori
       [0, 1, 2].forEach(i => {
         let check = document.querySelector(`#suara${i} .check`);
         if(check) check.classList.toggle('hidden', String(i) !== String(suaraIndex));
@@ -1421,7 +1433,7 @@
           let btnBuka = document.getElementById('btnBukaChat');
 
           if(panelChat && panelChat.classList.contains('hidden')) {
-            if(btnBuka) btnBuka.classList.add('icon-berkedip');
+            if(btnBuka) btnBuka.classList.add('icon-goyang');
           }
         }
       });
