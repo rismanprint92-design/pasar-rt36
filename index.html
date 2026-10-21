@@ -1286,6 +1286,7 @@
       if(m) m.classList.add('hidden');
     }
 
+   // Fungsi Hapus Pesan (Murni menghapus data tanpa suara)
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
