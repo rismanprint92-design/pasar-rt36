@@ -964,8 +964,9 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP ---
+    // --- SAKLAR UTAMA LIVE CHAT & FITUR LENGKAP + REPLY / BALAS CHAT ---
     let AKTIFKAN_LOGIN_CHAT = false; // Ubah ke true jika ingin mengaktifkan halaman login kembali
+    let pesanBalasanData = null; // Menyimpan data pesan yang sedang dibalas
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1055,17 +1056,35 @@
     }
 
     function toggleBoxChat() {
-      // Tombol buka/tutup chat TIDAK memicu suara apa pun
+      if (!cekVerifikasiChat()) return;
+
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
       let badge = document.getElementById('badgeBaru');
-      p.classList.toggle('hidden');
-      b.classList.toggle('hidden');
-      if(!p.classList.contains('hidden')){
+
+      if (p.classList.contains('hidden')) {
+        p.classList.remove('hidden');
+        b.classList.add('hidden');
         b.classList.remove('icon-berkedip');
-        if(badge) badge.classList.add('hidden');
+        if (badge) badge.classList.add('hidden');
+        window.history.pushState({ chatOpen: true }, "");
+      } else {
+        p.classList.add('hidden');
+        b.classList.remove('hidden');
+        if (window.history.state && window.history.state.chatOpen) {
+          window.history.back();
+        }
       }
     }
+
+    window.addEventListener('popstate', function (event) {
+      let p = document.getElementById('panelChatWarga');
+      let b = document.getElementById('btnBukaChat');
+      if (p && !p.classList.contains('hidden')) {
+        p.classList.add('hidden');
+        if (b) b.classList.remove('hidden');
+      }
+    });
 
     function cekKetik() {
       if (!cekVerifikasiChat()) {
@@ -1094,6 +1113,35 @@
       }
     }
 
+    // FUNGSI MEMULAI BALAS CHAT (REPLY)
+    function mulaiBalasPesan(nama, isiPesan) {
+      pesanBalasanData = { nama: nama, pesan: isiPesan };
+      
+      // Buat atau tampilkan kotak preview balasan di atas input chat
+      let chatInputArea = document.getElementById('kotakInputPutih').parentNode;
+      let existingPreview = document.getElementById('previewBalasChat');
+      if(existingPreview) existingPreview.remove();
+
+      let previewDiv = document.createElement('div');
+      previewDiv.id = 'previewBalasChat';
+      previewDiv.className = 'bg-white border-l-4 border-emerald-600 p-2 text-xs mx-2 mb-1 rounded-r-lg flex justify-between items-center shadow-sm';
+      previewDiv.innerHTML = `
+        <div class="overflow-hidden">
+          <p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p>
+          <p class="text-gray-600 truncate text-[11px]">${isiPesan}</p>
+        </div>
+        <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm">&times;</button>
+      `;
+      chatInputArea.insertBefore(previewDiv, document.getElementById('kotakInputPutih'));
+      document.getElementById('teksPesanWarga').focus();
+    }
+
+    function batalkanBalasChat() {
+      pesanBalasanData = null;
+      let previewDiv = document.getElementById('previewBalasChat');
+      if(previewDiv) previewDiv.remove();
+    }
+
     function kirimPesanWarga(){
       if (!cekVerifikasiChat()) return;
 
@@ -1104,15 +1152,24 @@
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
-      getChatRef().push({
+      let dataKirim = {
         nama: verifiedNama, 
         pesan: pesan, 
         waktu: jam, 
         userId: myId, 
         timestamp: Date.now(), 
         tipe: 'teks'
-      }).then(()=>{
+      };
+
+      // Jika sedang membalas pesan, sertakan data balasan
+      if (pesanBalasanData) {
+        dataKirim.replyTo = pesanBalasanData.nama;
+        dataKirim.replyContent = pesanBalasanData.pesan;
+      }
+
+      getChatRef().push(dataKirim).then(()=>{
         document.getElementById('teksPesanWarga').value='';
+        batalkanBalasChat();
         if(typeof cekKetik === 'function') cekKetik();
       }).catch(err => {
         alert('Gagal mengirim pesan: ' + err.message);
@@ -1213,7 +1270,6 @@
       if(m) m.classList.add('hidden');
     }
 
-    // Fungsi Hapus Pesan via Ikon Sampah (Tidak bersuara)
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
@@ -1227,7 +1283,6 @@
       }
     }
 
-    // Fungsi Edit Pesan via Ikon Pensil (Tidak bersuara)
     function mulaiEditPesan(keyPesan, encodedPesan) {
       let pesanLama = decodeURIComponent(encodedPesan);
       let pesanBaru = prompt("Edit pesan Anda:", pesanLama);
@@ -1292,6 +1347,15 @@
         div.className = isMe ? 'bubble-wa bubble-me' : 'bubble-wa bubble-other';
         div.id = 'msg_' + key;
         
+        // Tambahkan tombol klik untuk membalas pesan ini
+        div.style.cursor = 'pointer';
+        div.title = 'Ketuk untuk membalas pesan ini';
+        div.onclick = function(e) {
+          // Jangan picu balasan jika yang diklik adalah tombol edit atau hapus
+          if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+          mulaiBalasPesan(data.nama, data.tipe === 'teks' ? data.pesan : '[Media/Lokasi]');
+        };
+
         let isiPesan = data.pesan;
         if (data.tipe === 'foto') {
           isiPesan = `<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)">`;
@@ -1301,6 +1365,17 @@
           isiPesan = `📍 <a href="${data.pesan}" target="_blank" class="text-blue-600 underline font-bold">Kirim Lokasi GPS Warga</a>`;
         } else {
           isiPesan = `<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`;
+        }
+
+        // Tampilkan kotak kutipan balasan jika pesan ini merupakan balasan
+        let replyHtml = '';
+        if (data.replyTo && data.replyContent) {
+          replyHtml = `
+            <div class="bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]">
+              <p class="font-bold text-emerald-800">${data.replyTo}</p>
+              <p class="text-gray-600 truncate">${data.replyContent}</p>
+            </div>
+          `;
         }
 
         let tombolAksiChat = '';
@@ -1324,13 +1399,13 @@
             <span class="nama-atas">${data.nama}</span>
             ${tombolAksiChat}
           </div>
+          ${replyHtml}
           <div class="py-0.5">${isiPesan}${statusEdit}</div>
           <div class="text-right text-[10px] text-gray-500">${data.waktu}</div>
         `;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        // Logika Notifikasi Suara & Animasi Ikon Chat Bergerak/Berkedip saat ada pesan masuk baru dari orang lain
         if(!chatPertamaLoad && !isMe) {
           bunyikanNotifikasi();
           
@@ -1338,7 +1413,6 @@
           let btnBuka = document.getElementById('btnBukaChat');
           let badge = document.getElementById('badgeBaru');
 
-          // Jika panel chat sedang ditutup, aktifkan animasi berkedip/bergerak pada tombol chat
           if(panelChat && panelChat.classList.contains('hidden')) {
             if(btnBuka) btnBuka.classList.add('icon-berkedip');
             if(badge) badge.classList.remove('hidden');
