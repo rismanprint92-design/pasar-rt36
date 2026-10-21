@@ -979,7 +979,7 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & FITUR NOTIFIKASI BALASAN + AUTO SCROLL ---
+    // --- SAKLAR UTAMA LIVE CHAT + AUTO HAPUS CHAT 24 JAM ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     let isProsesHapus = false; 
@@ -1082,12 +1082,10 @@
         b.classList.add('hidden');
         b.classList.remove('icon-goyang');
         
-        // AUTO SCROLL KETIKA DIBUKA KE PESAN TERBARU & TANDAI SUDAH DIBACA
         let box = document.getElementById('boxChatWarga');
         if(box) {
           box.scrollTop = box.scrollHeight;
         }
-        localStorage.setItem('last_read_chat_rt36', Date.now());
 
         window.history.pushState({ chatOpen: true }, "");
       } else {
@@ -1361,6 +1359,20 @@
       let box = document.getElementById('boxChatWarga');
       if(!box) return;
 
+      // PEMBERSIHAN OTOMATIS: Hapus chat lama yang umurnya > 24 jam
+      const SEKARANG = Date.now();
+      const BATAS_24_JAM = 24 * 60 * 60 * 1000;
+      ref.once('value', snap => {
+        const dataChat = snap.val();
+        if(dataChat) {
+          Object.keys(dataChat).forEach(key => {
+            if(dataChat[key].timestamp && (SEKARANG - dataChat[key].timestamp) > BATAS_24_JAM) {
+              ref.child(key).remove();
+            }
+          });
+        }
+      });
+
       try {
         let onlineRoot = getOnlineRef();
         let myOnlineRef = onlineRoot.child(myId);
@@ -1439,11 +1451,7 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        // DETEKSI PESAN MASUK / BALASAN KE KITA: BUNYI & GOYANG ICON CHAT
-        if(!chatPertamaLoad && !isMe) {
-          let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
-          
-          // Bunyikan notifikasi untuk semua pesan masuk atau prioritas khusus balasan
+        if(!chatPertamaLoad && !isMe && !isProsesHapus) {
           bunyikanNotifikasi();
           
           let panelChat = document.getElementById('panelChatWarga');
@@ -1464,6 +1472,7 @@
         }
       });
 
+      // EVENT HAPUS PESAN: DIJAMIN SENYAP TOTAL DI SEMUA PERANGKAT
       ref.on('child_removed', snap => {
         isProsesHapus = true;
         let key = snap.key;
