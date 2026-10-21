@@ -1092,15 +1092,34 @@
       if(!isRekam) mulaiRekam(); else stopRekam();
     }
 
-    function kirimPesanWarga(){
+   function kirimPesanWarga(){
+      // Pastikan identitas tamu aman jika login dimatikan
+      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
+        if (!localStorage.getItem('verified_nama_rt36')) {
+          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
+          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
+        }
+      }
+
       let pesan = document.getElementById('teksPesanWarga').value.trim();
       if(!pesan) return;
-      let verifiedNama = localStorage.getItem('verified_nama_rt36');
-      let myId = localStorage.getItem('my_chat_id');
+      
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      getChatRef().push({nama: verifiedNama, pesan, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'teks'}).then(()=>{
+      
+      getChatRef().push({
+        nama: verifiedNama, 
+        pesan: pesan, 
+        waktu: jam, 
+        userId: myId, 
+        timestamp: Date.now(), 
+        tipe: 'teks'
+      }).then(()=>{
         document.getElementById('teksPesanWarga').value='';
-        cekKetik();
+        if(typeof cekKetik === 'function') cekKetik();
+      }).catch(err => {
+        alert('Gagal mengirim pesan: ' + err.message);
       });
     }
 
