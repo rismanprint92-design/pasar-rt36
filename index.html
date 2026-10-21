@@ -1160,28 +1160,25 @@
 
     function mulaiBalasPesan(nama, isiPesan) {
       pesanBalasanData = { nama: nama, pesan: isiPesan };
-      let chatInputArea = document.getElementById('kotakInputPutih').parentNode;
-      let existingPreview = document.getElementById('previewBalasChat');
-      if(existingPreview) existingPreview.remove();
-
-      let previewDiv = document.createElement('div');
-      previewDiv.id = 'previewBalasChat';
-      previewDiv.className = 'bg-white border-l-4 border-emerald-600 p-2 text-xs mx-2 mb-1 rounded-r-lg flex justify-between items-center shadow-sm';
-      previewDiv.innerHTML = `
-        <div class="overflow-hidden">
-          <p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p>
-          <p class="text-gray-600 truncate text-[11px]">${isiPesan}</p>
+      let containerPreview = document.getElementById('containerPreviewBalas');
+      if(!containerPreview) return;
+      
+      containerPreview.innerHTML = `
+        <div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm">
+          <div class="overflow-hidden">
+            <p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p>
+            <p class="text-gray-600 truncate text-[11px]">${isiPesan}</p>
+          </div>
+          <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm">&times;</button>
         </div>
-        <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm">&times;</button>
       `;
-      chatInputArea.insertBefore(previewDiv, document.getElementById('kotakInputPutih'));
       document.getElementById('teksPesanWarga').focus();
     }
 
     function batalkanBalasChat() {
       pesanBalasanData = null;
-      let previewDiv = document.getElementById('previewBalasChat');
-      if(previewDiv) previewDiv.remove();
+      let containerPreview = document.getElementById('containerPreviewBalas');
+      if(containerPreview) containerPreview.innerHTML = '';
     }
 
     function kirimPesanWarga(){
@@ -1210,6 +1207,9 @@
 
       getChatRef().push(dataKirim).then(()=>{
         document.getElementById('teksPesanWarga').value='';
+        // Reset tinggi textarea kembali ke awal
+        let txtArea = document.getElementById('teksPesanWarga');
+        if(txtArea) txtArea.style.height = 'auto';
         batalkanBalasChat();
         if(typeof cekKetik === 'function') cekKetik();
       }).catch(err => {
@@ -1490,7 +1490,7 @@
               if(btnBuka) {
                 btnBuka.classList.add('icon-goyang');
                 btnBuka.classList.remove('bg-emerald-600');
-                btnBuka.classList.add('bg-red-600'); // Berubah merah mencolok
+                btnBuka.classList.add('bg-red-600');
               }
             }
           }
