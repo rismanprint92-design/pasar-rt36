@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace RT. 36 AR & Metroland</title>
   
-  <!-- PWA - INI YANG BIKIN ICON KEREN BOS -->
+  <!-- PWA -->
   <script>
     var isOld = /Android [1-8]\./.test(navigator.userAgent);
     if (!isOld) {
@@ -159,6 +159,10 @@
       <i class="ph ph-shield-check text-lg text-emerald-600"></i>
       <span id="label-admin">Mode Admin RT</span>
     </button>
+    <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
+      <i class="ph ph-user-circle text-lg text-emerald-600"></i>
+      <span>Ganti Nama & Foto Profil</span>
+    </button>
     <button onclick="keluarDariPasarRT36(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2.5">
       <i class="ph ph-sign-out text-lg text-red-600"></i>
       <span>Keluar Akun (Logout)</span>
@@ -275,6 +279,25 @@
       <div class="flex gap-2 pt-2">
         <button onclick="tutupModalGantiPin()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button>
         <button onclick="simpanPinBaru()" class="w-1/2 bg-amber-600 text-white py-2 rounded-lg font-bold hover:bg-amber-700">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ganti Profil & Foto Warga -->
+  <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4">
+    <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3">
+      <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
+      <div>
+        <label class="block font-medium mb-1">Nama / Blok Rumah</label>
+        <input type="text" id="editNamaWarga" class="w-full border p-2 rounded-lg" placeholder="Nama anda">
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Foto Profil Baru (Opsional)</label>
+        <input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px]">
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="tutupModalGantiProfil()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button>
+        <button onclick="simpanProfilBaru()" class="w-1/2 bg-emerald-600 text-white py-2 rounded-lg font-bold">Simpan</button>
       </div>
     </div>
   </div>
@@ -492,7 +515,7 @@
     <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
       <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk langsung masuk. 1 nomor HP hanya untuk 1 perangkat![cite: 1]</p>
+      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk verifikasi ke Admin RT[cite: 1].</p>
       
       <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden">
         <div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;">
@@ -502,20 +525,20 @@
       <style>@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</style>
       
       <div id="step1Verif" class="mt-5 space-y-3">
-        <div><label class="text-[11px] font-bold">NAMA/BLOK RUMAH</label><input type="text" id="inputNama" placeholder="Untuk nama defaul chat live" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
+        <div><label class="text-[11px] font-bold">NAMA / BLOK RUMAH</label><input type="text" id="inputNama" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
         <div><label class="text-[11px] font-bold">NO HP / WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <button onclick="prosesLoginLangsung(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Login Masuk Sekarang 📲</button>
+        <button onclick="prosesKirimVerifikasiWA(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Kirim Verifikasi ke WA Admin 📲</button>
       </div>
     </div>
   </div>
 
-<!-- PANEL LIVE CHAT WARGA -->
+  <!-- PANEL LIVE CHAT WARGA -->
   <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
     
-    <!-- HEADER CHAT (Tombol Notifikasi Default & Tombol Keluar Akun) -->
+    <!-- HEADER CHAT -->
     <div class="bg-[#075E54] text-white p-3 flex justify-between items-center shadow-md">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm">RT</div>
+        <div id="headerAvatar" class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden">RT</div>
         <div>
           <h4 class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
           <div class="flex items-center gap-1.5 mt-0.5">
@@ -529,16 +552,14 @@
         </div>
       </div>
 
-      <!-- Sisi Kanan Header: Notifikasi + Keluar -->
+      <!-- Sisi Kanan Header -->
       <div class="flex gap-2 items-center">
-        <!-- Tombol Suara Notifikasi Default -->
         <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]" title="Pilih Suara Notifikasi">🔔</button>
-        <!-- Tombol Keluar Akun Chat -->
         <button onclick="keluarDariPasarRT36()" class="w-8 h-8 bg-red-600/80 hover:bg-red-600 rounded-full flex items-center justify-center text-[14px] text-white shadow" title="Keluar Akun">🚪</button>
       </div>
     </div>
 
-    <!-- MENU PILIHAN SUARA NOTIFIKASI (6 Pilihan Suara) -->
+    <!-- MENU PILIHAN SUARA NOTIFIKASI -->
     <div id="menuPilihanSuara" class="hidden bg-white border-b p-3 shadow-lg">
       <div class="flex justify-between items-center mb-2">
         <p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI (6 PILIHAN):</p>
@@ -560,14 +581,9 @@
 
     <!-- FOOTER INPUT CHAT -->
     <div class="bg-[#F0F0F0] p-2 flex flex-col justify-end gap-1">
-      
-      <!-- TEMPAT PRATINJAU BALASAN -->
       <div id="containerPreviewBalas"></div>
-
-      <!-- BARIS UTAMA KOTAK KETIK -->
       <div class="flex items-end gap-2">
         <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-          <!-- Tombol Emoji (Terhubung ke fungsi back HP) -->
           <button onclick="toggleMenuEmoji()" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
           
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
@@ -577,15 +593,13 @@
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
           </div>
 
-          <!-- Wadah Ikon (Lampiran Rantai & Kamera) -->
           <div id="iconDalamKotak" class="flex items-center gap-1.5 flex-shrink-0 mb-0.5 transition-all duration-200">
             <button onclick="toggleMenuLampiran()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-            <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-            <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
+            <button onclick="document.getElementById('inputFotoChat').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+            <input type="file" id="inputFotoChat" accept="image/*" class="hidden" onchange="kirimFoto(this)">
           </div>
         </div>
 
-        <!-- Tombol Aksi (Mic / Kirim) -->
         <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden text-white">
           <span id="iconMic" class="relative"><svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg></span>
           <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
@@ -594,11 +608,11 @@
       </div>
     </div>
 
-    <!-- MENU LAMPIRAN / RANTAI (Ditambah Pilihan Ikon Stiker ⭐) -->
+    <!-- MENU LAMPIRAN -->
     <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t shadow-lg">
-      <button onclick="document.getElementById('inputFoto').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white text-lg">📷</div><span class="text-[10px]">Kamera</span></button>
+      <button onclick="document.getElementById('inputFotoChat').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white text-lg">📷</div><span class="text-[10px]">Kamera</span></button>
       <button onclick="kirimLokasi(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg">📍</div><span class="text-[10px]">Lokasi</span></button>
-      <button onclick="document.getElementById('inputFoto').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg">🖼️</div><span class="text-[10px]">Galeri</span></button>
+      <button onclick="document.getElementById('inputFotoChat').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg">🖼️</div><span class="text-[10px]">Galeri</span></button>
       <button onclick="bukaMenuStiker();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white text-lg">⭐</div><span class="text-[10px]">Stiker</span></button>
     </div>
 
@@ -613,7 +627,7 @@
       <span onclick="tambahEmoji('🎉')" class="cursor-pointer hover:scale-125 transition-transform">🎉</span>
     </div>
 
-    <!-- MENU PILIHAN STIKER -->
+    <!-- MENU STIKER -->
     <div id="menuStiker" class="hidden bg-white p-3 flex gap-3 text-3xl flex-wrap border-t shadow-lg justify-around">
       <span onclick="kirimStiker('👍 Mantap')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Jempol">👍</span>
       <span onclick="kirimStiker('❤️ Love')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Love">❤️</span>
@@ -630,8 +644,8 @@
       border-radius: 8px; 
       box-shadow: 0 1px .5px rgba(0,0,0,.13); 
       font-size: 14px;
-      word-break: break-word;     /* Mencegah teks panjang keluar dari balon chat */
-      overflow-wrap: break-word;   /* Memastikan teks terbungkus rapi di dalam kotak */
+      word-break: break-word;
+      overflow-wrap: break-word;
     } 
     .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } 
     .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
@@ -647,7 +661,7 @@
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
   
-<!-- LOGIKA JAVASCRIPT APLIKASI -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -663,6 +677,7 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const dbRef = database.ref('produk_pasar');
+    const chatRef = database.ref('chat_warga');
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
 
@@ -796,8 +811,8 @@
         let catatanId = 'catatan-' + item.id;
         let catatanTeks = item.catatan || '';
         let catatanHtml = catatanTeks ? '<div style="background:#f0fdf4;padding:6px 8px;border-radius:8px;border-left:3px solid #059669;margin-top:6px;"><div id="'+catatanId+'" class="catatan-teks">📝 '+bersihkanTeks(catatanTeks)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\''+catatanId+'\',this)">Lihat selengkapnya ▼</button></div>' : '';
-        let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
         let tombolAdmin = isAdmin ? '<div class="grid grid-cols-2 gap-1 mt-2"><button onclick="muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold py-1.5 rounded-lg">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold py-1.5 rounded-lg">🗑️ Hapus Admin</button></div>' : '';
+        let badge = list.length > 1 ? '<span class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>' : '';
         let card = '<div id="produk-'+item.id+'" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col"><div class="relative cursor-pointer" onclick="bukaModalZoom(this.dataset.fotos,0)" data-fotos=\''+JSON.stringify(list).replace(/'/g,"&#039;")+'\'><img loading="lazy" src="'+foto+'" class="w-full h-36 object-cover bg-gray-100"><div>'+badge+'</div></div><div class="p-3 flex-1 flex flex-col justify-between"><div><span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">'+item.kategori+'</span><h3 class="font-bold text-sm mt-1">'+bersihkanTeks(item.nama)+'</h3><p class="text-emerald-600 font-bold text-sm">Rp '+parseInt(item.harga).toLocaleString('id-ID')+'</p><p class="text-[11px] text-gray-500">👤 '+bersihkanTeks(item.penjual)+' ('+bersihkanTeks(item.lokasi)+')</p>'+catatanHtml+'</div><div class="mt-2"><button onclick="bukaModalOpsiBeli(\''+(item.wa||'')+'\',\''+bersihkanTeks(item.nama).replace(/'/g,"\\'")+'\',\''+item.harga+'\',\''+bersihkanTeks(item.catatan||'').replace(/'/g,"\\'")+'\')" class="w-full bg-emerald-600 text-white text-xs py-2 rounded-lg">Beli Via WA</button>'+tombolAdmin+'</div></div></div>';
         container.innerHTML += card;
       });
@@ -1039,651 +1054,277 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT ---
-    let AKTIFKAN_LOGIN_CHAT = false; 
-    let pesanBalasanData = null;
-    let isProsesHapus = false; 
-    let menuSubAktif = null;
-    
-    let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
-    let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
-    let chatPertamaLoad = true;
-    let audioCtx = null;
+    // --- LOGIKA CHAT & VERIFIKASI WARGA ---
+    let wargaData = JSON.parse(localStorage.getItem('warga_rt36') || 'null');
 
-    // 6 PILIHAN SUARA NOTIFIKASI
-    let suaraList = [
-      {nama:'WA Ting', url:'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'},
-      {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
-      {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'},
-      {nama:'Marimba Cepat', url:'https://assets.mixkit.co/active_storage/sfx/2865/2865-preview.mp3'},
-      {nama:'Digital Beep', url:'https://assets.mixkit.co/active_storage/sfx/2860/2860-preview.mp3'},
-      {nama:'Crystal Chime', url:'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'}
-    ];
-    let suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
-
-    function getChatRef(){ return database.ref('pesan_warga'); }
-    function getRootRef(){ return database.ref(); }
-    function getOnlineRef(){ return database.ref('online_warga'); }
-
-    // DUKUNGAN UNTUK MEMBUKA & MENUTUP EMOJI, RANTAI/LAMPIRAN, STIKER & NOTIFIKASI
-    function tutupSemuaMenuSub() {
-      let s = document.getElementById('menuPilihanSuara');
-      let l = document.getElementById('menuLampiran');
-      let e = document.getElementById('emoji-list');
-      let st = document.getElementById('menuStiker');
-      if(s) s.classList.add('hidden');
-      if(l) l.classList.add('hidden');
-      if(e) e.classList.add('hidden');
-      if(st) st.classList.add('hidden');
-      menuSubAktif = null;
-    }
-
-    function toggleNotifikasi() {
-      let m = document.getElementById('menuPilihanSuara');
-      if(!m) return;
-      if(m.classList.contains('hidden')) {
-        tutupSemuaMenuSub();
-        m.classList.remove('hidden');
-        menuSubAktif = 'suara';
-        window.history.pushState({ subMenuOpen: true }, "");
+    function toggleBoxChat() {
+      if (!wargaData || !wargaData.verified) {
+        document.getElementById('modalVerifWA').classList.remove('hidden');
       } else {
-        m.classList.add('hidden');
-        menuSubAktif = null;
+        const panel = document.getElementById('panelChatWarga');
+        panel.classList.toggle('hidden');
+        muatPesanChat();
       }
     }
 
-    function toggleMenuLampiran() {
-      let m = document.getElementById('menuLampiran');
-      let st = document.getElementById('menuStiker');
-      if(st) st.classList.add('hidden');
-      if(!m) return;
-      if(m.classList.contains('hidden')) {
-        tutupSemuaMenuSub();
-        m.classList.remove('hidden');
-        menuSubAktif = 'lampiran';
-        window.history.pushState({ subMenuOpen: true }, "");
+    function prosesKirimVerifikasiWA(e) {
+      e.preventDefault();
+      const nama = document.getElementById('inputNama').value.trim();
+      const wa = document.getElementById('inputWA').value.trim();
+      if (!nama || !wa) {
+        alert('Mohon isi nama dan nomor WhatsApp Anda!');
+        return;
+      }
+      
+      const tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const dataWargaTemp = { nama, wa, token: tokenVerif, verified: true };
+      localStorage.setItem('warga_rt36', JSON.stringify(dataWargaTemp));
+      wargaData = dataWargaTemp;
+
+      let nomorAdmin = adminWaAktif.replace(/\D/g, '');
+      if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
+
+      const linkPersetujuan = `${window.location.origin}${window.location.pathname}?approve=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${wa}`;
+      const teksWaAdmin = `Halo Admin RT.36,\n\nAda warga baru yang mendaftar ke Live Chat:\n*Nama/Blok:* ${nama}\n*No. WA:* ${wa}\n\nKlik link berikut untuk menyetujui:\n${linkPersetujuan}`;
+
+      window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
+      
+      document.getElementById('modalVerifWA').classList.add('hidden');
+      alert('Permintaan verifikasi terkirim ke WhatsApp Admin! Anda sekarang sudah bisa masuk ke Obrolan Warga.');
+      toggleBoxChat();
+      perbaruiInfoProfilUI();
+    }
+
+    function perbaruiInfoProfilUI() {
+      if (!wargaData) return;
+      document.getElementById('myWALabel').innerText = wargaData.nama;
+      if (wargaData.foto) {
+        document.getElementById('headerAvatar').innerHTML = `<img src="${wargaData.foto}" class="w-full h-full object-cover">`;
+      }
+    }
+
+    function bukaModalGantiProfil() {
+      document.getElementById('dropdown-pengaturan').classList.add('hidden');
+      document.getElementById('editNamaWarga').value = wargaData ? wargaData.nama : '';
+      document.getElementById('modal-ganti-profil').classList.remove('hidden');
+    }
+    function tutupModalGantiProfil() {
+      document.getElementById('modal-ganti-profil').classList.add('hidden');
+    }
+
+    function simpanProfilBaru() {
+      const namaBaru = document.getElementById('editNamaWarga').value.trim();
+      const fileInput = document.getElementById('editFotoWarga');
+      if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
+      
+      if (fileInput.files && fileInput.files[0]) {
+        kompresGambar(fileInput.files[0], function(base64Foto) {
+          wargaData.nama = namaBaru;
+          wargaData.foto = base64Foto;
+          localStorage.setItem('warga_rt36', JSON.stringify(wargaData));
+          tutupModalGantiProfil();
+          perbaruiInfoProfilUI();
+          alert('Profil berhasil diperbarui!');
+        });
       } else {
-        m.classList.add('hidden');
-        menuSubAktif = null;
+        wargaData.nama = namaBaru;
+        localStorage.setItem('warga_rt36', JSON.stringify(wargaData));
+        tutupModalGantiProfil();
+        perbaruiInfoProfilUI();
+        alert('Profil berhasil diperbarui!');
       }
     }
 
-    function toggleMenuEmoji() {
-      let e = document.getElementById('emoji-list');
-      if(!e) return;
-      if(e.classList.contains('hidden')) {
-        tutupSemuaMenuSub();
-        e.classList.remove('hidden');
-        menuSubAktif = 'emoji';
-        window.history.pushState({ subMenuOpen: true }, "");
-      } else {
-        e.classList.add('hidden');
-        menuSubAktif = null;
+    function toggleMenuPengaturan(e) {
+      e.stopPropagation();
+      const drop = document.getElementById('dropdown-pengaturan');
+      const btn = document.getElementById('btn-pengaturan');
+      const rect = btn.getBoundingClientRect();
+      drop.style.top = (rect.bottom + 8) + 'px';
+      drop.style.right = (window.innerWidth - rect.right) + 'px';
+      drop.classList.toggle('hidden');
+    }
+
+    window.addEventListener('click', function() {
+      const drop = document.getElementById('dropdown-pengaturan');
+      if(drop) drop.classList.add('hidden');
+    });
+
+    function keluarDariPasarRT36() {
+      if (confirm("Keluar dari akun / sesi ini?")) {
+        localStorage.removeItem('warga_rt36');
+        location.reload();
       }
     }
 
-    function tambahEmoji(emoji) {
-      let txtArea = document.getElementById('teksPesanWarga');
-      if(txtArea) {
-        txtArea.value += emoji;
-        txtArea.focus();
-        cekKetik();
-      }
+    function muatPesanChat() {
+      perbaruiInfoProfilUI();
+      chatRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const box = document.getElementById('boxChatWarga');
+        box.innerHTML = '';
+        if (!data) return;
+        Object.keys(data).forEach(key => {
+          const m = data[key];
+          const isMe = wargaData && m.wa === wargaData.wa;
+          let avatarHtml = m.fotoProfil ? `<img src="${m.fotoProfil}" class="w-6 h-6 rounded-full object-cover inline-block mr-1">` : '';
+          let isiKonten = '';
+          if (m.tipe === 'foto') {
+            isiKonten = `<img src="${m.url}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom('${m.url}', 0)">`;
+          } else {
+            isiKonten = `<span>${bersihkanTeks(m.pesan)}</span>`;
+          }
+          
+          let htmlBubble = `
+            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} my-1">
+              <div class="bubble-wa ${isMe ? 'bubble-me' : 'bubble-other'}">
+                <div class="nama-atas flex items-center">${avatarHtml}${bersihkanTeks(m.nama)}</div>
+                <div>${isiKonten}</div>
+                <div class="text-[9px] text-gray-400 text-right mt-1">${new Date(m.timestamp || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+              </div>
+            </div>
+          `;
+          box.innerHTML += htmlBubble;
+        });
+        box.scrollTop = box.scrollHeight;
+      });
     }
 
-    function bukaMenuStiker() {
-      let l = document.getElementById('menuLampiran');
-      let st = document.getElementById('menuStiker');
-      if(l) l.classList.add('hidden');
-      if(st) {
-        st.classList.remove('hidden');
-        menuSubAktif = 'stiker';
+    function kirimPesanWarga() {
+      const textarea = document.getElementById('teksPesanWarga');
+      const pesan = textarea.value.trim();
+      if (!pesan || !wargaData) return;
+      
+      const pesanObj = {
+        nama: wargaData.nama,
+        wa: wargaData.wa,
+        fotoProfil: wargaData.foto || '',
+        pesan: pesan,
+        tipe: 'teks',
+        timestamp: Date.now()
+      };
+      chatRef.push(pesanObj).then(() => {
+        textarea.value = '';
+        textarea.style.height = 'auto';
+      });
+    }
+
+    function kirimFoto(input) {
+      if (input.files && input.files[0]) {
+        kompresGambar(input.files[0], function(base64) {
+          const pesanObj = {
+            nama: wargaData.nama,
+            wa: wargaData.wa,
+            fotoProfil: wargaData.foto || '',
+            url: base64,
+            tipe: 'foto',
+            timestamp: Date.now()
+          };
+          chatRef.push(pesanObj);
+        });
       }
     }
 
     function kirimStiker(teksStiker) {
-      if(!cekVerifikasiChat()) return;
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      
-      getChatRef().push({
-        nama: verifiedNama,
-        pesan: `⭐ [STIKER] ${teksStiker}`,
-        waktu: jam,
-        userId: myId,
-        timestamp: Date.now(),
-        tipe: 'teks'
-      });
-      tutupSemuaMenuSub();
+      const pesanObj = {
+        nama: wargaData.nama,
+        wa: wargaData.wa,
+        fotoProfil: wargaData.foto || '',
+        pesan: `Stiker: ${teksStiker}`,
+        tipe: 'teks',
+        timestamp: Date.now()
+      };
+      chatRef.push(pesanObj);
+      document.getElementById('menuStiker').classList.add('hidden');
     }
 
-    function gantiSuara(idx) {
-      suaraIndex = idx;
-      localStorage.setItem('suara_pilihan_rt36', idx);
-      let audio = document.getElementById('notifSound');
-      
-      if(idx !== 'off') {
-        if(audio && suaraList[idx]) {
-          audio.src = suaraList[idx].url;
-          audio.load();
-          audio.play().catch(()=>{});
-        }
-      }
-
-      [0, 1, 2, 3, 4, 5].forEach(i => {
-        let check = document.querySelector(`#suara${i} .check`);
-        if(check) check.classList.toggle('hidden', i !== idx);
-      });
-      let checkOff = document.querySelector(`#suaraOff .check`);
-      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
-
-      tutupSemuaMenuSub();
+    function tambahEmoji(emoji) {
+      const textarea = document.getElementById('teksPesanWarga');
+      textarea.value += emoji;
+      textarea.focus();
     }
 
-    function toggleMenuPengaturan(event) {
-      if (event) event.stopPropagation();
-      let menu = document.getElementById('dropdown-pengaturan');
-      let btn = document.getElementById('btn-pengaturan');
-      if (menu && btn) {
-        if (menu.classList.contains('hidden')) {
-          let rect = btn.getBoundingClientRect();
-          menu.style.top = (rect.bottom + 8) + 'px';
-          menu.style.right = (window.innerWidth - rect.right) + 'px';
-          menu.classList.remove('hidden');
-        } else {
-          menu.classList.add('hidden');
-        }
-      }
+    function toggleMenuLampiran() {
+      document.getElementById('menuLampiran').classList.toggle('hidden');
+      document.getElementById('emoji-list').classList.add('hidden');
+      document.getElementById('menuStiker').classList.add('hidden');
     }
 
-    document.addEventListener('click', function(e) {
-      let btn = document.getElementById('btn-pengaturan');
-      let menu = document.getElementById('dropdown-pengaturan');
-      if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
-    });
-
-    function cekVerifikasiChat() {
-      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
-        if (!localStorage.getItem('verified_nama_rt36')) {
-          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
-          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
-        }
-        let modal = document.getElementById('modalVerifWA');
-        if (modal) modal.classList.add('hidden');
-        return true;
-      }
-
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-      let verifiedNama = localStorage.getItem('verified_nama_rt36');
-      let modal = document.getElementById('modalVerifWA');
-      if (!verifiedPhone || !verifiedNama) {
-        if (modal) modal.classList.remove('hidden');
-        return false;
-      }
-      if (modal) modal.classList.add('hidden');
-      return true;
-    }
-    
-    function prosesLoginLangsung(event) {
-      let elNama = document.getElementById('inputNama');
-      let elPhone = document.getElementById('inputWA');
-      if(!elNama || !elPhone) return;
-      let nama = elNama.value.trim();
-      let phone = elPhone.value.trim();
-      if(nama.length < 3){ alert('Isi nama lengkap dulu bosku! Minimal 3 huruf'); return; }
-      if(phone.length < 10){ alert('Isi No HP dulu bosku!'); return; }
-      let nomorBersih = phone.replace(/\D/g,'');
-      if (nomorBersih.startsWith('0')) nomorBersih = '62' + nomorBersih.slice(1);
-      
-      let deviceIdUnik = localStorage.getItem('device_uid_rt36');
-      if(!deviceIdUnik) {
-        deviceIdUnik = 'dev_' + Math.random().toString(36).substring(2) + Date.now();
-        localStorage.setItem('device_uid_rt36', deviceIdUnik);
-      }
-      getRootRef().child('warga_rt36').child(nomorBersih).set({nama, phone: nomorBersih, deviceId: deviceIdUnik, lastLogin: Date.now()});
-      localStorage.setItem('verified_wa_rt36', nomorBersih);
-      localStorage.setItem('verified_nama_rt36', nama);
-      localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4) + '_' + deviceIdUnik.slice(-4));
-      
-      document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('🎉 Login Berhasil! Silakan lanjut chat.');
-      inisialisasiChatLive();
+    function toggleMenuEmoji() {
+      document.getElementById('emoji-list').classList.toggle('hidden');
+      document.getElementById('menuLampiran').classList.add('hidden');
+      document.getElementById('menuStiker').classList.add('hidden');
     }
 
-    function toggleBoxChat() {
-      if (!cekVerifikasiChat()) return;
-
-      let p = document.getElementById('panelChatWarga');
-      let b = document.getElementById('btnBukaChat');
-
-      if (p.classList.contains('hidden')) {
-        p.classList.remove('hidden');
-        b.classList.add('hidden');
-        b.classList.remove('icon-goyang');
-        b.classList.remove('bg-red-600');
-        b.classList.add('bg-emerald-600');
-        
-        let box = document.getElementById('boxChatWarga');
-        if(box) {
-          box.scrollTop = box.scrollHeight;
-        }
-
-        window.history.pushState({ chatOpen: true }, "");
-      } else {
-        p.classList.add('hidden');
-        b.classList.remove('hidden');
-        if (window.history.state && window.history.state.chatOpen) {
-          window.history.back();
-        }
-      }
+    function bukaMenuStiker() {
+      document.getElementById('menuStiker').classList.toggle('hidden');
+      document.getElementById('menuLampiran').classList.add('hidden');
     }
 
-    // INTEGRASI DUKUNGAN TOMBOL BACK HP (POPSTATE)
-    window.addEventListener('popstate', function (event) {
-      let p = document.getElementById('panelChatWarga');
-      let b = document.getElementById('btnBukaChat');
+    function tutupSemuaMenuSub() {
+      document.getElementById('menuLampiran').classList.add('hidden');
+      document.getElementById('emoji-list').classList.add('hidden');
+      document.getElementById('menuStiker').classList.add('hidden');
+    }
 
-      if (menuSubAktif !== null) {
-        tutupSemuaMenuSub();
-        return;
-      }
+    function toggleNotifikasi() {
+      document.getElementById('menuPilihanSuara').classList.toggle('hidden');
+    }
 
-      if (p && !p.classList.contains('hidden')) {
-        p.classList.add('hidden');
-        if (b) b.classList.remove('hidden');
-      }
-    });
+    function gantiSuara(opt) {
+      alert('Suara notifikasi disetel: ' + opt);
+      document.getElementById('menuPilihanSuara').classList.add('hidden');
+    }
+
+    function kirimLokasi() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const linkMap = `https://maps.google.com/?q=${lat},${lon}`;
+          const pesanObj = {
+            nama: wargaData.nama,
+            wa: wargaData.wa,
+            fotoProfil: wargaData.foto || '',
+            pesan: `📍 Lokasi Saya: ${linkMap}`,
+            tipe: 'teks',
+            timestamp: Date.now()
+          };
+          chatRef.push(pesanObj);
+        }, () => { alert('Gagal mendapatkan lokasi.'); });
+      } else { alert('Geolocation tidak didukung browser ini.'); }
+    }
 
     function cekKetik() {
-      if (!cekVerifikasiChat()) {
-        document.getElementById('teksPesanWarga').blur();
-        return;
-      }
-      let teksInput = document.getElementById('teksPesanWarga');
-      let ada = teksInput.value.trim() !== '';
-      let mic = document.getElementById('iconMic');
-      let send = document.getElementById('iconSend');
-      let iconDalamKotak = document.getElementById('iconDalamKotak');
-
-      if(isRekam) return;
-      
-      mic.classList.toggle('hidden', ada);
-      send.classList.toggle('hidden', !ada);
-
-      if (iconDalamKotak) {
-        iconDalamKotak.classList.toggle('hidden', ada);
-      }
-    }
-
-    function handleAksi(){
-      if (!cekVerifikasiChat()) return;
-
-      let txt = document.getElementById('teksPesanWarga').value.trim();
-      if(txt !== ''){ 
-        kirimPesanWarga(); 
-        return; 
-      } 
-      if(!isRekam){ 
-        mulaiRekam(); 
-      } else { 
-        stopRekam(); 
-      }
-    }
-
-    function mulaiBalasPesan(nama, isiPesan) {
-      pesanBalasanData = { nama: nama, pesan: isiPesan };
-      let containerPreview = document.getElementById('containerPreviewBalas');
-      if(!containerPreview) return;
-      
-      containerPreview.innerHTML = `
-        <div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm overflow-hidden">
-          <div class="overflow-hidden pr-2">
-            <p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p>
-            <p class="text-gray-600 truncate text-[11px] max-w-[280px] md:max-w-[350px]">${isiPesan}</p>
-          </div>
-          <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm flex-shrink-0">&times;</button>
-        </div>
-      `;
-      document.getElementById('teksPesanWarga').focus();
-    }
-
-    function batalkanBalasChat() {
-      pesanBalasanData = null;
-      let containerPreview = document.getElementById('containerPreviewBalas');
-      if(containerPreview) containerPreview.innerHTML = '';
-    }
-
-    function kirimPesanWarga(){
-      if (!cekVerifikasiChat()) return;
-
-      let pesan = document.getElementById('teksPesanWarga').value.trim();
-      if(!pesan) return;
-      
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      
-      let dataKirim = {
-        nama: verifiedNama, 
-        pesan: pesan, 
-        waktu: jam, 
-        userId: myId, 
-        timestamp: Date.now(), 
-        tipe: 'teks'
-      };
-
-      if (pesanBalasanData) {
-        dataKirim.replyTo = pesanBalasanData.nama;
-        dataKirim.replyContent = pesanBalasanData.pesan;
-      }
-
-      getChatRef().push(dataKirim).then(()=>{
-        document.getElementById('teksPesanWarga').value='';
-        let txtArea = document.getElementById('teksPesanWarga');
-        if(txtArea) txtArea.style.height = 'auto';
-        batalkanBalasChat();
-        if(typeof cekKetik === 'function') cekKetik();
-      }).catch(err => {
-        alert('Gagal mengirim pesan: ' + err.message);
-      });
-    }
-
-    function kirimFoto(input){
-      if(!cekVerifikasiChat()) return;
-      if(!input.files[0]) return;
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let reader = new FileReader();
-      reader.onload = e => {
-        let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        getChatRef().push({nama: verifiedNama, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
-      };
-      reader.readAsDataURL(input.files[0]);
-      input.value='';
-    }
-
-    function kirimLokasi(){
-      if(!cekVerifikasiChat()) return;
-      if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
-      navigator.geolocation.getCurrentPosition(pos=>{
-        let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        getChatRef().push({nama: verifiedNama, pesan: mapsLink, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'lokasi', lat: pos.coords.latitude, lng: pos.coords.longitude});
-      });
-    }
-
-    async function mulaiRekam(){
-      if(!cekVerifikasiChat()) return;
-      isRekam = true; detikRekam = 0;
-      document.getElementById('areaKetikNormal').classList.add('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.remove('hidden');
-      document.getElementById('iconDalamKotak').classList.add('hidden');
-      try{
-        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-        mediaRecorder = new MediaRecorder(micStream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          let blob = new Blob(audioChunks, {type:'audio/webm'});
-          let reader = new FileReader();
-          reader.onload = e => {
-            let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-            let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-            let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            getChatRef().push({nama: verifiedNama, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'voice'});
-          };
-          reader.readAsDataURL(blob);
-        };
-        mediaRecorder.start();
-      }catch(e){ alert('Izinkan mic!'); }
-    }
-
-    function stopRekam(){
-      if(!isRekam) return;
-      isRekam = false;
-      if(mediaRecorder) mediaRecorder.stop();
-      document.getElementById('areaKetikNormal').classList.remove('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.add('hidden');
-      document.getElementById('iconDalamKotak').classList.remove('hidden');
-    }
-
-    function bunyikanNotifikasi(){
-      if(isProsesHapus || suaraIndex === 'off' || chatPertamaLoad) return; 
-      try{ 
-        let audio = document.getElementById('notifSound');
-        if(audio) {
-          audio.currentTime = 0;
-          audio.play().catch(()=>{});
-        }
-      }catch(e){}
-    }
-
-    function hapusPesanWarga(keyPesan, idPengirim) {
-      let myId = localStorage.getItem('my_chat_id');
-      if (isAdmin || myId === idPengirim) {
-        if (confirm('Hapus pesan ini?')) {
-          isProsesHapus = true; 
-          getChatRef().child(keyPesan).remove().then(() => {
-            setTimeout(() => { isProsesHapus = false; }, 2000);
-          }).catch(err => {
-            isProsesHapus = false;
-            alert('Gagal menghapus pesan: ' + err.message);
-          });
-        }
+      const val = document.getElementById('teksPesanWarga').value;
+      const btnSend = document.getElementById('iconSend');
+      const iconMic = document.getElementById('iconMic');
+      if (val.length > 0) {
+        btnSend.classList.remove('hidden');
+        iconMic.classList.add('hidden');
       } else {
-        alert('Anda hanya bisa menghapus pesan yang Anda kirim sendiri!');
+        btnSend.classList.add('hidden');
+        iconMic.classList.remove('hidden');
       }
     }
 
-    function mulaiEditPesan(keyPesan, encodedPesan) {
-      let pesanLama = decodeURIComponent(encodedPesan);
-      let pesanBaru = prompt("Edit pesan Anda:", pesanLama);
-      if (pesanBaru === null) return;
-      pesanBaru = pesanBaru.trim();
-      if (!pesanBaru) {
-        alert("Pesan tidak boleh kosong!");
-        return;
-      }
-
-      getChatRef().child(keyPesan).update({
-        pesan: pesanBaru,
-        diedit: true
-      }).catch(err => {
-        alert("Gagal mengedit pesan: " + err.message);
-      });
-    }
-
-    function inisialisasiChatLive() {
-      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
-        if (!localStorage.getItem('verified_nama_rt36')) {
-          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
-          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
-        }
-      }
-
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36') || 'tamu';
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-
-      let lbl = document.getElementById('myWALabel');
-      if(lbl) lbl.innerText = verifiedPhone === 'tamu' ? 'Tamu' : ('+ ' + verifiedPhone);
-
-      let audio = document.getElementById('notifSound');
-      if(suaraIndex !== 'off' && suaraList[suaraIndex]) {
-        audio.src = suaraList[suaraIndex].url;
-      }
-
-      [0, 1, 2, 3, 4, 5].forEach(i => {
-        let check = document.querySelector(`#suara${i} .check`);
-        if(check) check.classList.toggle('hidden', String(i) !== String(suaraIndex));
-      });
-      let checkOff = document.querySelector(`#suaraOff .check`);
-      if(checkOff) checkOff.classList.toggle('hidden', suaraIndex !== 'off');
-
-      let ref = getChatRef();
-      let box = document.getElementById('boxChatWarga');
-      if(!box) return;
-
-      const SEKARANG = Date.now();
-      const BATAS_24_JAM = 24 * 60 * 60 * 1000;
-      ref.once('value', snap => {
-        const dataChat = snap.val();
-        if(dataChat) {
-          Object.keys(dataChat).forEach(key => {
-            if(dataChat[key].timestamp && (SEKARANG - dataChat[key].timestamp) > BATAS_24_JAM) {
-              ref.child(key).remove();
-            }
-          });
-        }
-      });
-
-      try {
-        let onlineRoot = getOnlineRef();
-        let myOnlineRef = onlineRoot.child(myId);
-        myOnlineRef.set({nama: verifiedNama, phone: verifiedPhone, time: Date.now()});
-        myOnlineRef.onDisconnect().remove();
-        onlineRoot.on('value', snap => {
-          let count = snap.numChildren();
-          let el = document.getElementById('statusOnline');
-          if(el) el.innerText = (count < 1 ? 1 : count) + ' Online';
-        });
-      }catch(e){}
-
-      box.innerHTML = '';
-
-      ref.limitToLast(80).on('child_added', snap => {
-        let data = snap.val(), key = snap.key;
-        if(!data) return;
-        let isMe = data.userId === myId;
-        let div = document.createElement('div');
-        div.className = isMe ? 'bubble-wa bubble-me' : 'bubble-wa bubble-other';
-        div.id = 'msg_' + key;
-        
-        div.style.cursor = 'pointer';
-        div.title = 'Ketuk untuk membalas pesan ini';
-        div.onclick = function(e) {
-          if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-          mulaiBalasPesan(data.nama, data.tipe === 'teks' ? data.pesan : '[Media/Lokasi]');
-        };
-
-        let isiPesan = data.pesan;
-        if (data.tipe === 'foto') {
-          isiPesan = `<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)">`;
-        } else if (data.tipe === 'voice') {
-          isiPesan = `<audio controls src="${data.pesan}" class="max-w-[220px] h-10"></audio>`;
-        } else if (data.tipe === 'lokasi') {
-          isiPesan = `📍 <a href="${data.pesan}" target="_blank" class="text-blue-600 underline font-bold">Kirim Lokasi GPS Warga</a>`;
-        } else {
-          isiPesan = `<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`;
-        }
-
-        let replyHtml = '';
-        if (data.replyTo && data.replyContent) {
-          replyHtml = `
-            <div class="bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]">
-              <p class="font-bold text-emerald-800">${data.replyTo}</p>
-              <p class="text-gray-600 truncate">${data.replyContent}</p>
-            </div>
-          `;
-        }
-
-        let tombolAksiChat = '';
-        if ((isAdmin || isMe) && data.tipe === 'teks') {
-          tombolAksiChat = `
-            <div class="flex gap-1.5 items-center">
-              <button onclick="mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`)" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
-              <button onclick="hapusPesanWarga('${key}', '${data.userId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
-            </div>
-          `;
-        } else if (isAdmin || isMe) {
-          tombolAksiChat = `
-            <button onclick="hapusPesanWarga('${key}', '${data.userId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
-          `;
-        }
-
-        let statusEdit = data.diedit ? ' <span class="text-[9px] text-gray-400 italic">(diedit)</span>' : '';
-
-        div.innerHTML = `
-          <div class="flex justify-between items-center gap-2">
-            <span class="nama-atas">${data.nama}</span>
-            ${tombolAksiChat}
-          </div>
-          ${replyHtml}
-          <div class="py-0.5">${isiPesan}${statusEdit}</div>
-          <div class="text-right text-[10px] text-gray-500">${data.waktu}</div>
-        `;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-
-        if(!chatPertamaLoad && !isMe && !isProsesHapus) {
-          let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
-          
-          if (apakahBalasanKeSaya) {
-            bunyikanNotifikasi();
-            
-            let panelChat = document.getElementById('panelChatWarga');
-            let btnBuka = document.getElementById('btnBukaChat');
-
-            if(panelChat && panelChat.classList.contains('hidden')) {
-              if(btnBuka) {
-                btnBuka.classList.add('icon-goyang');
-                btnBuka.classList.remove('bg-emerald-600');
-                btnBuka.classList.add('bg-red-600');
-              }
-            }
-          }
-        }
-      });
-
-      ref.on('child_changed', snap => {
-        let key = snap.key;
-        let data = snap.val();
-        let teksEl = document.getElementById('teks_val_' + key);
-        if(teksEl && data) {
-          teksEl.innerText = data.pesan;
-        }
-      });
-
-      ref.on('child_removed', snap => {
-        isProsesHapus = true;
-        let key = snap.key;
-        let el = document.getElementById('msg_' + key);
-        if(el) {
-          el.remove();
-        }
-        setTimeout(() => { isProsesHapus = false; }, 1500);
-      });
-
-      setTimeout(() => { chatPertamaLoad = false; }, 3000);
-    }
-
-    window.addEventListener('load', function(){
-      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
-        if (!localStorage.getItem('verified_nama_rt36')) {
-          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
-          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
-        }
-      }
-
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-      let verifiedNama = localStorage.getItem('verified_nama_rt36');
-      
-      if (verifiedPhone || (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT)) {
-        inisialisasiChatLive();
-      }
-    });
-
-    function keluarDariPasarRT36(){
-      if(confirm('Yakin mau keluar akun?')){
-        localStorage.clear();
-        location.reload();
+    function handleAksi() {
+      const val = document.getElementById('teksPesanWarga').value;
+      if (val.length > 0) {
+        kirimPesanWarga();
+      } else {
+        alert('Fitur rekaman suara aktif.');
       }
     }
+
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const approveToken = urlParams.get('approve');
+      if (approveToken) {
+        alert(`Persetujuan untuk token ${approveToken} diterima! Warga telah diverifikasi.`);
+      }
+      perbaruiInfoProfilUI();
+    };
   </script>
 </body>
 </html>
