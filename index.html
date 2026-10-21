@@ -1085,11 +1085,28 @@
       send.classList.toggle('hidden', !ada);
     }
 
-    function handleAksi() {
-      if (!cekVerifikasiChat()) return;
+   function handleAksi(){
+      // Jika login dimatikan, amankan identitas tamu terlebih dahulu
+      if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
+        if (!localStorage.getItem('verified_nama_rt36')) {
+          localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
+          localStorage.setItem('my_chat_id', 'tamu_' + Date.now());
+        }
+      } else {
+        // Jika login aktif, cek verifikasi seperti biasa
+        if (!cekVerifikasiChat()) return;
+      }
+
       let txt = document.getElementById('teksPesanWarga').value.trim();
-      if(txt !== ''){ kirimPesanWarga(); return; }
-      if(!isRekam) mulaiRekam(); else stopRekam();
+      if(txt !== ''){ 
+        kirimPesanWarga(); 
+        return; 
+      } 
+      if(!isRekam){ 
+        mulaiRekam(); 
+      } else { 
+        stopRekam(); 
+      }
     }
 
    function kirimPesanWarga(){
