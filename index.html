@@ -979,9 +979,10 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & SEMUA FITUR TERBARU ---
+    // --- SAKLAR UTAMA LIVE CHAT & LOGIKA SENYAP HAPUS CHAT ---
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
+    let isProsesHapus = false; // FLAG KHUSUS UNTUK MEMATIKAN SUARA SAAT HAPUS PESAN
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1246,8 +1247,9 @@
       document.getElementById('iconDalamKotak').classList.remove('hidden');
     }
 
+    // FUNGSI BUNYI DENGAN PROTEKSI MULTI-PERANGKAT
     function bunyikanNotifikasi(){
-      if(suaraIndex === 'off') return; 
+      if(isProsesHapus || suaraIndex === 'off' || chatPertamaLoad) return; 
       try{ 
         let audio = document.getElementById('notifSound');
         if(audio) {
@@ -1286,12 +1288,15 @@
       if(m) m.classList.add('hidden');
     }
 
-   function hapusPesanWarga(keyPesan, idPengirim) {
+    function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
         if (confirm('Hapus pesan ini?')) {
-          // Hapus langsung dari database tanpa memicu efek suara/notifikasi
-          getChatRef().child(keyPesan).remove().catch(err => {
+          isProsesHapus = true; // Aktifkan kunci senyap
+          getChatRef().child(keyPesan).remove().then(() => {
+            setTimeout(() => { isProsesHapus = false; }, 2000);
+          }).catch(err => {
+            isProsesHapus = false;
             alert('Gagal menghapus pesan: ' + err.message);
           });
         }
@@ -1427,7 +1432,8 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        if(!chatPertamaLoad && !isMe) {
+        // BISA BUNYI HANYA JIKA BUKAN PROSES HAPUS & BUKAN PESAN PERTAMA & BUKAN DARI DIRI SENDIRI
+        if(!chatPertamaLoad && !isMe && !isProsesHapus) {
           bunyikanNotifikasi();
           
           let panelChat = document.getElementById('panelChatWarga');
@@ -1448,11 +1454,15 @@
         }
       });
 
-      // Hapus pesan murni senyap di semua perangkat (tanpa suara/goyang)
+      // EVENT HAPUS PESAN: DIJAMIN SENYAP TOTAL DI SEMUA PERANGKAT
       ref.on('child_removed', snap => {
+        isProsesHapus = true;
         let key = snap.key;
         let el = document.getElementById('msg_' + key);
-        if(el) el.remove();
+        if(el) {
+          el.remove();
+        }
+        setTimeout(() => { isProsesHapus = false; }, 1500);
       });
 
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
