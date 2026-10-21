@@ -509,10 +509,10 @@
     </div>
   </div>
 
- <!-- PANEL LIVE CHAT WARGA -->
+<!-- PANEL LIVE CHAT WARGA -->
   <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
     
-    <!-- HEADER CHAT (Tombol TUTUP dihilangkan, murni menggunakan tombol kembali HP) -->
+    <!-- HEADER CHAT (Tombol Notifikasi Default & Tombol Keluar Akun) -->
     <div class="bg-[#075E54] text-white p-3 flex justify-between items-center shadow-md">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm">RT</div>
@@ -528,27 +528,37 @@
           </p>
         </div>
       </div>
-      <div class="flex gap-1 items-center">
-        <!-- Tombol pengaturan suara notifikasi tetap ada -->
-        <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]">🔔</button>
+
+      <!-- Sisi Kanan Header: Notifikasi + Keluar -->
+      <div class="flex gap-2 items-center">
+        <!-- Tombol Suara Notifikasi Default -->
+        <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]" title="Pilih Suara Notifikasi">🔔</button>
+        <!-- Tombol Keluar Akun Chat -->
+        <button onclick="keluarDariPasarRT36()" class="w-8 h-8 bg-red-600/80 hover:bg-red-600 rounded-full flex items-center justify-center text-[14px] text-white shadow" title="Keluar Akun">🚪</button>
       </div>
     </div>
 
-    <!-- MENU PILIHAN SUARA NOTIFIKASI -->
-    <div id="menuPilihanSuara" class="hidden bg-white border-b p-3">
-      <div class="flex justify-between items-center mb-2"><p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p><button onclick="document.getElementById('menuPilihanSuara').classList.add('hidden')" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full font-bold">TUTUP ✕</button></div>
-      <div class="flex flex-col gap-2">
-        <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting</span><span class="check">✔️</span></button>
+    <!-- MENU PILIHAN SUARA NOTIFIKASI (6 Pilihan Suara) -->
+    <div id="menuPilihanSuara" class="hidden bg-white border-b p-3 shadow-lg">
+      <div class="flex justify-between items-center mb-2">
+        <p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI (6 PILIHAN):</p>
+        <span class="text-[10px] text-gray-400 italic">Tekan Back HP untuk tutup</span>
+      </div>
+      <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+        <button onclick="gantiSuara(0)" id="suara0" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 1. WA Ting (Klasik)</span><span class="check">✔️</span></button>
         <button onclick="gantiSuara(1)" id="suara1" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 2. Ding Dong</span><span class="check hidden">✔️</span></button>
         <button onclick="gantiSuara(2)" id="suara2" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 3. Pop Pendek</span><span class="check hidden">✔️</span></button>
-        <button onclick="gantiSuara('off')" id="suaraOff" class="text-left text-[12px] p-2 rounded-lg border border-red-200 bg-red-50 text-red-700 flex justify-between items-center"><span>🔕 4. Matikan Suara (Nonaktif)</span><span class="check hidden">✔️</span></button>
+        <button onclick="gantiSuara(3)" id="suara3" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 4. Marimba Cepat</span><span class="check hidden">✔️</span></button>
+        <button onclick="gantiSuara(4)" id="suara4" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 5. Digital Beep</span><span class="check hidden">✔️</span></button>
+        <button onclick="gantiSuara(5)" id="suara5" class="text-left text-[12px] p-2 rounded-lg border flex justify-between items-center"><span>🔔 6. Crystal Chime</span><span class="check hidden">✔️</span></button>
+        <button onclick="gantiSuara('off')" id="suaraOff" class="text-left text-[12px] p-2 rounded-lg border border-red-200 bg-red-50 text-red-700 flex justify-between items-center"><span>🔕 7. Matikan Suara (Nonaktif)</span><span class="check hidden">✔️</span></button>
       </div>
     </div>
 
     <!-- AREA BUBBLE CHAT -->
     <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
-    <!-- FOOTER INPUT CHAT (IKON LOKASI DIHILANGKAN DARI DALAM KOTAK) -->
+    <!-- FOOTER INPUT CHAT -->
     <div class="bg-[#F0F0F0] p-2 flex flex-col justify-end gap-1">
       
       <!-- TEMPAT PRATINJAU BALASAN -->
@@ -557,8 +567,8 @@
       <!-- BARIS UTAMA KOTAK KETIK -->
       <div class="flex items-end gap-2">
         <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-          <!-- Tombol Emoji -->
-          <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
+          <!-- Tombol Emoji (Terhubung ke fungsi back HP) -->
+          <button onclick="toggleMenuEmoji()" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
           
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
             <div id="areaKetikNormal" class="w-full flex items-center">
@@ -567,9 +577,9 @@
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
           </div>
 
-          <!-- Wadah Ikon (Hanya menyisakan Lampiran File & Kamera, ikon lokasi 📍 sudah dihapus) -->
+          <!-- Wadah Ikon (Lampiran Rantai & Kamera) -->
           <div id="iconDalamKotak" class="flex items-center gap-1.5 flex-shrink-0 mb-0.5 transition-all duration-200">
-            <button onclick="document.getElementById('menuLampiran').classList.toggle('hidden')" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
+            <button onclick="toggleMenuLampiran()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
             <button onclick="document.getElementById('inputFoto').click()" class="w-8 h-8 flex items-center justify-center text-[#54656F]"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
             <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
           </div>
@@ -584,14 +594,33 @@
       </div>
     </div>
 
-    <!-- MENU LAMPIRAN & EMOJI -->
-    <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
-      <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
-      <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
-      <button onclick="document.getElementById('inputFoto').click()" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🖼️</div><span class="text-[10px]">Galeri</span></button>
-      <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">😊</div><span class="text-[10px]">Emoji</span></button>
+    <!-- MENU LAMPIRAN / RANTAI (Ditambah Pilihan Ikon Stiker ⭐) -->
+    <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t shadow-lg">
+      <button onclick="document.getElementById('inputFoto').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white text-lg">📷</div><span class="text-[10px]">Kamera</span></button>
+      <button onclick="kirimLokasi(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg">📍</div><span class="text-[10px]">Lokasi</span></button>
+      <button onclick="document.getElementById('inputFoto').click(); tutupSemuaMenuSub();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg">🖼️</div><span class="text-[10px]">Galeri</span></button>
+      <button onclick="bukaMenuStiker();" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white text-lg">⭐</div><span class="text-[10px]">Stiker</span></button>
     </div>
-    <div id="emoji-list" class="hidden bg-white p-2 flex gap-3 text-2xl flex-wrap border-t"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span></div>
+
+    <!-- MENU EMOJI -->
+    <div id="emoji-list" class="hidden bg-white p-3 flex gap-4 text-2xl flex-wrap border-t shadow-lg justify-around">
+      <span onclick="tambahEmoji('😀')" class="cursor-pointer hover:scale-125 transition-transform">😀</span>
+      <span onclick="tambahEmoji('😂')" class="cursor-pointer hover:scale-125 transition-transform">😂</span>
+      <span onclick="tambahEmoji('❤️')" class="cursor-pointer hover:scale-125 transition-transform">❤️</span>
+      <span onclick="tambahEmoji('🙏')" class="cursor-pointer hover:scale-125 transition-transform">🙏</span>
+      <span onclick="tambahEmoji('👍')" class="cursor-pointer hover:scale-125 transition-transform">👍</span>
+      <span onclick="tambahEmoji('🔥')" class="cursor-pointer hover:scale-125 transition-transform">🔥</span>
+      <span onclick="tambahEmoji('🎉')" class="cursor-pointer hover:scale-125 transition-transform">🎉</span>
+    </div>
+
+    <!-- MENU PILIHAN STIKER -->
+    <div id="menuStiker" class="hidden bg-white p-3 flex gap-3 text-3xl flex-wrap border-t shadow-lg justify-around">
+      <span onclick="kirimStiker('👍 Mantap')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Jempol">👍</span>
+      <span onclick="kirimStiker('❤️ Love')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Love">❤️</span>
+      <span onclick="kirimStiker('🔥 Kece')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Api">🔥</span>
+      <span onclick="kirimStiker('☕ Ngopi')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Kopi">☕</span>
+      <span onclick="kirimStiker('🎉 Hore')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Pesta">🎉</span>
+    </div>
   </div>
   
   <style>
