@@ -661,7 +661,10 @@
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
   
- <!-- LOGIKA JAVASCRIPT APLIKASI -->
+ <!-- MODAL LOGIN ADMIN UNTUK PERSETUJUAN (APPROVE) -->
+  <!-- (Pastikan elemen modal login admin di HTML Anda sudah tersedia, atau script di bawah ini menangani proses tokennya) -->
+
+  <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -681,6 +684,7 @@
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
+    const pendingWargaRef = database.ref('warga_pending_approval');
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
@@ -816,7 +820,6 @@
       });
     }
 
-    // --- FITUR PENCARIAN & KATEGORI ---
     function filterKategori(kat) {
       kategoriAktif = kat;
       ['semua', 'kuliner', 'sembako', 'jasa', 'bekas', 'pakaian', 'aksesoris', 'elektronik', 'dll'].forEach(k => {
@@ -827,7 +830,6 @@
     }
     function jalankanPencarian() { terapkanFilterDanPencarian(); }
 
-    // --- MODAL INFO & BANTUAN ---
     function bukaModalInfoAdmin() {
       document.getElementById('modal-info-admin').classList.remove('hidden');
       document.getElementById('admin-whatsapp-nomor').value = adminWaAktif;
@@ -845,7 +847,6 @@
       tutupModalInfoAdmin();
     }
 
-    // --- KOMPRESI GAMBAR & MODAL PEMBELIAN/JUAL ---
     function kompresGambar(file, callback) {
       if (file.size < 200 * 1024) {
         const reader = new FileReader();
@@ -1034,6 +1035,25 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
+
+        // Cek apakah ada token persetujuan warga yang menunggu di URL
+        let urlParams = new URLSearchParams(window.location.search);
+        let approveToken = urlParams.get('approve');
+        let approveNama = urlParams.get('nama');
+        let approveWa = urlParams.get('wa');
+        if (approveToken && approveNama) {
+          if (confirm(`Setujui pendaftaran warga "${approveNama}" (${approveWa})?`)) {
+            pendingWargaRef.child(approveToken).set({
+              nama: approveNama,
+              wa: approveWa,
+              status: 'approved',
+              approvedAt: Date.now()
+            }).then(() => {
+              alert(`Berhasil! Warga ${approveNama} telah disetujui.`);
+              window.history.replaceState({}, document.title, window.location.pathname);
+            });
+          }
+        }
       } else { alert('PIN Admin RT Salah!'); }
     }
     function keluarAdmin() {
@@ -1219,6 +1239,15 @@
       if (nomorBersih.startsWith('0')) nomorBersih = '62' + nomorBersih.slice(1);
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      // Simpan data pendaftaran sementara ke database pending approval
+      pendingWargaRef.child(tokenVerif).set({
+        nama: nama,
+        wa: nomorBersih,
+        status: 'pending',
+        timestamp: Date.now()
+      });
+
       localStorage.setItem('verified_wa_rt36', nomorBersih);
       localStorage.setItem('verified_nama_rt36', nama);
       localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
@@ -1226,13 +1255,14 @@
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
+      // Link mengarah ke website dengan parameter approve agar admin memasukkan sandi admin terlebih dahulu
       let linkPersetujuan = `${window.location.origin}${window.location.pathname}?approve=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
-      let teksWaAdmin = `Halo Admin RT.36,\n\nAda warga baru yang mendaftar ke Live Chat:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nKlik link berikut untuk menyetujui:\n${linkPersetujuan}`;
+      let teksWaAdmin = `Halo Admin RT.36,\n\nAda warga baru yang mendaftar ke Live Chat:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link di bawah untuk masuk ke Mode Admin & menyetujui:\n${linkPersetujuan}`;
 
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
       
       document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('Permintaan verifikasi terkirim ke WhatsApp Admin! Anda sekarang dapat mengetik dan mengirim pesan.');
+      alert('Permintaan verifikasi terkirim ke WhatsApp Admin! Mohon tunggu persetujuan pengurus RT.');
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
     }
@@ -1550,7 +1580,7 @@
 
       box.innerHTML = '';
 
-      ref.limitToLast(80).on('child_added', snap => {
+      ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
         let isMe = data.userId === myId;
@@ -1651,7 +1681,8 @@
       let urlParams = new URLSearchParams(window.location.search);
       let approveToken = urlParams.get('approve');
       if (approveToken) {
-        alert(`Persetujuan untuk token ${approveToken} diterima! Warga telah diverifikasi.`);
+        // Otomatis buka modal login admin jika link persetujuan diklik
+        document.getElementById('modal-login-admin').classList.remove('hidden');
       }
     });
 
