@@ -572,7 +572,7 @@
     .icon-berkedip{animation:blinkChatIcon 1s infinite; background:#FF3B30 !important;}
   </style>
 
- <!-- LOGIKA JAVASCRIPT APLIKASI -->
+<!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -964,8 +964,8 @@
       tutupModalShare();
     }
 
-    // --- SAKLAR UTAMA LIVE CHAT & LOGIN ---
-    let AKTIFKAN_LOGIN_CHAT = false; // <-- UBAH KE TRUE JIKA INGIN MENGAKTIFKAN KEMBALI HALAMAN LOGIN
+    // --- SAKLAR UTAMA LIVE CHAT & KEMBALI KE FUNGSI ASLI ---
+    let AKTIFKAN_LOGIN_CHAT = false; // Ubah ke true jika ingin mengaktifkan halaman login kembali
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
@@ -1006,7 +1006,7 @@
       }
     });
 
-    // Fungsi Verifikasi yang Mendukung Saklar On/Off
+    // FUNGSI CEK VERIFIKASI ASLI DENGAN PENAMBAHAN SAKLAR
     function cekVerifikasiChat() {
       if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
         if (!localStorage.getItem('verified_nama_rt36')) {
@@ -1190,13 +1190,53 @@
         audio.play().then(()=>{ audio.pause(); }).catch(()=>{});
       }catch(e){}
     }
+    
     function bunyikanNotifikasi(){
       if(!notifAktif) return;
       try{ document.getElementById('notifSound').play(); }catch(e){}
     }
 
+    // FITUR PENGATURAN SUARA NOTIFIKASI
+    function toggleNotifikasi() {
+      let m = document.getElementById('menuPilihanSuara');
+      if(m) m.classList.toggle('hidden');
+    }
+
+    function gantiSuara(idx) {
+      suaraIndex = idx;
+      localStorage.setItem('suara_pilihan_rt36', idx);
+      let audio = document.getElementById('notifSound');
+      if(audio && suaraList[idx]) {
+        audio.src = suaraList[idx].url;
+        audio.load();
+        audio.play().catch(()=>{});
+      }
+      [0,1,2].forEach(i => {
+        let check = document.querySelector(`#suara${i} .check`);
+        if(check) check.classList.toggle('hidden', i !== idx);
+      });
+      let m = document.getElementById('menuPilihanSuara');
+      if(m) m.classList.add('hidden');
+    }
+
+    // FUNGSI HAPUS PESAN OLEH PENGIRIM / ADMIN
+    function hapusPesanWarga(keyPesan, idPengirim) {
+      let myId = localStorage.getItem('my_chat_id');
+      if (isAdmin || myId === idPengirim) {
+        if (confirm('Hapus pesan ini?')) {
+          getChatRef().child(keyPesan).remove().then(() => {
+            // Pesan berhasil dihapus dari Firebase
+          }).catch(err => {
+            alert('Gagal menghapus pesan: ' + err.message);
+          });
+        }
+      } else {
+        alert('Anda hanya bisa menghapus pesan yang Anda kirim sendiri!');
+      }
+    }
+
+    // INISIALISASI CHAT LIVE DENGAN FITUR LENGKAP ASLI
     function inisialisasiChatLive() {
-      // Pastikan identitas tamu otomatis jika login dimatikan
       if (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT) {
         if (!localStorage.getItem('verified_nama_rt36')) {
           localStorage.setItem('verified_nama_rt36', 'Warga Tamu');
@@ -1207,6 +1247,16 @@
       let verifiedPhone = localStorage.getItem('verified_wa_rt36') || 'tamu';
       let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+
+      // Tampilkan label nomor WA / identitas di header chat
+      let lbl = document.getElementById('myWALabel');
+      if(lbl) lbl.innerText = verifiedPhone === 'tamu' ? 'Tamu' : ('+ ' + verifiedPhone);
+
+      // Set audio sumber notifikasi sesuai pilihan
+      let audio = document.getElementById('notifSound');
+      if(audio && suaraList[suaraIndex]) {
+        audio.src = suaraList[suaraIndex].url;
+      }
 
       let ref = getChatRef();
       let box = document.getElementById('boxChatWarga');
@@ -1224,12 +1274,16 @@
         });
       }catch(e){}
 
+      // Bersihkan isi box agar tidak duplikat saat reload
+      box.innerHTML = '';
+
       ref.limitToLast(80).on('child_added', snap => {
-        let data = snap.val();
+        let data = snap.val(), key = snap.key;
         if(!data) return;
         let isMe = data.userId === myId;
         let div = document.createElement('div');
         div.className = isMe ? 'bubble-wa bubble-me' : 'bubble-wa bubble-other';
+        div.id = 'msg_' + key;
         
         let isiPesan = data.pesan;
         if (data.tipe === 'foto') {
@@ -1242,11 +1296,22 @@
           isiPesan = bersihkanTeks(data.pesan);
         }
 
-        div.innerHTML = `<div class="nama-atas">${data.nama}</div><div>${isiPesan}</div><div class="text-right text-[10px] text-gray-500">${data.waktu}</div>`;
+        // Tombol hapus pesan jika pesan milik sendiri atau akun admin aktif
+        let tombolHapus = (isAdmin || isMe) ? `<button onclick="hapusPesanWarga('${key}', '${data.userId}')" class="btn-hapus" title="Hapus Pesan">Hapus</button>` : '';
+
+        div.innerHTML = `<div class="flex justify-between items-center"><span class="nama-atas">${data.nama}</span>${tombolHapus}</div><div>${isiPesan}</div><div class="text-right text-[10px] text-gray-500">${data.waktu}</div>`;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
         if(!chatPertamaLoad && !isMe) bunyikanNotifikasi();
       });
+
+      // Handle jika pesan dihapus dari database realtime
+      ref.on('child_removed', snap => {
+        let key = snap.key;
+        let el = document.getElementById('msg_' + key);
+        if(el) el.remove();
+      });
+
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
@@ -1261,6 +1326,7 @@
       let verifiedPhone = localStorage.getItem('verified_wa_rt36');
       let verifiedNama = localStorage.getItem('verified_nama_rt36');
       
+      // Muat chat otomatis jika login aktif DAN sudah terverifikasi, ATAU jika saklar login dimatikan (false)
       if (verifiedPhone || (typeof AKTIFKAN_LOGIN_CHAT !== 'undefined' && !AKTIFKAN_LOGIN_CHAT)) {
         inisialisasiChatLive();
       }
