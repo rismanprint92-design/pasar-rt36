@@ -1043,21 +1043,143 @@
     let AKTIFKAN_LOGIN_CHAT = false; 
     let pesanBalasanData = null;
     let isProsesHapus = false; 
+    let menuSubAktif = null;
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false, timerInterval = null, detikRekam = 0;
     let notifAktif = localStorage.getItem('notif_suara_rt36') !== 'off';
     let chatPertamaLoad = true;
     let audioCtx = null;
+
+    // 6 PILIHAN SUARA NOTIFIKASI
     let suaraList = [
       {nama:'WA Ting', url:'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'},
       {nama:'Ding Dong', url:'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'},
-      {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'}
+      {nama:'Pop Pendek', url:'https://assets.mixkit.co/active_storage/sfx/235/235-preview.mp3'},
+      {nama:'Marimba Cepat', url:'https://assets.mixkit.co/active_storage/sfx/2865/2865-preview.mp3'},
+      {nama:'Digital Beep', url:'https://assets.mixkit.co/active_storage/sfx/2860/2860-preview.mp3'},
+      {nama:'Crystal Chime', url:'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'}
     ];
     let suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
 
     function getChatRef(){ return database.ref('pesan_warga'); }
     function getRootRef(){ return database.ref(); }
     function getOnlineRef(){ return database.ref('online_warga'); }
+
+    // DUKUNGAN UNTUK MEMBUKA & MENUTUP EMOJI, RANTAI/LAMPIRAN, STIKER & NOTIFIKASI
+    function tutupSemuaMenuSub() {
+      let s = document.getElementById('menuPilihanSuara');
+      let l = document.getElementById('menuLampiran');
+      let e = document.getElementById('emoji-list');
+      let st = document.getElementById('menuStiker');
+      if(s) s.classList.add('hidden');
+      if(l) l.classList.add('hidden');
+      if(e) e.classList.add('hidden');
+      if(st) st.classList.add('hidden');
+      menuSubAktif = null;
+    }
+
+    function toggleNotifikasi() {
+      let m = document.getElementById('menuPilihanSuara');
+      if(!m) return;
+      if(m.classList.contains('hidden')) {
+        tutupSemuaMenuSub();
+        m.classList.remove('hidden');
+        menuSubAktif = 'suara';
+        window.history.pushState({ subMenuOpen: true }, "");
+      } else {
+        m.classList.add('hidden');
+        menuSubAktif = null;
+      }
+    }
+
+    function toggleMenuLampiran() {
+      let m = document.getElementById('menuLampiran');
+      let st = document.getElementById('menuStiker');
+      if(st) st.classList.add('hidden');
+      if(!m) return;
+      if(m.classList.contains('hidden')) {
+        tutupSemuaMenuSub();
+        m.classList.remove('hidden');
+        menuSubAktif = 'lampiran';
+        window.history.pushState({ subMenuOpen: true }, "");
+      } else {
+        m.classList.add('hidden');
+        menuSubAktif = null;
+      }
+    }
+
+    function toggleMenuEmoji() {
+      let e = document.getElementById('emoji-list');
+      if(!e) return;
+      if(e.classList.contains('hidden')) {
+        tutupSemuaMenuSub();
+        e.classList.remove('hidden');
+        menuSubAktif = 'emoji';
+        window.history.pushState({ subMenuOpen: true }, "");
+      } else {
+        e.classList.add('hidden');
+        menuSubAktif = null;
+      }
+    }
+
+    function tambahEmoji(emoji) {
+      let txtArea = document.getElementById('teksPesanWarga');
+      if(txtArea) {
+        txtArea.value += emoji;
+        txtArea.focus();
+        cekKetik();
+      }
+    }
+
+    function bukaMenuStiker() {
+      let l = document.getElementById('menuLampiran');
+      let st = document.getElementById('menuStiker');
+      if(l) l.classList.add('hidden');
+      if(st) {
+        st.classList.remove('hidden');
+        menuSubAktif = 'stiker';
+      }
+    }
+
+    function kirimStiker(teksStiker) {
+      if(!cekVerifikasiChat()) return;
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      
+      getChatRef().push({
+        nama: verifiedNama,
+        pesan: `⭐ [STIKER] ${teksStiker}`,
+        waktu: jam,
+        userId: myId,
+        timestamp: Date.now(),
+        tipe: 'teks'
+      });
+      tutupSemuaMenuSub();
+    }
+
+    function gantiSuara(idx) {
+      suaraIndex = idx;
+      localStorage.setItem('suara_pilihan_rt36', idx);
+      let audio = document.getElementById('notifSound');
+      
+      if(idx !== 'off') {
+        if(audio && suaraList[idx]) {
+          audio.src = suaraList[idx].url;
+          audio.load();
+          audio.play().catch(()=>{});
+        }
+      }
+
+      [0, 1, 2, 3, 4, 5].forEach(i => {
+        let check = document.querySelector(`#suara${i} .check`);
+        if(check) check.classList.toggle('hidden', i !== idx);
+      });
+      let checkOff = document.querySelector(`#suaraOff .check`);
+      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
+
+      tutupSemuaMenuSub();
+    }
 
     function toggleMenuPengaturan(event) {
       if (event) event.stopPropagation();
@@ -1159,9 +1281,16 @@
       }
     }
 
+    // INTEGRASI DUKUNGAN TOMBOL BACK HP (POPSTATE)
     window.addEventListener('popstate', function (event) {
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
+
+      if (menuSubAktif !== null) {
+        tutupSemuaMenuSub();
+        return;
+      }
+
       if (p && !p.classList.contains('hidden')) {
         p.classList.add('hidden');
         if (b) b.classList.remove('hidden');
@@ -1184,7 +1313,6 @@
       mic.classList.toggle('hidden', ada);
       send.classList.toggle('hidden', !ada);
 
-      // Otomatis hidden ikon kamera & maps saat mengetik agar kotak teks lebih lega
       if (iconDalamKotak) {
         iconDalamKotak.classList.toggle('hidden', ada);
       }
@@ -1335,35 +1463,6 @@
       }catch(e){}
     }
 
-    function toggleNotifikasi() {
-      let m = document.getElementById('menuPilihanSuara');
-      if(m) m.classList.toggle('hidden');
-    }
-
-    function gantiSuara(idx) {
-      suaraIndex = idx;
-      localStorage.setItem('suara_pilihan_rt36', idx);
-      let audio = document.getElementById('notifSound');
-      
-      if(idx !== 'off') {
-        if(audio && suaraList[idx]) {
-          audio.src = suaraList[idx].url;
-          audio.load();
-          audio.play().catch(()=>{});
-        }
-      }
-
-      [0, 1, 2].forEach(i => {
-        let check = document.querySelector(`#suara${i} .check`);
-        if(check) check.classList.toggle('hidden', i !== idx);
-      });
-      let checkOff = document.querySelector(`#suaraOff .check`);
-      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
-
-      let m = document.getElementById('menuPilihanSuara');
-      if(m) m.classList.add('hidden');
-    }
-
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
@@ -1419,7 +1518,7 @@
         audio.src = suaraList[suaraIndex].url;
       }
 
-      [0, 1, 2].forEach(i => {
+      [0, 1, 2, 3, 4, 5].forEach(i => {
         let check = document.querySelector(`#suara${i} .check`);
         if(check) check.classList.toggle('hidden', String(i) !== String(suaraIndex));
       });
