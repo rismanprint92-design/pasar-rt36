@@ -664,7 +664,7 @@
  <!-- MODAL LOGIN ADMIN UNTUK PERSETUJUAN (APPROVE) -->
   <!-- (Pastikan elemen modal login admin di HTML Anda sudah tersedia, atau script di bawah ini menangani proses tokennya) -->
 
-  <!-- LOGIKA JAVASCRIPT APLIKASI -->
+ <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -692,6 +692,8 @@
     let pesanBalasanData = null;
     let isProsesHapus = false; 
     let menuSubAktif = null;
+    let targetChatPribadiId = null;
+    let targetChatPribadiNama = '';
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false;
     let chatPertamaLoad = true;
@@ -1036,7 +1038,6 @@
         tutupModalAdmin();
         terapkanFilterDanPencarian();
 
-        // Cek apakah ada token persetujuan warga yang menunggu di URL
         let urlParams = new URLSearchParams(window.location.search);
         let approveToken = urlParams.get('approve');
         let approveNama = urlParams.get('nama');
@@ -1075,7 +1076,7 @@
       });
     }
 
-    // --- LOGIKA LIVE CHAT & VERIFIKASI WARGA ---
+    // --- LOGIKA LIVE CHAT & CHAT PRIBADI ---
     function tutupSemuaMenuSub() {
       let s = document.getElementById('menuPilihanSuara');
       let l = document.getElementById('menuLampiran');
@@ -1240,7 +1241,6 @@
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
       
-      // Simpan data pendaftaran sementara ke database pending approval
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
         wa: nomorBersih,
@@ -1255,14 +1255,13 @@
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      // Link mengarah ke website dengan parameter approve agar admin memasukkan sandi admin terlebih dahulu
       let linkPersetujuan = `${window.location.origin}${window.location.pathname}?approve=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
       let teksWaAdmin = `Halo Admin RT.36,\n\nAda warga baru yang mendaftar ke Live Chat:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link di bawah untuk masuk ke Mode Admin & menyetujui:\n${linkPersetujuan}`;
 
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
       
       document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('Permintaan verifikasi terkirim ke WhatsApp Admin! Mohon tunggu persetujuan pengurus RT.');
+      alert('Permintaan verifikasi terkirim ke WhatsApp Admin!');
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
     }
@@ -1275,8 +1274,12 @@
       if(lbl) lbl.innerText = nama;
       
       let headerAvatar = document.getElementById('headerAvatar');
-      if(headerAvatar && foto) {
-        headerAvatar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
+      if(headerAvatar) {
+        if(foto) {
+          headerAvatar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
+        } else {
+          headerAvatar.innerHTML = `<div class="w-full h-full bg-emerald-700 text-white flex items-center justify-center font-bold">${nama.charAt(0).toUpperCase()}</div>`;
+        }
       }
     }
 
@@ -1301,20 +1304,20 @@
       if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
       
       if (fileInput && fileInput.files && fileInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = function(e) {
+        kompresGambar(fileInput.files[0], function(base64Foto) {
           localStorage.setItem('verified_nama_rt36', namaBaru);
-          localStorage.setItem('verified_foto_rt36', e.target.result);
+          localStorage.setItem('verified_foto_rt36', base64Foto);
           tutupModalGantiProfil();
           perbaruiInfoProfilUI();
           alert('Profil dan foto berhasil diperbarui!');
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+          location.reload();
+        });
       } else {
         localStorage.setItem('verified_nama_rt36', namaBaru);
         tutupModalGantiProfil();
         perbaruiInfoProfilUI();
         alert('Nama profil berhasil diperbarui!');
+        location.reload();
       }
     }
 
@@ -1348,8 +1351,8 @@
 
       if(isRekam) return;
       
-      mic.classList.toggle('hidden', ada);
-      send.classList.toggle('hidden', !ada);
+      if (mic) mic.classList.toggle('hidden', ada);
+      if (send) send.classList.toggle('hidden', !ada);
       if (iconDalamKotak) {
         iconDalamKotak.classList.toggle('hidden', ada);
       }
@@ -1397,7 +1400,9 @@
     function kirimPesanWarga(){
       if (!cekVerifikasiChat()) return;
 
-      let pesan = document.getElementById('teksPesanWarga').value.trim();
+      let teksInput = document.getElementById('teksPesanWarga');
+      if(!teksInput) return;
+      let pesan = teksInput.value.trim();
       if(!pesan) return;
       
       let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
@@ -1405,6 +1410,27 @@
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
+      // Jika sedang berada dalam mode halaman chat pribadi
+      if (targetChatPribadiId) {
+        let roomKey = [myId, targetChatPribadiId].sort().join('_');
+        database.ref('chat_pribadi/' + roomKey).push({
+          senderId: myId,
+          senderName: verifiedNama,
+          receiverId: targetChatPribadiId,
+          receiverName: targetChatPribadiNama,
+          pesan: pesan,
+          waktu: jam,
+          timestamp: Date.now()
+        }).then(() => {
+          teksInput.value = '';
+          batalkanBalasChat();
+          cekKetik();
+        }).catch(err => {
+          alert('Gagal mengirim pesan pribadi: ' + err.message);
+        });
+        return;
+      }
+
       let dataKirim = {
         nama: verifiedNama, 
         fotoProfil: verifiedFoto,
@@ -1421,11 +1447,10 @@
       }
 
       database.ref('pesan_warga').push(dataKirim).then(()=>{
-        document.getElementById('teksPesanWarga').value='';
-        let txtArea = document.getElementById('teksPesanWarga');
-        if(txtArea) txtArea.style.height = 'auto';
+        teksInput.value = '';
+        if(teksInput) teksInput.style.height = 'auto';
         batalkanBalasChat();
-        if(typeof cekKetik === 'function') cekKetik();
+        cekKetik();
       }).catch(err => {
         alert('Gagal mengirim pesan: ' + err.message);
       });
@@ -1437,12 +1462,18 @@
       let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
       let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
       let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let reader = new FileReader();
-      reader.onload = e => {
+      kompresGambar(input.files[0], function(base64Img) {
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
-      };
-      reader.readAsDataURL(input.files[0]);
+        if (targetChatPribadiId) {
+          let roomKey = [myId, targetChatPribadiId].sort().join('_');
+          database.ref('chat_pribadi/' + roomKey).push({
+            senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
+            pesan: base64Img, waktu: jam, timestamp: Date.now(), tipe: 'foto'
+          });
+        } else {
+          database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: base64Img, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
+        }
+      });
       input.value='';
     }
 
@@ -1455,16 +1486,27 @@
         let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
         let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: mapsLink, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'lokasi'});
+        if (targetChatPribadiId) {
+          let roomKey = [myId, targetChatPribadiId].sort().join('_');
+          database.ref('chat_pribadi/' + roomKey).push({
+            senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
+            pesan: mapsLink, waktu: jam, timestamp: Date.now(), tipe: 'lokasi'
+          });
+        } else {
+          database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: mapsLink, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'lokasi'});
+        }
       });
     }
 
     async function mulaiRekam(){
       if(!cekVerifikasiChat()) return;
       isRekam = true;
-      document.getElementById('areaKetikNormal').classList.add('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.remove('hidden');
-      document.getElementById('iconDalamKotak').classList.add('hidden');
+      let areaKetik = document.getElementById('areaKetikNormal');
+      let areaRekam = document.getElementById('areaRekamDalamKotak');
+      let iconKotak = document.getElementById('iconDalamKotak');
+      if(areaKetik) areaKetik.classList.add('hidden');
+      if(areaRekam) areaRekam.classList.remove('hidden');
+      if(iconKotak) iconKotak.classList.add('hidden');
       try{
         micStream = await navigator.mediaDevices.getUserMedia({audio:true});
         mediaRecorder = new MediaRecorder(micStream);
@@ -1478,7 +1520,15 @@
             let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
             let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'voice'});
+            if (targetChatPribadiId) {
+              let roomKey = [myId, targetChatPribadiId].sort().join('_');
+              database.ref('chat_pribadi/' + roomKey).push({
+                senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
+                pesan: e.target.result, waktu: jam, timestamp: Date.now(), tipe: 'voice'
+              });
+            } else {
+              database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'voice'});
+            }
           };
           reader.readAsDataURL(blob);
         };
@@ -1490,9 +1540,12 @@
       if(!isRekam) return;
       isRekam = false;
       if(mediaRecorder) mediaRecorder.stop();
-      document.getElementById('areaKetikNormal').classList.remove('hidden');
-      document.getElementById('areaRekamDalamKotak').classList.add('hidden');
-      document.getElementById('iconDalamKotak').classList.remove('hidden');
+      let areaKetik = document.getElementById('areaKetikNormal');
+      let areaRekam = document.getElementById('areaRekamDalamKotak');
+      let iconKotak = document.getElementById('iconDalamKotak');
+      if(areaKetik) areaKetik.classList.remove('hidden');
+      if(areaRekam) areaRekam.classList.add('hidden');
+      if(iconKotak) iconKotak.classList.remove('hidden');
     }
 
     function bunyikanNotifikasi(){
@@ -1536,6 +1589,34 @@
       }).catch(err => { alert("Gagal mengedit pesan: " + err.message); });
     }
 
+    // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
+    function bukaChatPribadi(userIdLawan, namaLawan) {
+      let myId = localStorage.getItem('my_chat_id');
+      if (myId === userIdLawan) {
+        alert("Ini adalah akun Anda sendiri.");
+        return;
+      }
+      targetChatPribadiId = userIdLawan;
+      targetChatPribadiNama = namaLawan;
+
+      let judulChat = document.getElementById('judulHeaderChat');
+      if (judulChat) {
+        judulChat.innerHTML = `Chat Pribadi: ${namaLawan} <button onclick="tutupChatPribadi()" class="ml-2 bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded">Kembali ke Grup</button>`;
+      }
+
+      inisialisasiChatLive();
+    }
+
+    function tutupChatPribadi() {
+      targetChatPribadiId = null;
+      targetChatPribadiNama = '';
+      let judulChat = document.getElementById('judulHeaderChat');
+      if (judulChat) {
+        judulChat.innerHTML = `Obrolan Warga RT.36`;
+      }
+      inisialisasiChatLive();
+    }
+
     function inisialisasiChatLive() {
       let verifiedPhone = localStorage.getItem('verified_wa_rt36') || 'tamu';
       let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
@@ -1549,46 +1630,38 @@
         audio.src = suaraList[suaraIndex].url;
       }
 
-      let ref = database.ref('pesan_warga');
+      let ref;
+      if (targetChatPribadiId) {
+        let roomKey = [myId, targetChatPribadiId].sort().join('_');
+        ref = database.ref('chat_pribadi/' + roomKey);
+      } else {
+        ref = database.ref('pesan_warga');
+      }
+
       let box = document.getElementById('boxChatWarga');
       if(!box) return;
-
-      const SEKARANG = Date.now();
-      const BATAS_24_JAM = 24 * 60 * 60 * 1000;
-      ref.once('value', snap => {
-        const dataChat = snap.val();
-        if(dataChat) {
-          Object.keys(dataChat).forEach(key => {
-            if(dataChat[key].timestamp && (SEKARANG - dataChat[key].timestamp) > BATAS_24_JAM) {
-              ref.child(key).remove();
-            }
-          });
-        }
-      });
-
-      try {
-        let onlineRoot = database.ref('online_warga');
-        let myOnlineRef = onlineRoot.child(myId);
-        myOnlineRef.set({nama: verifiedNama, phone: verifiedPhone, time: Date.now()});
-        myOnlineRef.onDisconnect().remove();
-        onlineRoot.on('value', snap => {
-          let count = snap.numChildren();
-          let el = document.getElementById('statusOnline');
-          if(el) el.innerText = (count < 1 ? 1 : count) + ' Online';
-        });
-      }catch(e){}
 
       box.innerHTML = '';
 
       ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
-        let isMe = data.userId === myId;
+
+        let isMe = targetChatPribadiId ? (data.senderId === myId) : (data.userId === myId);
+        let pengirimNama = targetChatPribadiId ? data.senderName : data.nama;
+        let pengirimId = targetChatPribadiId ? data.senderId : data.userId;
+
         let div = document.createElement('div');
         div.className = isMe ? 'flex flex-col items-end my-1' : 'flex flex-col items-start my-1';
         div.id = 'msg_' + key;
         
-        let avatarHtml = data.fotoProfil ? `<img src="${data.fotoProfil}" class="w-5 h-5 rounded-full object-cover inline-block mr-1">` : '';
+        let avatarHtml = '';
+        if (data.fotoProfil) {
+          avatarHtml = `<img src="${data.fotoProfil}" class="w-5 h-5 rounded-full object-cover inline-block mr-1 flex-shrink-0">`;
+        } else {
+          let initial = pengirimNama ? pengirimNama.charAt(0).toUpperCase() : 'W';
+          avatarHtml = `<span class="w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold inline-flex items-center justify-center mr-1 flex-shrink-0">${initial}</span>`;
+        }
 
         let isiPesan = data.pesan;
         if (data.tipe === 'foto') {
@@ -1612,25 +1685,25 @@
         }
 
         let tombolAksiChat = '';
-        if ((isAdmin || isMe) && data.tipe === 'teks') {
+        if (!targetChatPribadiId && ((isAdmin || isMe) && data.tipe === 'teks')) {
           tombolAksiChat = `
             <div class="flex gap-1.5 items-center">
-              <button onclick="mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`)" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
-              <button onclick="hapusPesanWarga('${key}', '${data.userId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
+              <button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`)" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
+              <button onclick="event.stopPropagation(); hapusPesanWarga('${key}', '${pengirimId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
             </div>
-          `;
-        } else if (isAdmin || isMe) {
-          tombolAksiChat = `
-            <button onclick="hapusPesanWarga('${key}', '${data.userId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
           `;
         }
 
         let statusEdit = data.diedit ? ' <span class="text-[9px] text-gray-400 italic">(diedit)</span>' : '';
+        let klikNamaAksi = targetChatPribadiId ? '' : `onclick="event.stopPropagation(); bukaChatPribadi('${pengirimId}', '${pengirimNama}')" title="Klik untuk membuka chat pribadi"`;
+        let kursorStyle = targetChatPribadiId ? '' : 'cursor-pointer hover:underline text-emerald-800';
 
         div.innerHTML = `
-          <div class="bubble-wa ${isMe ? 'bubble-me' : 'bubble-other'} cursor-pointer" onclick="if(!event.target.closest('button')) mulaiBalasPesan('${data.nama}', '${data.tipe === 'teks' ? data.pesan : '[Media]'}')">
+          <div class="bubble-wa ${isMe ? 'bubble-me' : 'bubble-other'} cursor-pointer" onclick="if(!event.target.closest('button')) mulaiBalasPesan('${pengirimNama}', '${data.tipe === 'teks' ? data.pesan : '[Media]'}')">
             <div class="flex justify-between items-center gap-2">
-              <span class="nama-atas flex items-center">${avatarHtml}${data.nama}</span>
+              <span class="nama-atas flex items-center ${kursorStyle}" ${klikNamaAksi}>
+                ${avatarHtml}${pengirimNama} ${targetChatPribadiId ? '' : '💬'}
+              </span>
               ${tombolAksiChat}
             </div>
             ${replyHtml}
@@ -1640,35 +1713,6 @@
         `;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
-
-        if(!chatPertamaLoad && !isMe && !isProsesHapus) {
-          let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
-          if (apakahBalasanKeSaya) {
-            bunyikanNotifikasi();
-            let panelChat = document.getElementById('panelChatWarga');
-            let btnBuka = document.getElementById('btnBukaChat');
-            if(panelChat && panelChat.classList.contains('hidden') && btnBuka) {
-              btnBuka.classList.add('icon-goyang');
-              btnBuka.classList.remove('bg-emerald-600');
-              btnBuka.classList.add('bg-red-600');
-            }
-          }
-        }
-      });
-
-      ref.on('child_changed', snap => {
-        let key = snap.key;
-        let data = snap.val();
-        let teksEl = document.getElementById('teks_val_' + key);
-        if(teksEl && data) { teksEl.innerText = data.pesan; }
-      });
-
-      ref.on('child_removed', snap => {
-        isProsesHapus = true;
-        let key = snap.key;
-        let el = document.getElementById('msg_' + key);
-        if(el) { el.remove(); }
-        setTimeout(() => { isProsesHapus = false; }, 1500);
       });
 
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
@@ -1681,7 +1725,6 @@
       let urlParams = new URLSearchParams(window.location.search);
       let approveToken = urlParams.get('approve');
       if (approveToken) {
-        // Otomatis buka modal login admin jika link persetujuan diklik
         document.getElementById('modal-login-admin').classList.remove('hidden');
       }
     });
