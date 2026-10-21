@@ -1055,9 +1055,7 @@
     }
 
     function toggleBoxChat() {
-      unlockAudio();
-      if (!cekVerifikasiChat()) return;
-
+      // Tombol buka/tutup chat TIDAK memicu suara apa pun
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
       let badge = document.getElementById('badgeBaru');
@@ -1182,17 +1180,15 @@
       document.getElementById('iconDalamKotak').classList.remove('hidden');
     }
 
-    function unlockAudio(){
-      try{
-        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let audio = document.getElementById('notifSound');
-        audio.play().then(()=>{ audio.pause(); }).catch(()=>{});
-      }catch(e){}
-    }
-    
     function bunyikanNotifikasi(){
       if(!notifAktif) return;
-      try{ document.getElementById('notifSound').play(); }catch(e){}
+      try{ 
+        let audio = document.getElementById('notifSound');
+        if(audio) {
+          audio.currentTime = 0;
+          audio.play().catch(()=>{});
+        }
+      }catch(e){}
     }
 
     function toggleNotifikasi() {
@@ -1217,7 +1213,7 @@
       if(m) m.classList.add('hidden');
     }
 
-    // Fungsi Hapus Pesan via Ikon Sampah
+    // Fungsi Hapus Pesan via Ikon Sampah (Tidak bersuara)
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
@@ -1231,7 +1227,7 @@
       }
     }
 
-    // Fungsi Edit Pesan via Ikon Pensil
+    // Fungsi Edit Pesan via Ikon Pensil (Tidak bersuara)
     function mulaiEditPesan(keyPesan, encodedPesan) {
       let pesanLama = decodeURIComponent(encodedPesan);
       let pesanBaru = prompt("Edit pesan Anda:", pesanLama);
@@ -1307,7 +1303,6 @@
           isiPesan = `<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`;
         }
 
-        // Tombol Aksi (Edit & Hapus) berupa ikon rapi
         let tombolAksiChat = '';
         if ((isAdmin || isMe) && data.tipe === 'teks') {
           tombolAksiChat = `
@@ -1334,10 +1329,23 @@
         `;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
-        if(!chatPertamaLoad && !isMe) bunyikanNotifikasi();
+
+        // Logika Notifikasi Suara & Animasi Ikon Chat Bergerak/Berkedip saat ada pesan masuk baru dari orang lain
+        if(!chatPertamaLoad && !isMe) {
+          bunyikanNotifikasi();
+          
+          let panelChat = document.getElementById('panelChatWarga');
+          let btnBuka = document.getElementById('btnBukaChat');
+          let badge = document.getElementById('badgeBaru');
+
+          // Jika panel chat sedang ditutup, aktifkan animasi berkedip/bergerak pada tombol chat
+          if(panelChat && panelChat.classList.contains('hidden')) {
+            if(btnBuka) btnBuka.classList.add('icon-berkedip');
+            if(badge) badge.classList.remove('hidden');
+          }
+        }
       });
 
-      // Update teks secara real-time jika ada yang mengedit pesan
       ref.on('child_changed', snap => {
         let key = snap.key;
         let data = snap.val();
