@@ -545,21 +545,23 @@
       </div>
     </div>
 
-    <!-- AREA BUBBLE CHAT -->
+   <!-- AREA BUBBLE CHAT -->
     <div id="boxChatWarga" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"></div>
 
-   <!-- FOOTER INPUT CHAT (DIPERBARUI: PREVIEW DI ATAS, KOTAK KETIK DI BAWAH) -->
+    <!-- FOOTER INPUT CHAT WA (TERURUT RAPI & SEJAJAR SEPERTI WHATSAPP) -->
     <div class="bg-[#F0F0F0] p-2 flex flex-col justify-end gap-1">
       
       <!-- TEMPAT PRATINJAU BALASAN (Muncul di ATAS secara rapi jika sedang membalas) -->
       <div id="containerPreviewBalas"></div>
 
-      <!-- BARIS UTAMA KOTAK KETIK -->
+      <!-- BARIS UTAMA KOTAK KETIK & TOMBOL AKSI SEJAJAR DI SAMPING -->
       <div class="flex items-end gap-2">
         <div id="kotakInputPutih" class="flex-1 bg-white rounded-[28px] min-h-[48px] flex items-end px-2 py-2 shadow-sm">
-          <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button>
-          <div class="flex-1 relative min-h-[32px] flex items-center">
-            <div id="areaKetikNormal" class="w-full flex items-center"><textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea></div>
+          <button onclick="document.getElementById('emoji-list').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center text-[#54656F] flex-shrink-0 mb-0.5"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button> 
+          <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
+            <div id="areaKetikNormal" class="w-full flex items-center">
+              <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
+            </div>
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
           </div>
           <div id="iconDalamKotak" class="flex items-center gap-1 flex-shrink-0 mb-0.5">
@@ -569,14 +571,17 @@
             <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="kirimFoto(this)">
           </div>
         </div>
+        
+        <!-- Tombol Aksi (Mic / Kirim) Sekarang Berada Sejajar di Samping Kanan -->
+        <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden text-white">
+          <span id="iconMic" class="relative"><svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg></span>
+          <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
+          <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
+        </button>
       </div>
     </div>
-      <button id="btnAksi" onclick="handleAksi()" class="bg-[#00A884] w-[48px] h-[48px] rounded-full flex items-center justify-center shadow-lg flex-shrink-0 transition-all relative overflow-hidden">
-        <span id="iconMic" class="relative"><svg viewBox="0 0 24 24" width="26" height="26" fill="white" class="relative"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="white" stroke-width="1.5" fill="none"></path></svg></span>
-        <span id="iconSend" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"></path></svg></span>
-        <span id="iconStop" class="hidden w-5 h-5 bg-white rounded-sm"></span>
-      </button>
-    </div>
+    
+    <!-- MENU LAMPIRAN & EMOJI -->
     <div id="menuLampiran" class="hidden bg-white p-3 grid grid-cols-4 gap-3 text-center border-t">
       <button onclick="document.getElementById('inputFoto').click(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">📷</div><span class="text-[10px]">Kamera</span></button>
       <button onclick="kirimLokasi(); document.getElementById('menuLampiran').classList.add('hidden')" class="flex flex-col items-center gap-1"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">📍</div><span class="text-[10px]">Lokasi</span></button>
@@ -585,7 +590,7 @@
     </div>
     <div id="emoji-list" class="hidden bg-white p-2 flex gap-3 text-2xl flex-wrap border-t"><span onclick="tambahEmoji('😀')">😀</span><span onclick="tambahEmoji('😂')">😂</span><span onclick="tambahEmoji('❤️')">❤️</span><span onclick="tambahEmoji('🙏')">🙏</span><span onclick="tambahEmoji('👍')">👍</span></div>
   </div>
-
+  
   <style>
     .bubble-wa {
       max-width: 80%; 
@@ -1164,12 +1169,12 @@
       if(!containerPreview) return;
       
       containerPreview.innerHTML = `
-        <div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm">
-          <div class="overflow-hidden">
+        <div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm overflow-hidden">
+          <div class="overflow-hidden pr-2">
             <p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p>
-            <p class="text-gray-600 truncate text-[11px]">${isiPesan}</p>
+            <p class="text-gray-600 truncate text-[11px] max-w-[280px] md:max-w-[350px]">${isiPesan}</p>
           </div>
-          <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm">&times;</button>
+          <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm flex-shrink-0">&times;</button>
         </div>
       `;
       document.getElementById('teksPesanWarga').focus();
@@ -1207,7 +1212,6 @@
 
       getChatRef().push(dataKirim).then(()=>{
         document.getElementById('teksPesanWarga').value='';
-        // Reset tinggi textarea kembali ke awal
         let txtArea = document.getElementById('teksPesanWarga');
         if(txtArea) txtArea.style.height = 'auto';
         batalkanBalasChat();
@@ -1384,7 +1388,6 @@
       let box = document.getElementById('boxChatWarga');
       if(!box) return;
 
-      // OTOMATIS HAPUS CHAT LEBIH DARI 24 JAM
       const SEKARANG = Date.now();
       const BATAS_24_JAM = 24 * 60 * 60 * 1000;
       ref.once('value', snap => {
@@ -1476,7 +1479,6 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        // NOTIFIKASI HANYA BERBUNYI & IKON MERAH JIKA CHAT KITA DIBALAS/DI-REPLY
         if(!chatPertamaLoad && !isMe && !isProsesHapus) {
           let apakahBalasanKeSaya = data.replyTo && data.replyTo.toLowerCase() === verifiedNama.toLowerCase();
           
@@ -1506,7 +1508,6 @@
         }
       });
 
-      // EVENT HAPUS PESAN: DIJAMIN SENYAP TANPA BUNYI
       ref.on('child_removed', snap => {
         isProsesHapus = true;
         let key = snap.key;
