@@ -515,7 +515,7 @@
     <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
       <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP untuk verifikasi ke Admin RT.</p>
+      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP WA Anda sendiri untuk verifikasi ke Admin RT.</p>
       
       <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden">
         <div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;">
@@ -526,8 +526,8 @@
 
       <div id="step1Verif" class="mt-5 space-y-3">
         <div><label class="text-[11px] font-bold">NAMA / BLOK RUMAH</label><input type="text" id="inputNama" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <div><label class="text-[11px] font-bold">NO HP / WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <button onclick="prosesKirimVerifikasiWA(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Kirim Verifikasi ke WA Admin 📲</button>
+        <div><label class="text-[11px] font-bold">NO. WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
+        <button onclick="prosesKirimVerifikasiWA(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Minta Persetujuan via WA Admin 📲</button>
       </div>
     </div>
   </div>
@@ -1285,69 +1285,103 @@
     function cekVerifikasiChat() {
       let verifiedPhone = null;
       let verifiedNama = null;
+      let statusVerif = null;
       try {
         verifiedPhone = localStorage.getItem('verified_wa_rt36');
         verifiedNama = localStorage.getItem('verified_nama_rt36');
+        statusVerif = localStorage.getItem('status_verif_rt36');
       } catch(e) {}
 
       let modal = document.getElementById('modalVerifWA');
-      if (!verifiedPhone || !verifiedNama) {
+
+      // Jika belum disetujui, tampilkan modal verifikasi
+      if (!verifiedPhone || !verifiedNama || statusVerif !== 'approved') {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
         return false;
       }
+
       if (modal) modal.classList.add('hidden');
       return true;
     }
     
-    // --- Alur Verifikasi: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
+    // --- REVISI ALUR VERIFIKASI SESUAI PERMINTAAN ---
+    // Warga Input -> Aplikasi Membuka WA Warga Sendiri membawa pesan otomatis & Link ke WA Admin -> Klik Link WA Admin -> Admin Klik Approval Link
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
       if(!elNama || !elPhone) return;
+      
       let nama = elNama.value.trim();
       let phone = elPhone.value.trim();
-      if(nama.length < 3){ alert('Isi nama lengkap / blok rumah dulu bosku!'); return; }
-      if(phone.length < 10){ alert('Isi No HP / WA dulu bosku!'); return; }
       
-      let nomorBersih = phone.replace(/\D/g,'');
-      if (nomorBersih.startsWith('0')) nomorBersih = '62' + nomorBersih.slice(1);
+      if(nama.length < 3){ alert('Isi nama lengkap / blok rumah dulu bosku!'); return; }
+      if(phone.length < 10){ alert('Isi No. WA milik Anda sendiri dulu bosku!'); return; }
+      
+      let nomorWarga = phone.replace(/\D/g,'');
+      if (nomorWarga.startsWith('0')) nomorWarga = '62' + nomorWarga.slice(1);
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
       
+      // Simpan status verifikasi pending di database Firebase
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
-        wa: nomorBersih,
+        wa: nomorWarga,
         status: 'pending',
         timestamp: Date.now()
       });
 
       try {
-        localStorage.setItem('verified_wa_rt36', nomorBersih);
+        localStorage.setItem('verified_wa_rt36', nomorWarga);
         localStorage.setItem('verified_nama_rt36', nama);
-        localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
+        localStorage.setItem('status_verif_rt36', 'pending');
+        localStorage.setItem('my_chat_id', 'warga_' + nomorWarga.slice(-4));
       } catch(e) {}
-      
+
+      // Nomor Admin Penerima Persetujuan
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
+      // Link Approval yang nantinya diklik Admin
       let baseUrl = window.location.origin + window.location.pathname;
-      let linkVerifikasiWarga = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
+      let linkApprovalAdmin = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorWarga}`;
       
-      let teksWaAdmin = "Halo Admin RT.36,\n\n" +
-        "Warga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n" +
-        "*Nama/Blok:* " + nama + "\n" +
-        "*No. WA:* " + nomorBersih + "\n\n" +
-        "Silakan klik link verifikasi di bawah ini untuk menyetujui dan masuk ke halaman login Admin:\n" +
-        linkVerifikasiWarga;
+      // Teks pesan yang dikirim dari Warga ke WA Admin
+      let teksUntukAdmin = "Halo Admin RT.36,\n\nSaya ingin meminta persetujuan aktivasi akun warga:\n*Nama / Blok:* " + nama + "\n*No. WA Saya:* " + nomorWarga + "\n\nSilakan klik link di bawah untuk menyetujui:\n" + linkApprovalAdmin;
 
-      window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
+      // Link WA yang membuka WhatsApp Admin langsung
+      let linkWaAdminDirect = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksUntukAdmin)}`;
+
+      // Draf pesan yang dikirim ke Nomor WA Warga sendiri lebih dahulu
+      let pesanKeWaWargaSendiri = "Halo " + nama + ",\n\nIni adalah draf permintaan persetujuan akun warga RT.36.\n\n" +
+        "Silakan KLIK LINK WHATSAPP ADMIN di bawah ini untuk membuka chat dengan Admin dan mengirimkan pesan persetujuan:\n\n" +
+        "👉 " + linkWaAdminDirect;
+
+      // Membuka WhatsApp ke NOMOR WARGA SENDIRI
+      window.open(`https://wa.me/${nomorWarga}?text=${encodeURIComponent(pesanKeWaWargaSendiri)}`, '_blank');
       
       document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('Link verifikasi nomor aktif telah dikirim ke WhatsApp Admin!');
+      alert('Pesan draf telah dibuka di WhatsApp Anda! Silakan klik link WhatsApp Admin yang ada di dalam chat tersebut untuk meneruskan persetujuan ke Admin RT.');
       perbaruiInfoProfilUI();
-      inisialisasiChatLive();
+      pantauPersetujuanWarga(tokenVerif);
+    }
+
+    // Pantau secara Realtime jika Admin mengeklik link persetujuan
+    function pantauPersetujuanWarga(token) {
+      if (!token) return;
+      pendingWargaRef.child(token).on('value', snapshot => {
+        let val = snapshot.val();
+        if (val && val.status === 'approved') {
+          try {
+            localStorage.setItem('status_verif_rt36', 'approved');
+          } catch(e) {}
+          alert('Selamat! Akun warga Anda telah disetujui dan diaktifkan oleh Admin RT!');
+          document.getElementById('modalVerifWA').classList.add('hidden');
+          perbaruiInfoProfilUI();
+          inisialisasiChatLive();
+        }
+      });
     }
 
     function perbaruiInfoProfilUI() {
@@ -1859,18 +1893,27 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
+    // --- PROSES PERSETUJUAN DARI ADMIN ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
       
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
-      if (verifyToken) {
-        let modalLogin = document.getElementById('modal-login-admin');
-        if (modalLogin) {
-          modalLogin.classList.remove('hidden');
-          modalLogin.scrollIntoView({ behavior: 'smooth' });
-        }
+      let verifyNama = urlParams.get('nama');
+      let verifyWa = urlParams.get('wa');
+
+      // Jika URL persetujuan diklik oleh Admin
+      if (verifyToken && verifyNama) {
+        pendingWargaRef.child(verifyToken).set({
+          nama: verifyNama,
+          wa: verifyWa,
+          status: 'approved',
+          approvedAt: Date.now()
+        }).then(() => {
+          alert(`Berhasil! Akun warga "${verifyNama}" (${verifyWa}) telah disetujui dan diaktifkan.`);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
       }
     });
 
