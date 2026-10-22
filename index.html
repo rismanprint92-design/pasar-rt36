@@ -1900,12 +1900,30 @@
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
+      let verifyWa = urlParams.get('wa');
 
-      // Jika URL memiliki parameter verify, langsung panggil toggleModeAdmin agar modal PIN Admin terbuka
+      // Jika URL membawa token verifikasi dari link WhatsApp
       if (verifyToken && verifyNama) {
         setTimeout(function() {
-          toggleModeAdmin();
-        }, 400);
+          // Memicu kotak dialog PIN Admin secara langsung tanpa masuk mode admin penuh
+          let inputPin = prompt(`Konfirmasi Persetujuan Warga:\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT untuk menyetujui:`);
+          
+          if (inputPin !== null) {
+            if (inputPin === pinAdminAktif) {
+              pendingWargaRef.child(verifyToken).set({
+                nama: verifyNama,
+                wa: verifyWa,
+                status: 'approved',
+                approvedAt: Date.now()
+              }).then(() => {
+                alert(`BERHASIL! Akun warga atas nama "${verifyNama}" (${verifyWa}) telah disetujui & diaktifkan.`);
+                window.history.replaceState({}, document.title, window.location.pathname);
+              });
+            } else {
+              alert("PIN Admin RT Salah! Ditolak.");
+            }
+          }
+        }, 300);
       }
     });
 
