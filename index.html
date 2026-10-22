@@ -690,7 +690,7 @@
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
 
- <!-- LOGIKA JAVASCRIPT APLIKASI -->
+<!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -1068,7 +1068,10 @@
     // --- ADMIN MODE ---
     function toggleModeAdmin() {
       if (isAdmin) { keluarAdmin(); }
-      else { document.getElementById('modal-login-admin').classList.remove('hidden'); }
+      else { 
+        document.getElementById('modal-login-admin').classList.remove('hidden'); 
+        setTimeout(() => document.getElementById('pin-admin').focus(), 100);
+      }
     }
     function tutupModalAdmin() { document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value = ''; }
     
@@ -1882,7 +1885,7 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
-    // --- PENANGANAN SAAT LINK PERSETUJUAN DIKLIK ADMIN ---
+    // --- PENANGANAN OTOMATIS SAAT LINK PERSETUJUAN DIKLIK ADMIN ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
@@ -1891,9 +1894,16 @@
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
 
-      // Jika URL diklik oleh admin dari WhatsApp, otomatis buka modal login PIN Admin
-      if (verifyToken && verifyNama) {
-        document.getElementById('modal-login-admin').classList.remove('hidden');
+      // Jika URL memiliki parameter persetujuan dari WhatsApp, otomatis paksa buka modal PIN Admin dengan delay
+      if (verifyToken || verifyNama) {
+        setTimeout(function() {
+          let modalAdmin = document.getElementById('modal-login-admin');
+          if (modalAdmin) {
+            modalAdmin.classList.remove('hidden');
+            let inputPin = document.getElementById('pin-admin');
+            if (inputPin) inputPin.focus();
+          }
+        }, 300);
       }
     });
 
