@@ -1069,14 +1069,21 @@
     function toggleModeAdmin() {
       if (isAdmin) { keluarAdmin(); }
       else { 
-        document.getElementById('modal-login-admin').classList.remove('hidden'); 
-        setTimeout(() => document.getElementById('pin-admin').focus(), 100);
+        let modalAdmin = document.getElementById('modal-login-admin');
+        if(modalAdmin) {
+          modalAdmin.classList.remove('hidden');
+          setTimeout(() => {
+            let inputPin = document.getElementById('pin-admin');
+            if(inputPin) inputPin.focus();
+          }, 100);
+        }
       }
     }
     function tutupModalAdmin() { document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value = ''; }
     
     function verifikasiAdmin() {
-      if (document.getElementById('pin-admin').value === pinAdminAktif) {
+      let pinInputVal = document.getElementById('pin-admin').value;
+      if (pinInputVal === pinAdminAktif) {
         isAdmin = true;
         document.getElementById('banner-admin').classList.remove('hidden');
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
@@ -1894,16 +1901,17 @@
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
 
-      // Jika URL memiliki parameter persetujuan dari WhatsApp, otomatis paksa buka modal PIN Admin dengan delay
-      if (verifyToken || verifyNama) {
-        setTimeout(function() {
+      // Jika URL WhatsApp membawa token verifikasi, paksa munculkan modal PIN Admin dengan interval aman
+      if (verifyToken && verifyNama) {
+        let cekModalSiap = setInterval(function() {
           let modalAdmin = document.getElementById('modal-login-admin');
+          let inputPin = document.getElementById('pin-admin');
           if (modalAdmin) {
             modalAdmin.classList.remove('hidden');
-            let inputPin = document.getElementById('pin-admin');
             if (inputPin) inputPin.focus();
+            clearInterval(cekModalSiap); // Hentikan loop jika modal sudah berhasil dibuka
           }
-        }, 300);
+        }, 200);
       }
     });
 
