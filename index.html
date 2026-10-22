@@ -1901,17 +1901,11 @@
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
 
-      // Jika URL WhatsApp membawa token verifikasi, paksa munculkan modal PIN Admin dengan interval aman
+      // Jika URL memiliki parameter verify, langsung panggil toggleModeAdmin agar modal PIN Admin terbuka
       if (verifyToken && verifyNama) {
-        let cekModalSiap = setInterval(function() {
-          let modalAdmin = document.getElementById('modal-login-admin');
-          let inputPin = document.getElementById('pin-admin');
-          if (modalAdmin) {
-            modalAdmin.classList.remove('hidden');
-            if (inputPin) inputPin.focus();
-            clearInterval(cekModalSiap); // Hentikan loop jika modal sudah berhasil dibuka
-          }
-        }, 200);
+        setTimeout(function() {
+          toggleModeAdmin();
+        }, 400);
       }
     });
 
