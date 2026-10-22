@@ -632,7 +632,7 @@
           
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
             <div id="areaKetikNormal" class="w-full flex items-center">
-              <!-- Ketika diklik dan belum login, memunculkan pemberitahuan sebelum dialihkan ke modal login (Dilewati jika Mode Admin Aktif) -->
+              <!-- Ketika diklik, tombol teks langsung aktif tanpa pop-up login jika mode admin aktif -->
               <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" onfocus="handleFokusKetik(event)" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
             </div>
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
@@ -1133,9 +1133,9 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
-        muatDaftarWargaOnline(); // Refresh daftar warga online agar tombol edit & hapus profil muncul untuk admin
+        muatDaftarWargaOnline();
 
-        // Sembunyikan atau tutup modal login warga secara otomatis jika sedang terbuka saat admin aktif
+        // Sembunyikan modal login warga jika sedang aktif/terbuka
         let modalVerif = document.getElementById('modalVerifWA');
         if (modalVerif) modalVerif.classList.add('hidden');
 
@@ -1344,9 +1344,9 @@
       }
     });
 
-    // --- CEK VERIFIKASI CHAT DENGAN PEMBERITAHUAN & BYPASS JIKA MODE ADMIN AKTIF ---
+    // --- CEK VERIFIKASI CHAT (DILEWATI JIKA MODE ADMIN AKTIF) ---
     function handleFokusKetik(event) {
-      if (isAdmin) return; // JIKA MODE ADMIN AKTIF, BYPASS / LEWATI HALAMAN LOGIN
+      if (isAdmin) return; // BYPASS JIKA ADMIN
 
       let verifiedPhone = null;
       let verifiedNama = null;
@@ -1356,7 +1356,7 @@
       } catch(e) {}
 
       if (!verifiedPhone || !verifiedNama) {
-        event.target.blur(); // Batalkan fokus agar keyboard HP tidak muncul dulu
+        event.target.blur();
         alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan full akses ke obrolan warga RT.36.");
         let modal = document.getElementById('modalVerifWA');
         if (modal) modal.classList.remove('hidden');
@@ -1364,7 +1364,7 @@
     }
 
     function cekVerifikasiChat() {
-      if (isAdmin) return true; // JIKA MODE ADMIN AKTIF, OTOMATIS IZINKAN TANPA LOGIN
+      if (isAdmin) return true; // BYPASS JIKA ADMIN
 
       let verifiedPhone = null;
       let verifiedNama = null;
@@ -1412,7 +1412,6 @@
         timestamp: Date.now()
       });
 
-      // Simpan juga database profil aktif agar Admin bisa memantau, mengedit, dan menghapus profil jika diperlukan
       profilWargaDbRef.child(myUniqueId).set({
         userId: myUniqueId,
         nama: nama,
@@ -1436,10 +1435,7 @@
       let teksUntukAdmin = "Halo Admin RT.36,\n\nSaya ingin meminta persetujuan aktivasi akun warga:\n*Nama / Blok:* " + nama + "\n*No. WA Saya:* " + nomorWarga + "\n\nSilakan klik link di bawah untuk menyetujui:\n" + linkApprovalAdmin;
 
       let linkWaAdminDirect = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksUntukAdmin)}`;
-
-      let pesanKeWaWargaSendiri = "Halo " + nama + ",\n\nIni adalah draf permintaan persetujuan akun warga RT.36.\n\n" +
-        "Silakan KLIK LINK WHATSAPP ADMIN di bawah ini untuk membuka chat dengan Admin dan mengirimkan pesan persetujuan:\n\n" +
-        "👉 " + linkWaAdminDirect;
+      let pesanKeWaWargaSendiri = "Halo " + nama + ",\n\nIni adalah draf permintaan persetujuan akun warga RT.36.\n\nSilakan KLIK LINK WHATSAPP ADMIN di bawah ini untuk membuka chat dengan Admin dan mengirimkan pesan persetujuan:\n\n👉 " + linkWaAdminDirect;
 
       window.open(`https://wa.me/${nomorWarga}?text=${encodeURIComponent(pesanKeWaWargaSendiri)}`, '_blank');
       
@@ -1503,7 +1499,7 @@
       }
     }
 
-    // --- PENGUBAHAN PROFIL (PRIBADI & OLEH ADMIN) ---
+    // --- PENGUBAHAN PROFIL ---
     function bukaModalGantiProfil(adminTargetUserId, currentNama) {
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
@@ -1511,7 +1507,6 @@
       let judulModal = document.getElementById('judulModalGantiProfil');
 
       if (adminTargetUserId && isAdmin) {
-        // Mode Admin Mengedit Profil Warga Lain
         if(inputTarget) inputTarget.value = adminTargetUserId;
         if(inputNama) inputNama.value = currentNama || '';
         if(judulModal) judulModal.innerText = `Edit Profil Warga: ${currentNama}`;
@@ -1519,7 +1514,6 @@
         return;
       }
 
-      // Jika Mode Admin Aktif dan bukan edit target lain, izinkan ubah nama admin langsung tanpa verifikasi warga
       if (isAdmin) {
         if(inputTarget) inputTarget.value = '';
         if(judulModal) judulModal.innerText = 'Ganti Nama Admin';
@@ -1528,7 +1522,6 @@
         return;
       }
 
-      // Mode Warga Mengedit Profil Sendiri
       let verifiedPhone = null;
       let verifiedNama = null;
       try {
@@ -1564,7 +1557,6 @@
       if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
 
       if (adminTargetUserId && isAdmin) {
-        // Admin menyimpan perubahan profil warga lain di Firebase
         let prosesSimpanAdmin = (fotoBase64) => {
           let updateData = { nama: namaBaru };
           if(fotoBase64) updateData.foto = fotoBase64;
@@ -1594,7 +1586,6 @@
         return;
       }
       
-      // Warga biasa menyimpan profilnya sendiri di localStorage
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
           try {
@@ -1625,7 +1616,6 @@
       }
     }
 
-    // --- FUNGSI ADMIN: HAPUS PROFIL WARGA YANG SUDAH LOGIN ---
     function adminHapusProfilWarga(userIdWarga, namaWarga) {
       if (!isAdmin) {
         alert("Maaf bosku, fitur hapus profil warga hanya dapat diakses melalui Mode Admin RT!");
@@ -1930,7 +1920,6 @@
       }catch(e){}
     }
 
-    // --- FITUR HAPUS CHAT / EDIT PESAN OLEH ADMIN ---
     function hapusPesanWarga(keyPesan, idPengirim) {
       if (!isAdmin) {
         alert('Maaf bosku, fitur hapus chat/pesan hanya dapat diakses melalui Mode Admin RT!');
@@ -1966,7 +1955,6 @@
       }).catch(err => { alert("Gagal mengedit pesan: " + err.message); });
     }
 
-    // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
       let myId = isAdmin ? 'admin_rt_36' : null;
       try {
@@ -1998,7 +1986,6 @@
       inisialisasiChatLive();
     }
 
-    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (DENGAN TOMBOL EDIT & HAPUS PROFIL JIKA ADMIN AKTIF) ---
     function muatDaftarWargaOnline() {
       let barOnline = document.getElementById('daftarWargaOnlineBar');
       if(!barOnline) return;
@@ -2032,6 +2019,7 @@
       });
     }
 
+    // --- INISIALISASI CHAT LIVE DENGAN PERBAIKAN PEMUATAN PESAN ---
     function inisialisasiChatLive() {
       let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
       try {
@@ -2077,6 +2065,7 @@
         }
       });
 
+      // Menggunakan event 'child_added' dengan aman untuk memuat riwayat dan pesan baru secara real-time
       ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
@@ -2084,6 +2073,10 @@
         let isMe = targetChatPribadiId ? (data.senderId === myId) : (data.userId === myId);
         let pengirimNama = targetChatPribadiId ? data.senderName : data.nama;
         let pengirimId = targetChatPribadiId ? data.senderId : data.userId;
+
+        // Cegah duplikasi elemen chat jika sudah ada di DOM
+        let existingEl = document.getElementById('msg_' + key);
+        if (existingEl) existingEl.remove();
 
         let div = document.createElement('div');
         div.className = isMe ? 'flex flex-col items-end my-1' : 'flex flex-col items-start my-1';
