@@ -704,22 +704,7 @@
       {nama:'Digital Beep', url:'https://assets.mixkit.co/active_storage/sfx/2860/2860-preview.mp3'},
       {nama:'Crystal Chime', url:'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'}
     ];
-    let suaraIndex = '0';
-    try {
-      suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
-    } catch(e) {}
-
-    // Unlock Audio untuk Browser Modern
-    document.addEventListener('click', function unlockAudio() {
-      let audio = document.getElementById('notifSound');
-      if (audio) {
-        audio.play().then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-        }).catch(() => {});
-      }
-      document.removeEventListener('click', unlockAudio);
-    }, { once: true });
+    let suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
 
     function bersihkanTeks(teks) {
       if (!teks) return '';
@@ -1167,16 +1152,11 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = 'Warga Tamu';
-      let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
-      try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      } catch(e) {}
-      
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      
       database.ref('pesan_warga').push({
         nama: verifiedNama,
         fotoProfil: verifiedFoto,
@@ -1191,10 +1171,7 @@
 
     function gantiSuara(idx) {
       suaraIndex = idx;
-      try {
-        localStorage.setItem('suara_pilihan_rt36', idx);
-      } catch(e) {}
-      
+      localStorage.setItem('suara_pilihan_rt36', idx);
       let audio = document.getElementById('notifSound');
       if(idx !== 'off' && audio && suaraList[idx]) {
         audio.src = suaraList[idx].url;
@@ -1235,14 +1212,10 @@
     });
 
     function cekVerifikasiChat() {
-      let verifiedPhone = null;
-      let verifiedNama = null;
-      try {
-        verifiedPhone = localStorage.getItem('verified_wa_rt36');
-        verifiedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
+      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
+      let verifiedNama = localStorage.getItem('verified_nama_rt36');
       let modal = document.getElementById('modalVerifWA');
+      
       if (!verifiedPhone || !verifiedNama) {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
@@ -1253,7 +1226,7 @@
       return true;
     }
     
-    // --- Alur Verifikasi: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
+    // --- Alur Baru: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
@@ -1275,24 +1248,16 @@
         timestamp: Date.now()
       });
 
-      try {
-        localStorage.setItem('verified_wa_rt36', nomorBersih);
-        localStorage.setItem('verified_nama_rt36', nama);
-        localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
-      } catch(e) {}
+      localStorage.setItem('verified_wa_rt36', nomorBersih);
+      localStorage.setItem('verified_nama_rt36', nama);
+      localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
       
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      let baseUrl = window.location.origin + window.location.pathname;
-      let linkVerifikasiWarga = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
-      
-      let teksWaAdmin = "Halo Admin RT.36,\n\n" +
-        "Warga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n" +
-        "*Nama/Blok:* " + nama + "\n" +
-        "*No. WA:* " + nomorBersih + "\n\n" +
-        "Silakan klik link verifikasi di bawah ini untuk menyetujui dan masuk ke halaman login Admin:\n" +
-        linkVerifikasiWarga;
+      // Link verifikasi aktif warga yang langsung mengarah ke halaman login/persetujuan admin
+      let linkVerifikasiWarga = `${window.location.origin}${window.location.pathname}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
+      let teksWaAdmin = `Halo Admin RT.36,\n\nWarga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link verifikasi di bawah ini untuk menyetujui dan masuk otomatis ke halaman login Admin:\n${linkVerifikasiWarga}`;
 
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
       
@@ -1303,12 +1268,8 @@
     }
 
     function perbaruiInfoProfilUI() {
-      let nama = 'Warga Tamu';
-      let foto = '';
-      try {
-        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        foto = localStorage.getItem('verified_foto_rt36') || '';
-      } catch(e) {}
+      let nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+      let foto = localStorage.getItem('verified_foto_rt36') || '';
       
       let lbl = document.getElementById('myWALabel');
       if(lbl) lbl.innerText = nama;
@@ -1329,9 +1290,7 @@
       
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
-      try {
-        if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
-      } catch(e) {}
+      if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
       if(modal) modal.classList.remove('hidden');
     }
 
@@ -1347,19 +1306,15 @@
       
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
-          try {
-            localStorage.setItem('verified_nama_rt36', namaBaru);
-            localStorage.setItem('verified_foto_rt36', base64Foto);
-          } catch(e) {}
+          localStorage.setItem('verified_nama_rt36', namaBaru);
+          localStorage.setItem('verified_foto_rt36', base64Foto);
           tutupModalGantiProfil();
           perbaruiInfoProfilUI();
           alert('Profil dan foto berhasil diperbarui!');
           location.reload();
         });
       } else {
-        try {
-          localStorage.setItem('verified_nama_rt36', namaBaru);
-        } catch(e) {}
+        localStorage.setItem('verified_nama_rt36', namaBaru);
         tutupModalGantiProfil();
         perbaruiInfoProfilUI();
         alert('Nama profil berhasil diperbarui!');
@@ -1451,15 +1406,9 @@
       let pesan = teksInput.value.trim();
       if(!pesan) return;
       
-      let verifiedNama = 'Warga';
-      let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
-      try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      } catch(e) {}
-
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
       if (targetChatPribadiId) {
@@ -1510,15 +1459,9 @@
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
       if(!input.files[0]) return;
-      let verifiedNama = 'Warga';
-      let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
-      try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      } catch(e) {}
-
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       kompresGambar(input.files[0], function(base64Img) {
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         if (targetChatPribadiId) {
@@ -1539,15 +1482,9 @@
       if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
         let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = 'Warga';
-        let verifiedFoto = '';
-        let myId = 'tamu_' + Date.now();
-        try {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        } catch(e) {}
-
+        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+        let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         if (targetChatPribadiId) {
           let roomKey = [myId, targetChatPribadiId].sort().join('_');
@@ -1579,15 +1516,9 @@
           let blob = new Blob(audioChunks, {type:'audio/webm'});
           let reader = new FileReader();
           reader.onload = e => {
-            let verifiedNama = 'Warga';
-            let verifiedFoto = '';
-            let myId = 'tamu_' + Date.now();
-            try {
-              verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-              verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-              myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-            } catch(ex) {}
-
+            let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+            let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+            let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             if (targetChatPribadiId) {
               let roomKey = [myId, targetChatPribadiId].sort().join('_');
@@ -1629,11 +1560,7 @@
     }
 
     function hapusPesanWarga(keyPesan, idPengirim) {
-      let myId = null;
-      try {
-        myId = localStorage.getItem('my_chat_id');
-      } catch(e) {}
-
+      let myId = localStorage.getItem('my_chat_id');
       if (isAdmin || myId === idPengirim) {
         if (confirm('Hapus pesan ini?')) {
           isProsesHapus = true; 
@@ -1664,11 +1591,7 @@
 
     // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
-      let myId = null;
-      try {
-        myId = localStorage.getItem('my_chat_id');
-      } catch(e) {}
-
+      let myId = localStorage.getItem('my_chat_id');
       if (myId === userIdLawan) {
         alert("Ini adalah akun Anda sendiri.");
         return;
@@ -1695,13 +1618,12 @@
     }
 
     function inisialisasiChatLive() {
-      let myId = 'tamu_' + Date.now();
-      try {
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        let lbl = document.getElementById('myWALabel');
-        if(lbl) lbl.innerText = verifiedNama;
-      } catch(e) {}
+      let verifiedPhone = localStorage.getItem('verified_wa_rt36') || 'tamu';
+      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+
+      let lbl = document.getElementById('myWALabel');
+      if(lbl) lbl.innerText = verifiedNama;
 
       let audio = document.getElementById('notifSound');
       if(suaraIndex !== 'off' && suaraList[suaraIndex]) {
@@ -1803,19 +1725,14 @@
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
       if (verifyToken) {
-        let modalLogin = document.getElementById('modal-login-admin');
-        if (modalLogin) {
-          modalLogin.classList.remove('hidden');
-          modalLogin.scrollIntoView({ behavior: 'smooth' });
-        }
+        // Otomatis buka modal login admin saat admin mengklik link verifikasi warga dari WhatsApp
+        document.getElementById('modal-login-admin').classList.remove('hidden');
       }
     });
 
     function keluarDariPasarRT36(){
       if(confirm('Yakin mau keluar akun?')){
-        try {
-          localStorage.clear();
-        } catch(e) {}
+        localStorage.clear();
         location.reload();
       }
     }
