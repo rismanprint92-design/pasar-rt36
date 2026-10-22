@@ -159,7 +159,7 @@
       <i class="ph ph-shield-check text-lg text-emerald-600"></i>
       <span id="label-admin">Mode Admin RT</span>
     </button>
-    <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
+    <button onclick="bukaModalGantiProfil(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
       <i class="ph ph-user-circle text-lg text-emerald-600"></i>
       <span>Ganti Nama & Foto Profil</span>
     </button>
@@ -1476,10 +1476,19 @@
       }
     }
 
-    // --- PENGUBAHAN PROFIL DIKUNCI HANYA UNTUK ADMIN ---
+    // --- PENGUBAHAN PROFIL DIBUKA UTUH SETELAH LOGIN/VERIFIKASI ---
     function bukaModalGantiProfil() {
-      if (!isAdmin) {
-        alert("Maaf bosku, pengubahan nama atau foto profil warga RT.36 hanya dapat diakses melalui Mode Admin RT!");
+      let verifiedPhone = null;
+      let verifiedNama = null;
+      try {
+        verifiedPhone = localStorage.getItem('verified_wa_rt36');
+        verifiedNama = localStorage.getItem('verified_nama_rt36');
+      } catch(e) {}
+
+      if (!verifiedPhone || !verifiedNama) {
+        alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan akses mengubah profil.");
+        let modal = document.getElementById('modalVerifWA');
+        if (modal) modal.classList.remove('hidden');
         return;
       }
 
@@ -1803,7 +1812,7 @@
       }catch(e){}
     }
 
-    // --- FITUR HAPUS CHAT HANYA UNTUK ADMIN ---
+    // --- FITUR HAPUS CHAT / EDIT PESAN OLEH ADMIN ---
     function hapusPesanWarga(keyPesan, idPengirim) {
       if (!isAdmin) {
         alert('Maaf bosku, fitur hapus chat/pesan hanya dapat diakses melalui Mode Admin RT!');
