@@ -690,7 +690,7 @@
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
 
-  <!-- LOGIKA JAVASCRIPT APLIKASI -->
+ <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -1294,7 +1294,6 @@
 
       let modal = document.getElementById('modalVerifWA');
 
-      // Jika belum disetujui, tampilkan modal verifikasi
       if (!verifiedPhone || !verifiedNama || statusVerif !== 'approved') {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
@@ -1323,7 +1322,6 @@
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
       
-      // Simpan status verifikasi pending di database Firebase
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
         wa: nomorWarga,
@@ -1338,26 +1336,20 @@
         localStorage.setItem('my_chat_id', 'warga_' + nomorWarga.slice(-4));
       } catch(e) {}
 
-      // Nomor Admin Penerima Persetujuan
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      // Link Approval yang diklik Admin (otomatis memicu modal login PIN Admin)
       let baseUrl = window.location.origin + window.location.pathname;
       let linkApprovalAdmin = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorWarga}`;
       
-      // Teks pesan yang dikirim dari Warga ke WA Admin
       let teksUntukAdmin = "Halo Admin RT.36,\n\nSaya ingin meminta persetujuan aktivasi akun warga:\n*Nama / Blok:* " + nama + "\n*No. WA Saya:* " + nomorWarga + "\n\nSilakan klik link di bawah untuk menyetujui:\n" + linkApprovalAdmin;
 
-      // Link WA yang membuka WhatsApp Admin langsung
       let linkWaAdminDirect = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksUntukAdmin)}`;
 
-      // Draf pesan yang dikirim ke Nomor WA Warga sendiri lebih dahulu
       let pesanKeWaWargaSendiri = "Halo " + nama + ",\n\nIni adalah draf permintaan persetujuan akun warga RT.36.\n\n" +
         "Silakan KLIK LINK WHATSAPP ADMIN di bawah ini untuk membuka chat dengan Admin dan mengirimkan pesan persetujuan:\n\n" +
         "👉 " + linkWaAdminDirect;
 
-      // Membuka WhatsApp ke NOMOR WARGA SENDIRI
       window.open(`https://wa.me/${nomorWarga}?text=${encodeURIComponent(pesanKeWaWargaSendiri)}`, '_blank');
       
       document.getElementById('modalVerifWA').classList.add('hidden');
@@ -1366,7 +1358,6 @@
       pantauPersetujuanWarga(tokenVerif);
     }
 
-    // Pantau secara Realtime jika Admin mengeklik link persetujuan
     function pantauPersetujuanWarga(token) {
       if (!token) return;
       pendingWargaRef.child(token).on('value', snapshot => {
@@ -1806,7 +1797,6 @@
         let dataMap = snap.val();
         let teksNotif = document.getElementById('teksNotif24Jam');
         
-        // Cek jika obrolan kosong vs ada pesan untuk menampilkan teks 24 jam
         if (teksNotif) {
           if (dataMap && Object.keys(dataMap).length > 0) {
             teksNotif.classList.remove('hidden');
@@ -1892,7 +1882,7 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
-    // --- PROSES LINK PERSETUJUAN DI SISI ADMIN ---
+    // --- PENANGANAN SAAT LINK PERSETUJUAN DIKLIK ADMIN ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
@@ -1900,14 +1890,10 @@
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
-      let verifyWa = urlParams.get('wa');
 
-      // Jika URL persetujuan diklik Admin dari WhatsApp
+      // Jika URL diklik oleh admin dari WhatsApp, otomatis buka modal login PIN Admin
       if (verifyToken && verifyNama) {
-        // Otomatis buka modal login admin agar admin memasukkan PIN terlebih dahulu
         document.getElementById('modal-login-admin').classList.remove('hidden');
-        
-        // Simpan referensi verifikasi pada fungsi verifikasiAdmin()
       }
     });
 
@@ -1920,5 +1906,3 @@
       }
     }
   </script>
-</body>
-</html>
