@@ -1065,7 +1065,7 @@
       tutupModalShare();
     }
 
-    // --- ADMIN MODE & INTERSEPSI LINK APPROVAL WHATSAPP ---
+    // --- ADMIN MODE ---
     function toggleModeAdmin() {
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
@@ -1474,6 +1474,7 @@
       }
     }
 
+    // --- FUNGSI TAMPIL / TUTUP CHAT & INTEGRASI TOMBOL BACK HP ---
     function toggleBoxChat() {
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
@@ -1487,12 +1488,30 @@
         
         let box = document.getElementById('boxChatWarga');
         if(box) { box.scrollTop = box.scrollHeight; }
+
+        // Tambah state history agar tombol back HP dapat menutup panel chat
+        try {
+          history.pushState({ chatOpen: true }, '');
+        } catch(e) {}
       } else {
         p.classList.add('hidden');
         b.classList.remove('hidden');
+        tutupMenuHeaderChat();
       }
     }
 
+    // Menangani penutupan panel chat saat tombol Kembali (Back) pada HP ditekan
+    window.addEventListener('popstate', function(e) {
+      let p = document.getElementById('panelChatWarga');
+      let b = document.getElementById('btnBukaChat');
+      if (p && !p.classList.contains('hidden')) {
+        p.classList.add('hidden');
+        if (b) b.classList.remove('hidden');
+        tutupMenuHeaderChat();
+      }
+    });
+
+    // --- PENANGANAN DETEKSI KETIKAN TEKS ---
     function cekKetik() {
       let teksInput = document.getElementById('teksPesanWarga');
       if (!teksInput) return;
@@ -1540,7 +1559,8 @@
           <button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm flex-shrink-0">&times;</button>
         </div>
       `;
-      document.getElementById('teksPesanWarga').focus();
+      let txt = document.getElementById('teksPesanWarga');
+      if(txt) txt.focus();
     }
 
     function batalkanBalasChat() {
@@ -1921,6 +1941,19 @@
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
+
+      // Penyesuaian HTML menu titik tiga: Mengganti tombol keluar akun menjadi Tutup Chat
+      let dropHeader = document.getElementById('dropdownHeaderChat');
+      if(dropHeader) {
+        dropHeader.innerHTML = `
+          <button onclick="toggleNotifikasi()" class="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b">
+            🔔 Pilihan Suara Notifikasi
+          </button>
+          <button onclick="toggleBoxChat()" class="w-full text-left px-4 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2">
+            ❌ Tutup Chat
+          </button>
+        `;
+      }
     });
 
     function keluarDariPasarRT36(){
