@@ -502,7 +502,7 @@
     <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
   </div>
 
-  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH (DEFAULT HIDDEN PANEL CHAT SAAT PAGE LOAD) -->
+  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH -->
   <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
     <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
     <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -532,7 +532,7 @@
     </div>
   </div>
 
-  <!-- PANEL LIVE CHAT WARGA (DISET HIDDEN SECARA DEFAULT SAAT PAGE LOAD/REFRESH) -->
+  <!-- PANEL LIVE CHAT WARGA -->
   <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
     
     <!-- HEADER CHAT UTAMA -->
@@ -1444,7 +1444,15 @@
       }
     }
 
+    // --- PENGUBAHAN PROFIL DIKUNCI HANYA UNTUK ADMIN ---
     function bukaModalGantiProfil() {
+      if (!isAdmin) {
+        alert("Maaf bosku, pengubahan nama atau foto profil/obrolan warga RT.36 hanya dapat diakses melalui Mode Admin RT!");
+        let menu = document.getElementById('dropdown-pengaturan');
+        if(menu) menu.classList.add('hidden');
+        return;
+      }
+
       let menu = document.getElementById('dropdown-pengaturan');
       if(menu) menu.classList.add('hidden');
       
@@ -1488,7 +1496,7 @@
       }
     }
 
-    // --- FUNGSI TOGGLE BOX CHAT (MEMPERBAIKI MASALAH TAMPILAN AWAL & KLIK IKON CHAT) ---
+    // --- FUNGSI TOGGLE BOX CHAT ---
     function toggleBoxChat() {
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
@@ -1502,7 +1510,6 @@
           b.classList.add('bg-emerald-600');
         }
         
-        // Default selalu kembali ke Obrolan Warga RT.36 (Grup) saat dibuka
         tutupChatPribadi();
 
         try {
@@ -1769,30 +1776,32 @@
       }catch(e){}
     }
 
+    // --- FITUR HAPUS CHAT DIKUNCI HANYA UNTUK ADMIN ---
     function hapusPesanWarga(keyPesan, idPengirim) {
-      let myId = null;
-      try {
-        myId = localStorage.getItem('my_chat_id');
-      } catch(e) {}
+      if (!isAdmin) {
+        alert('Maaf bosku, fitur hapus chat/pesan hanya dapat diakses melalui Mode Admin RT!');
+        return;
+      }
 
-      if (isAdmin || myId === idPengirim) {
-        if (confirm('Hapus pesan ini?')) {
-          isProsesHapus = true; 
-          database.ref('pesan_warga').child(keyPesan).remove().then(() => {
-            setTimeout(() => { isProsesHapus = false; }, 2000);
-          }).catch(err => {
-            isProsesHapus = false;
-            alert('Gagal menghapus pesan: ' + err.message);
-          });
-        }
-      } else {
-        alert('Anda hanya bisa menghapus pesan yang Anda kirim sendiri!');
+      if (confirm('Hapus pesan ini secara permanen?')) {
+        isProsesHapus = true; 
+        database.ref('pesan_warga').child(keyPesan).remove().then(() => {
+          setTimeout(() => { isProsesHapus = false; }, 2000);
+        }).catch(err => {
+          isProsesHapus = false;
+          alert('Gagal menghapus pesan: ' + err.message);
+        });
       }
     }
 
     function mulaiEditPesan(keyPesan, encodedPesan) {
+      if (!isAdmin) {
+        alert('Maaf bosku, fitur edit pesan hanya dapat diakses melalui Mode Admin RT!');
+        return;
+      }
+
       let pesanLama = decodeURIComponent(encodedPesan);
-      let pesanBaru = prompt("Edit pesan Anda:", pesanLama);
+      let pesanBaru = prompt("Edit pesan warga:", pesanLama);
       if (pesanBaru === null) return;
       pesanBaru = pesanBaru.trim();
       if (!pesanBaru) { alert("Pesan tidak boleh kosong!"); return; }
@@ -1955,7 +1964,7 @@
         }
 
         let tombolAksiChat = '';
-        if (!targetChatPribadiId && ((isAdmin || isMe) && data.tipe === 'teks')) {
+        if (!targetChatPribadiId && (isAdmin && data.tipe === 'teks')) {
           tombolAksiChat = `
             <div class="flex gap-1.5 items-center">
               <button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`)" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
