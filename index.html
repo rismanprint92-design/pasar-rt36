@@ -133,6 +133,28 @@
       animation: pop .25s ease-out !important;
     }
     @keyframes pop{ from{ transform:scale(0.9); opacity:0 } to{ transform:scale(1); opacity:1 } }
+
+    .bubble-wa {
+      max-width: 80%; 
+      padding: 6px 8px 5px 8px; 
+      border-radius: 8px; 
+      box-shadow: 0 1px .5px rgba(0,0,0,.13); 
+      font-size: 14px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    } 
+    .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } 
+    .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
+    .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }
+    
+    @keyframes goyangHalus {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+      75% { transform: rotate(-5deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
@@ -670,32 +692,8 @@
       <span onclick="kirimStiker('🎉 Hore')" class="cursor-pointer hover:scale-125 transition-transform" title="Stiker Pesta">🎉</span>
     </div>
   </div>
-  
-  <style>
-    .bubble-wa {
-      max-width: 80%; 
-      padding: 6px 8px 5px 8px; 
-      border-radius: 8px; 
-      box-shadow: 0 1px .5px rgba(0,0,0,.13); 
-      font-size: 14px;
-      word-break: break-word;
-      overflow-wrap: break-word;
-    } 
-    .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } 
-    .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
-    .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }
-    
-    @keyframes goyangHalus {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-5deg); }
-      50% { transform: rotate(5deg); }
-      75% { transform: rotate(-5deg); }
-      100% { transform: rotate(0deg); }
-    }
-    .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
-  </style>
 
-  <!-- LOGIKA JAVASCRIPT APLIKASI -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI UTAMA -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -1004,6 +1002,7 @@
         muatDataKeFormEdit(id);
       } else { alert('PIN Penjual salah!'); }
     }
+
     function muatDataKeFormEdit(id) {
       const produk = produkData.find(p => p.id === id);
       if (!produk) return;
@@ -1018,11 +1017,14 @@
       document.getElementById('modal-edit').classList.remove('hidden');
     }
     function tutupModalEdit() { document.getElementById('modal-edit').classList.add('hidden'); }
+
     function simpanPerubahanProduk(e) {
       e.preventDefault();
       const id = document.getElementById('edit-id').value;
       const produkLama = produkData.find(p => p.id === id);
-      dbRef.child(id).set({
+      if(!produkLama) return;
+
+      let updateData = {
         nama: bersihkanTeks(document.getElementById('edit-nama').value),
         harga: parseInt(document.getElementById('edit-harga').value),
         kategori: document.getElementById('edit-kategori').value,
@@ -1033,8 +1035,33 @@
         foto: produkLama.foto,
         pinPenjual: produkLama.pinPenjual || "1234",
         timestamp: produkLama.timestamp || Date.now()
-      }).then(() => { tutupModalEdit(); alert('Berhasil diperbarui!'); });
+      };
+
+      const fileInput = document.getElementById('edit-input-file-foto');
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        if (fileInput.files.length > 3) { alert('Maksimal 3 foto saja ya bos!'); return; }
+        let compressedPhotos = [], filesProcessed = 0, totalFiles = fileInput.files.length;
+        Array.from(fileInput.files).forEach((file, index) => {
+          kompresGambar(file, function(compressedDataUrl) {
+            compressedPhotos[index] = compressedDataUrl;
+            filesProcessed++;
+            if (filesProcessed === totalFiles) {
+              updateData.foto = compressedPhotos;
+              dbRef.child(id).set(updateData).then(() => {
+                tutupModalEdit();
+                alert('Berhasil diperbarui!');
+              });
+            }
+          });
+        });
+      } else {
+        dbRef.child(id).set(updateData).then(() => {
+          tutupModalEdit();
+          alert('Berhasil diperbarui!');
+        });
+      }
     }
+
     function hapusOlehPenjual() {
       const id = document.getElementById('edit-id').value;
       if (confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(() => tutupModalEdit());
@@ -1206,6 +1233,27 @@
       }
     }
 
+    function gantiSuara(idx) {
+      suaraIndex = idx;
+      try {
+        localStorage.setItem('suara_pilihan_rt36', idx);
+      } catch(e) {}
+      
+      let audio = document.getElementById('notifSound');
+      if(idx !== 'off' && audio && suaraList[idx]) {
+        audio.src = suaraList[idx].url;
+        audio.load();
+        audio.play().catch(()=>{});
+      }
+      [0, 1, 2, 3, 4, 5].forEach(i => {
+        let check = document.querySelector(`#suara${i} .check`);
+        if(check) check.classList.toggle('hidden', i !== idx);
+      });
+      let checkOff = document.querySelector(`#suaraOff .check`);
+      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
+      tutupSemuaMenuSub();
+    }
+
     function toggleMenuLampiran() {
       if (!cekVerifikasiChat()) return;
       let m = document.getElementById('menuLampiran');
@@ -1257,12 +1305,10 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = 'Warga Tamu';
-      let verifiedFoto = '';
+      let verifiedNama = akunWarga ? akunWarga.nama : 'Warga Tamu';
+      let verifiedFoto = akunWarga ? akunWarga.foto : '';
       let myId = 'tamu_' + Date.now();
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
         myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
       
@@ -1276,27 +1322,6 @@
         timestamp: Date.now(),
         tipe: 'teks'
       });
-      tutupSemuaMenuSub();
-    }
-
-    function gantiSuara(idx) {
-      suaraIndex = idx;
-      try {
-        localStorage.setItem('suara_pilihan_rt36', idx);
-      } catch(e) {}
-      
-      let audio = document.getElementById('notifSound');
-      if(idx !== 'off' && audio && suaraList[idx]) {
-        audio.src = suaraList[idx].url;
-        audio.load();
-        audio.play().catch(()=>{});
-      }
-      [0, 1, 2, 3, 4, 5].forEach(i => {
-        let check = document.querySelector(`#suara${i} .check`);
-        if(check) check.classList.toggle('hidden', i !== idx);
-      });
-      let checkOff = document.querySelector(`#suaraOff .check`);
-      if(checkOff) checkOff.classList.toggle('hidden', idx !== 'off');
       tutupSemuaMenuSub();
     }
 
@@ -1324,28 +1349,35 @@
       }
     });
 
+    // --- INISIALISASI & PENGECEKAN SESI LOGIN SEKALI SAJA ---
+    let akunWarga = null;
+    try {
+      const savedAkun = localStorage.getItem('rt36_warga_session');
+      if (savedAkun) {
+        akunWarga = JSON.parse(savedAkun);
+      } else {
+        let oldWa = localStorage.getItem('verified_wa_rt36');
+        let oldNama = localStorage.getItem('verified_nama_rt36');
+        if (oldWa && oldNama) {
+          akunWarga = { nama: oldNama, wa: oldWa, foto: localStorage.getItem('verified_foto_rt36') || '' };
+          localStorage.setItem('rt36_warga_session', JSON.stringify(akunWarga));
+        }
+      }
+    } catch(e) {}
+
     function cekVerifikasiChat() {
-      let verifiedPhone = null;
-      let verifiedNama = null;
-      try {
-        verifiedPhone = localStorage.getItem('verified_wa_rt36');
-        verifiedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
       let modal = document.getElementById('modalVerifWA');
-
-      if (!verifiedPhone || !verifiedNama) {
+      if (!akunWarga || !akunWarga.wa || !akunWarga.nama) {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
         return false;
       }
-
       if (modal) modal.classList.add('hidden');
       return true;
     }
     
-    // --- PROSES KIRIM VERIFIKASI WARGA ---
+    // --- PROSES KIRIM VERIFIKASI WARGA (HANYA SEKALI DI AWAL) ---
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
@@ -1369,7 +1401,9 @@
         timestamp: Date.now()
       });
 
+      akunWarga = { nama: nama, wa: nomorWarga, foto: '' };
       try {
+        localStorage.setItem('rt36_warga_session', JSON.stringify(akunWarga));
         localStorage.setItem('verified_wa_rt36', nomorWarga);
         localStorage.setItem('verified_nama_rt36', nama);
         localStorage.setItem('status_verif_rt36', 'pending');
@@ -1417,10 +1451,15 @@
     function perbaruiInfoProfilUI() {
       let nama = 'Warga Tamu';
       let foto = '';
-      try {
-        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        foto = localStorage.getItem('verified_foto_rt36') || '';
-      } catch(e) {}
+      if (akunWarga) {
+        nama = akunWarga.nama || 'Warga Tamu';
+        foto = akunWarga.foto || '';
+      } else {
+        try {
+          nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+          foto = localStorage.getItem('verified_foto_rt36') || '';
+        } catch(e) {}
+      }
       
       let lbl = document.getElementById('myWALabel');
       if(lbl) lbl.innerText = nama;
@@ -1458,9 +1497,7 @@
       
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
-      try {
-        if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
-      } catch(e) {}
+      if(inputNama && akunWarga) inputNama.value = akunWarga.nama || '';
       if(modal) modal.classList.remove('hidden');
     }
 
@@ -1474,9 +1511,14 @@
       let fileInput = document.getElementById('editFotoWarga');
       if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
       
+      if (!akunWarga) akunWarga = {};
+      akunWarga.nama = namaBaru;
+
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
+          akunWarga.foto = base64Foto;
           try {
+            localStorage.setItem('rt36_warga_session', JSON.stringify(akunWarga));
             localStorage.setItem('verified_nama_rt36', namaBaru);
             localStorage.setItem('verified_foto_rt36', base64Foto);
           } catch(e) {}
@@ -1487,6 +1529,7 @@
         });
       } else {
         try {
+          localStorage.setItem('rt36_warga_session', JSON.stringify(akunWarga));
           localStorage.setItem('verified_nama_rt36', namaBaru);
         } catch(e) {}
         tutupModalGantiProfil();
@@ -1502,6 +1545,11 @@
       let b = document.getElementById('btnBukaChat');
 
       if (p.classList.contains('hidden')) {
+        if (!akunWarga || !akunWarga.wa) {
+          let modal = document.getElementById('modalVerifWA');
+          if (modal) modal.classList.remove('hidden');
+          return;
+        }
         p.classList.remove('hidden');
         if(b) {
           b.classList.add('hidden');
@@ -1597,15 +1645,14 @@
       let pesan = teksInput.value.trim();
       if (!pesan) return;
       
-      let verifiedNama = 'Warga';
-      let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
-      
+      let verifiedNama = akunWarga ? akunWarga.nama : 'Warga';
+      let verifiedFoto = akunWarga ? akunWarga.foto : '';
+      let myId = '';
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      } catch(e) {}
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + (akunWarga ? akunWarga.wa : Date.now()));
+      } catch(e) {
+        myId = 'tamu_' + Date.now();
+      }
 
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
@@ -1658,14 +1705,14 @@
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
       if(!input.files[0]) return;
-      let verifiedNama = 'Warga';
-      let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
+      let verifiedNama = akunWarga ? akunWarga.nama : 'Warga';
+      let verifiedFoto = akunWarga ? akunWarga.foto : '';
+      let myId = '';
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      } catch(e) {}
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + (akunWarga ? akunWarga.wa : Date.now()));
+      } catch(e) {
+        myId = 'tamu_' + Date.now();
+      }
 
       kompresGambar(input.files[0], function(base64Img) {
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1687,14 +1734,14 @@
       if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
         let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = 'Warga';
-        let verifiedFoto = '';
-        let myId = 'tamu_' + Date.now();
+        let verifiedNama = akunWarga ? akunWarga.nama : 'Warga';
+        let verifiedFoto = akunWarga ? akunWarga.foto : '';
+        let myId = '';
         try {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        } catch(e) {}
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + (akunWarga ? akunWarga.wa : Date.now()));
+        } catch(e) {
+          myId = 'tamu_' + Date.now();
+        }
 
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         if (targetChatPribadiId) {
@@ -1727,14 +1774,14 @@
           let blob = new Blob(audioChunks, {type:'audio/webm'});
           let reader = new FileReader();
           reader.onload = e => {
-            let verifiedNama = 'Warga';
-            let verifiedFoto = '';
-            let myId = 'tamu_' + Date.now();
+            let verifiedNama = akunWarga ? akunWarga.nama : 'Warga';
+            let verifiedFoto = akunWarga ? akunWarga.foto : '';
+            let myId = '';
             try {
-              verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-              verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-              myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-            } catch(ex) {}
+              myId = localStorage.getItem('my_chat_id') || ('tamu_' + (akunWarga ? akunWarga.wa : Date.now()));
+            } catch(ex) {
+              myId = 'tamu_' + Date.now();
+            }
 
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             if (targetChatPribadiId) {
@@ -1883,10 +1930,10 @@
     }
 
     function inisialisasiChatLive() {
-      let myId = 'tamu_' + Date.now();
+      let myId = '';
       try {
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + (akunWarga ? akunWarga.wa : Date.now()));
+        let verifiedNama = akunWarga ? akunWarga.nama : 'Warga Tamu';
         let lbl = document.getElementById('myWALabel');
         if(lbl) lbl.innerText = verifiedNama;
       } catch(e) {}
@@ -2018,9 +2065,13 @@
     });
 
     function keluarDariPasarRT36(){
-      if(confirm('Yakin mau keluar akun?')){
+      if(confirm('Yakin mau keluar akun (Logout)? Anda akan diminta verifikasi ulang saat masuk kembali.')){
         try {
-          localStorage.clear();
+          localStorage.removeItem('rt36_warga_session');
+          localStorage.removeItem('verified_wa_rt36');
+          localStorage.removeItem('verified_nama_rt36');
+          localStorage.removeItem('status_verif_rt36');
+          localStorage.removeItem('my_chat_id');
         } catch(e) {}
         location.reload();
       }
