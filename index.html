@@ -159,7 +159,7 @@
       <i class="ph ph-shield-check text-lg text-emerald-600"></i>
       <span id="label-admin">Mode Admin RT</span>
     </button>
-    <button onclick="bukaModalGantiProfil(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
+    <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
       <i class="ph ph-user-circle text-lg text-emerald-600"></i>
       <span>Ganti Nama & Foto Profil</span>
     </button>
@@ -171,7 +171,7 @@
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
-    <span>⚠️ Mode Admin RT Aktif (Login Warga Dilewati)</span>
+    <span>⚠️ Mode Admin RT Aktif</span>
     <div class="flex gap-2 items-center">
       <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">Ubah PIN</button>
       <button onclick="keluarAdmin()" class="underline text-[11px]">Keluar</button>
@@ -286,8 +286,7 @@
   <!-- Modal Ganti Profil & Foto Warga -->
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4">
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3">
-      <h3 id="judulModalGantiProfil" class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
-      <input type="hidden" id="editAdminTargetUserId" value="">
+      <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
       <div>
         <label class="block font-medium mb-1">Nama / Blok Rumah</label>
         <input type="text" id="editNamaWarga" class="w-full border p-2 rounded-lg" placeholder="Nama anda">
@@ -513,12 +512,7 @@
 
   <!-- MODAL LOGIN / VERIFIKASI WARGA -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 relative">
-      <!-- Tombol Keluar / Tutup Modal Verifikasi berbentuk Ikon Telepon -->
-      <button onclick="tutupModalVerif()" class="absolute top-4 right-4 bg-red-100 text-red-600 hover:bg-red-200 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm" title="Tutup / Keluar">
-        <i class="ph ph-phone-disconnect text-base font-bold"></i>
-      </button>
-
+    <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
       <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
       <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP WA Anda sendiri untuk verifikasi ke Admin RT.</p>
@@ -545,8 +539,8 @@
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <!-- Avatar Header -->
-          <div id="headerAvatar" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden flex-shrink-0 ring-2 ring-emerald-300/45">RT</div>
+          <!-- Lingkaran Hijau: Klik untuk Ganti Profil -->
+          <div id="headerAvatar" onclick="bukaModalGantiProfil()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden flex-shrink-0 ring-2 ring-emerald-300/45 cursor-pointer hover:opacity-90 transition-all" title="Klik untuk ganti foto & nama profil">RT</div>
           <div>
             <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
             <div class="flex items-center gap-1.5 mt-0.5">
@@ -562,25 +556,13 @@
             <i class="ph ph-dots-three-vertical font-bold"></i>
           </button>
           
-          <!-- Dropdown Opsi Titik 3 (Berisi Foto Profil, Nama Login, Suara Notifikasi, Tutup Chat) -->
-          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[1000] text-xs text-gray-700">
-            <!-- Informasi Akun Login di dalam Titik Tiga -->
-            <div class="px-4 py-2.5 border-b flex items-center gap-2.5 bg-emerald-50">
-              <div id="dropdownAvatar" class="w-8 h-8 rounded-full overflow-hidden bg-emerald-600 flex items-center justify-center font-bold text-xs text-white flex-shrink-0"></div>
-              <div class="overflow-hidden">
-                <p class="text-[10px] text-gray-500 font-medium">Akun Login:</p>
-                <p id="dropdownNamaLogin" class="font-bold text-emerald-800 truncate text-[11px]">Warga Tamu</p>
-              </div>
-            </div>
-            <button onclick="bukaModalGantiProfil(); tutupMenuHeaderChat();" class="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2.5 font-medium border-b">
-              <span class="text-base">👤</span>
-              <span>Ganti Foto & Nama Profil</span>
-            </button>
-            <button onclick="toggleNotifikasi(); tutupMenuHeaderChat();" class="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2.5 font-medium border-b">
+          <!-- Dropdown Opsi Titik 3 -->
+          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
+            <button onclick="toggleNotifikasi(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2.5 font-medium border-b">
               <span class="text-base">🔔</span>
-              <span>Pilihan Suara Notifikasi</span>
+              <span>Suara Notifikasi</span>
             </button>
-            <button onclick="toggleBoxChat(); tutupMenuHeaderChat();" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
+            <button onclick="toggleBoxChat(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
               <span class="text-base">❌</span>
               <span>Tutup Chat</span>
             </button>
@@ -588,16 +570,24 @@
         </div>
       </div>
 
-      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP -->
+      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP & PROFIL AKUN LOGIN -->
       <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
-        <div id="daftarWargaOnlineBar" class="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 no-scrollbar">
+        <!-- Lingkaran Merah: Daftar Warga Online untuk Chat Pribadi -->
+        <div id="daftarWargaOnlineBar" class="flex items-center gap-1.5 overflow-x-auto max-w-[220px] pb-1 no-scrollbar">
           <span class="bg-emerald-700/70 text-emerald-200 px-2 py-1 rounded-md font-medium border border-emerald-500/30 whitespace-nowrap">
             👥 Grup RT
           </span>
         </div>
+
+        <!-- Lingkaran Biru: Profil Akun Login (Klik untuk Ganti Foto/Nama) -->
+        <div onclick="bukaModalGantiProfil()" class="flex items-center gap-1 truncate max-w-[140px] cursor-pointer bg-emerald-800/70 px-2 py-1 rounded-lg border border-emerald-500/30 hover:bg-emerald-700 transition-all flex-shrink-0" title="Klik untuk ganti foto & nama profil">
+          <div id="miniAvatarBar" class="w-4 h-4 rounded-full overflow-hidden bg-emerald-600 flex items-center justify-center font-bold text-[9px] text-white flex-shrink-0"></div>
+          <span class="text-white/70">Login:</span>
+          <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
+        </div>
       </div>
 
-      <!-- TEKS OTOMATIS 24 JAM (DIMUNCULKAN NANTI KETIKA ADA CHAT) -->
+      <!-- TEKS OTOMATIS 24 JAM -->
       <div id="teksNotif24Jam" class="hidden mt-1.5 bg-black/20 rounded-md py-0.5 px-2 text-[9.5px] text-amber-200 italic flex items-center gap-1 justify-center">
         <span>🕒</span> Pesan otomatis terhapus setelah 24 jam
       </div>
@@ -632,8 +622,7 @@
           
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
             <div id="areaKetikNormal" class="w-full flex items-center">
-              <!-- Ketika diklik dan belum login, memunculkan pemberitahuan sebelum dialihkan ke modal login (Dilewati jika Mode Admin Aktif) -->
-              <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" onfocus="handleFokusKetik(event)" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
+              <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
             </div>
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
           </div>
@@ -727,7 +716,6 @@
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
     const pendingWargaRef = database.ref('warga_pending_approval');
-    const profilWargaDbRef = database.ref('profil_warga_login');
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
@@ -1133,11 +1121,6 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
-        muatDaftarWargaOnline(); // Refresh daftar warga online agar tombol edit & hapus profil muncul untuk admin
-
-        // Sembunyikan atau tutup modal login warga secara otomatis jika sedang terbuka saat admin aktif
-        let modalVerif = document.getElementById('modalVerifWA');
-        if (modalVerif) modalVerif.classList.add('hidden');
 
         let urlParams = new URLSearchParams(window.location.search);
         let verifyToken = urlParams.get('verify');
@@ -1164,7 +1147,6 @@
       document.getElementById('banner-admin').classList.add('hidden');
       document.getElementById('label-admin').innerText = 'Admin';
       terapkanFilterDanPencarian();
-      muatDaftarWargaOnline();
     }
     function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin() { document.getElementById('modal-ganti-pin').classList.add('hidden'); }
@@ -1275,15 +1257,13 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga Tamu';
+      let verifiedNama = 'Warga Tamu';
       let verifiedFoto = '';
-      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+      let myId = 'tamu_' + Date.now();
       try {
-        if (!isAdmin) {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        }
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
       
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1344,28 +1324,7 @@
       }
     });
 
-    // --- CEK VERIFIKASI CHAT DENGAN PEMBERITAHUAN & BYPASS JIKA MODE ADMIN AKTIF ---
-    function handleFokusKetik(event) {
-      if (isAdmin) return; // JIKA MODE ADMIN AKTIF, BYPASS / LEWATI HALAMAN LOGIN
-
-      let verifiedPhone = null;
-      let verifiedNama = null;
-      try {
-        verifiedPhone = localStorage.getItem('verified_wa_rt36');
-        verifiedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
-      if (!verifiedPhone || !verifiedNama) {
-        event.target.blur(); // Batalkan fokus agar keyboard HP tidak muncul dulu
-        alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan full akses ke obrolan warga RT.36.");
-        let modal = document.getElementById('modalVerifWA');
-        if (modal) modal.classList.remove('hidden');
-      }
-    }
-
     function cekVerifikasiChat() {
-      if (isAdmin) return true; // JIKA MODE ADMIN AKTIF, OTOMATIS IZINKAN TANPA LOGIN
-
       let verifiedPhone = null;
       let verifiedNama = null;
       try {
@@ -1376,7 +1335,6 @@
       let modal = document.getElementById('modalVerifWA');
 
       if (!verifiedPhone || !verifiedNama) {
-        alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan full akses ke obrolan warga RT.36.");
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
@@ -1403,7 +1361,6 @@
       if (nomorWarga.startsWith('0')) nomorWarga = '62' + nomorWarga.slice(1);
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-      let myUniqueId = 'warga_' + nomorWarga.slice(-4);
 
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
@@ -1412,19 +1369,11 @@
         timestamp: Date.now()
       });
 
-      // Simpan juga database profil aktif agar Admin bisa memantau, mengedit, dan menghapus profil jika diperlukan
-      profilWargaDbRef.child(myUniqueId).set({
-        userId: myUniqueId,
-        nama: nama,
-        wa: nomorWarga,
-        lastLogin: Date.now()
-      });
-
       try {
         localStorage.setItem('verified_wa_rt36', nomorWarga);
         localStorage.setItem('verified_nama_rt36', nama);
         localStorage.setItem('status_verif_rt36', 'pending');
-        localStorage.setItem('my_chat_id', myUniqueId);
+        localStorage.setItem('my_chat_id', 'warga_' + nomorWarga.slice(-4));
       } catch(e) {}
 
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
@@ -1449,10 +1398,6 @@
       pantauPersetujuanWarga(tokenVerif);
     }
 
-    function tutupModalVerif() {
-      document.getElementById('modalVerifWA').classList.add('hidden');
-    }
-
     function pantauPersetujuanWarga(token) {
       if (!token) return;
       pendingWargaRef.child(token).on('value', snapshot => {
@@ -1470,19 +1415,15 @@
     }
 
     function perbaruiInfoProfilUI() {
-      let nama = isAdmin ? 'Admin RT.36' : 'Warga Tamu';
+      let nama = 'Warga Tamu';
       let foto = '';
       try {
-        if (!isAdmin) {
-          nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-          foto = localStorage.getItem('verified_foto_rt36') || '';
-        } else {
-          nama = 'Admin RT.36';
-        }
+        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        foto = localStorage.getItem('verified_foto_rt36') || '';
       } catch(e) {}
       
-      let dropdownNama = document.getElementById('dropdownNamaLogin');
-      if(dropdownNama) dropdownNama.innerText = nama;
+      let lbl = document.getElementById('myWALabel');
+      if(lbl) lbl.innerText = nama;
       
       let headerAvatar = document.getElementById('headerAvatar');
       if(headerAvatar) {
@@ -1493,58 +1434,30 @@
         }
       }
 
-      let dropdownAvatar = document.getElementById('dropdownAvatar');
-      if(dropdownAvatar) {
+      let miniBar = document.getElementById('miniAvatarBar');
+      if(miniBar) {
         if(foto) {
-          dropdownAvatar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
+          miniBar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
         } else {
-          dropdownAvatar.innerHTML = `<span>${nama.charAt(0).toUpperCase()}</span>`;
+          miniBar.innerHTML = `<span>${nama.charAt(0).toUpperCase()}</span>`;
         }
       }
     }
 
-    // --- PENGUBAHAN PROFIL (PRIBADI & OLEH ADMIN) ---
-    function bukaModalGantiProfil(adminTargetUserId, currentNama) {
+    // --- PENGUBAHAN PROFIL DIKUNCI HANYA UNTUK ADMIN ---
+    function bukaModalGantiProfil() {
+      if (!isAdmin) {
+        alert("Maaf bosku, pengubahan nama atau foto profil/obrolan warga RT.36 hanya dapat diakses melalui Mode Admin RT!");
+        let menu = document.getElementById('dropdown-pengaturan');
+        if(menu) menu.classList.add('hidden');
+        return;
+      }
+
+      let menu = document.getElementById('dropdown-pengaturan');
+      if(menu) menu.classList.add('hidden');
+      
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
-      let inputTarget = document.getElementById('editAdminTargetUserId');
-      let judulModal = document.getElementById('judulModalGantiProfil');
-
-      if (adminTargetUserId && isAdmin) {
-        // Mode Admin Mengedit Profil Warga Lain
-        if(inputTarget) inputTarget.value = adminTargetUserId;
-        if(inputNama) inputNama.value = currentNama || '';
-        if(judulModal) judulModal.innerText = `Edit Profil Warga: ${currentNama}`;
-        if(modal) modal.classList.remove('hidden');
-        return;
-      }
-
-      // Jika Mode Admin Aktif dan bukan edit target lain, izinkan ubah nama admin langsung tanpa verifikasi warga
-      if (isAdmin) {
-        if(inputTarget) inputTarget.value = '';
-        if(judulModal) judulModal.innerText = 'Ganti Nama Admin';
-        if(inputNama) inputNama.value = 'Admin RT.36';
-        if(modal) modal.classList.remove('hidden');
-        return;
-      }
-
-      // Mode Warga Mengedit Profil Sendiri
-      let verifiedPhone = null;
-      let verifiedNama = null;
-      try {
-        verifiedPhone = localStorage.getItem('verified_wa_rt36');
-        verifiedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
-      if (!verifiedPhone || !verifiedNama) {
-        alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan akses mengubah profil.");
-        let modalVerif = document.getElementById('modalVerifWA');
-        if (modalVerif) modalVerif.classList.remove('hidden');
-        return;
-      }
-
-      if(inputTarget) inputTarget.value = '';
-      if(judulModal) judulModal.innerText = 'Ganti Profil Warga';
       try {
         if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
       } catch(e) {}
@@ -1559,51 +1472,13 @@
     function simpanProfilBaru() {
       let namaBaru = document.getElementById('editNamaWarga').value.trim();
       let fileInput = document.getElementById('editFotoWarga');
-      let adminTargetUserId = document.getElementById('editAdminTargetUserId').value;
-      
       if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
-
-      if (adminTargetUserId && isAdmin) {
-        // Admin menyimpan perubahan profil warga lain di Firebase
-        let prosesSimpanAdmin = (fotoBase64) => {
-          let updateData = { nama: namaBaru };
-          if(fotoBase64) updateData.foto = fotoBase64;
-          
-          profilWargaDbRef.child(adminTargetUserId).update(updateData).then(() => {
-            tutupModalGantiProfil();
-            alert(`Profil warga berhasil diperbarui oleh Admin!`);
-            muatDaftarWargaOnline();
-          }).catch(err => {
-            alert("Gagal memperbarui profil: " + err.message);
-          });
-        };
-
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          kompresGambar(fileInput.files[0], function(base64Foto) {
-            prosesSimpanAdmin(base64Foto);
-          });
-        } else {
-          prosesSimpanAdmin(null);
-        }
-        return;
-      }
-
-      if (isAdmin) {
-        tutupModalGantiProfil();
-        alert('Nama Admin diperbarui!');
-        return;
-      }
       
-      // Warga biasa menyimpan profilnya sendiri di localStorage
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
           try {
             localStorage.setItem('verified_nama_rt36', namaBaru);
             localStorage.setItem('verified_foto_rt36', base64Foto);
-            let myId = localStorage.getItem('my_chat_id');
-            if(myId) {
-              profilWargaDbRef.child(myId).update({ nama: namaBaru, foto: base64Foto });
-            }
           } catch(e) {}
           tutupModalGantiProfil();
           perbaruiInfoProfilUI();
@@ -1613,32 +1488,11 @@
       } else {
         try {
           localStorage.setItem('verified_nama_rt36', namaBaru);
-          let myId = localStorage.getItem('my_chat_id');
-          if(myId) {
-            profilWargaDbRef.child(myId).update({ nama: namaBaru });
-          }
         } catch(e) {}
         tutupModalGantiProfil();
         perbaruiInfoProfilUI();
         alert('Nama profil berhasil diperbarui!');
         location.reload();
-      }
-    }
-
-    // --- FUNGSI ADMIN: HAPUS PROFIL WARGA YANG SUDAH LOGIN ---
-    function adminHapusProfilWarga(userIdWarga, namaWarga) {
-      if (!isAdmin) {
-        alert("Maaf bosku, fitur hapus profil warga hanya dapat diakses melalui Mode Admin RT!");
-        return;
-      }
-
-      if (confirm(`Yakin ingin menghapus / mereset profil login warga "${namaWarga}"? Akun dan data chat terkait warga ini akan dibersihkan.`)) {
-        profilWargaDbRef.child(userIdWarga).remove().then(() => {
-          alert(`Profil warga "${namaWarga}" berhasil dihapus oleh Admin!`);
-          muatDaftarWargaOnline();
-        }).catch(err => {
-          alert("Gagal menghapus profil warga: " + err.message);
-        });
       }
     }
 
@@ -1743,16 +1597,14 @@
       let pesan = teksInput.value.trim();
       if (!pesan) return;
       
-      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
+      let verifiedNama = 'Warga';
       let verifiedFoto = '';
-      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+      let myId = 'tamu_' + Date.now();
       
       try {
-        if (!isAdmin) {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        }
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
 
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1806,15 +1658,13 @@
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
       if(!input.files[0]) return;
-      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
+      let verifiedNama = 'Warga';
       let verifiedFoto = '';
-      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+      let myId = 'tamu_' + Date.now();
       try {
-        if (!isAdmin) {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        }
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
 
       kompresGambar(input.files[0], function(base64Img) {
@@ -1837,15 +1687,13 @@
       if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
         let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
+        let verifiedNama = 'Warga';
         let verifiedFoto = '';
-        let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+        let myId = 'tamu_' + Date.now();
         try {
-          if (!isAdmin) {
-            verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-            verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-            myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-          }
+          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
         } catch(e) {}
 
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1879,15 +1727,13 @@
           let blob = new Blob(audioChunks, {type:'audio/webm'});
           let reader = new FileReader();
           reader.onload = e => {
-            let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
+            let verifiedNama = 'Warga';
             let verifiedFoto = '';
-            let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+            let myId = 'tamu_' + Date.now();
             try {
-              if (!isAdmin) {
-                verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-                verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-                myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-              }
+              verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+              verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+              myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
             } catch(ex) {}
 
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1930,7 +1776,7 @@
       }catch(e){}
     }
 
-    // --- FITUR HAPUS CHAT / EDIT PESAN OLEH ADMIN ---
+    // --- FITUR HAPUS CHAT DIKUNCI HANYA UNTUK ADMIN ---
     function hapusPesanWarga(keyPesan, idPengirim) {
       if (!isAdmin) {
         alert('Maaf bosku, fitur hapus chat/pesan hanya dapat diakses melalui Mode Admin RT!');
@@ -1968,9 +1814,9 @@
 
     // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
-      let myId = isAdmin ? 'admin_rt_36' : null;
+      let myId = null;
       try {
-        if (!isAdmin) myId = localStorage.getItem('my_chat_id');
+        myId = localStorage.getItem('my_chat_id');
       } catch(e) {}
 
       if (myId === userIdLawan) {
@@ -1998,52 +1844,51 @@
       inisialisasiChatLive();
     }
 
-    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (DENGAN TOMBOL EDIT & HAPUS PROFIL JIKA ADMIN AKTIF) ---
+    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (LINGKARAN MERAH) ---
     function muatDaftarWargaOnline() {
       let barOnline = document.getElementById('daftarWargaOnlineBar');
       if(!barOnline) return;
 
       let htmlGrup = `<button onclick="tutupChatPribadi()" class="bg-emerald-700/80 text-white px-2 py-1 rounded-md font-bold border border-emerald-500/30 whitespace-nowrap flex items-center gap-1">👥 Grup RT</button>`;
       
-      profilWargaDbRef.on('value', snapshot => {
-        let dataProfil = snapshot.val();
-        let htmlWarga = htmlGrup;
-        let myId = isAdmin ? 'admin_rt_36' : '';
-        try { if(!isAdmin) myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
+      database.ref('pesan_warga').limitToLast(50).on('value', snapshot => {
+        let data = snapshot.val();
+        let wargaUnik = {};
+        let myId = '';
+        try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
 
-        if(dataProfil) {
-          Object.keys(dataProfil).forEach(uid => {
-            let w = dataProfil[uid];
-            if(uid !== myId) {
-              let avatarMini = w.foto ? `<img src="${w.foto}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama ? w.nama.charAt(0) : 'W'}</span>`;
-              
-              let tombolAksiAdmin = isAdmin ? ` <span onclick="event.stopPropagation(); bukaModalGantiProfil('${uid}', '${w.nama}')" class="text-blue-300 hover:text-blue-100 font-bold ml-1 text-xs" title="Edit Profil Warga">✏️</span> <span onclick="event.stopPropagation(); adminHapusProfilWarga('${uid}', '${w.nama}')" class="text-red-300 hover:text-red-100 font-bold ml-0.5 text-xs" title="Hapus Profil Warga">❌</span>` : '';
-
-              htmlWarga += `
-                <div class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all">
-                  <span onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="cursor-pointer flex items-center gap-1" title="Klik untuk chat pribadi">${avatarMini} ${w.nama}</span>
-                  ${tombolAksiAdmin}
-                </div>
-              `;
+        if(data) {
+          Object.values(data).forEach(msg => {
+            if(msg.userId && msg.userId !== myId) {
+              wargaUnik[msg.userId] = {
+                nama: msg.nama || 'Warga',
+                foto: msg.fotoProfil || ''
+              };
             }
           });
         }
+
+        let htmlWarga = htmlGrup;
+        Object.keys(wargaUnik).forEach(uid => {
+          let w = wargaUnik[uid];
+          let avatarMini = w.foto ? `<img src="${w.foto}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama.charAt(0)}</span>`;
+          htmlWarga += `
+            <button onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all" title="Klik untuk chat pribadi dengan ${w.nama}">
+              ${avatarMini} ${w.nama}
+            </button>
+          `;
+        });
         barOnline.innerHTML = htmlWarga;
       });
     }
 
     function inisialisasiChatLive() {
-      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
+      let myId = 'tamu_' + Date.now();
       try {
-        if (!isAdmin) {
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-          let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-          let lbl = document.getElementById('dropdownNamaLogin');
-          if(lbl) lbl.innerText = verifiedNama;
-        } else {
-          let lbl = document.getElementById('dropdownNamaLogin');
-          if(lbl) lbl.innerText = 'Admin RT.36';
-        }
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        let lbl = document.getElementById('myWALabel');
+        if(lbl) lbl.innerText = verifiedNama;
       } catch(e) {}
 
       let audio = document.getElementById('notifSound');
@@ -2064,7 +1909,7 @@
 
       box.innerHTML = '';
 
-      ref.limitToLast80().on('value', snap => {
+      ref.limitToLast(80).on('value', snap => {
         let dataMap = snap.val();
         let teksNotif = document.getElementById('teksNotif24Jam');
         
@@ -2077,7 +1922,7 @@
         }
       });
 
-      ref.limitToLast80().on('child_added', snap => {
+      ref.limitToLast(80).on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
 
@@ -2158,6 +2003,18 @@
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
       muatDaftarWargaOnline();
+
+      let dropHeader = document.getElementById('dropdownHeaderChat');
+      if(dropHeader) {
+        dropHeader.innerHTML = `
+          <button onclick="toggleNotifikasi()" class="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b">
+            🔔 Pilihan Suara Notifikasi
+          </button>
+          <button onclick="toggleBoxChat()" class="w-full text-left px-4 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2">
+            ❌ Tutup Chat
+          </button>
+        `;
+      }
     });
 
     function keluarDariPasarRT36(){
