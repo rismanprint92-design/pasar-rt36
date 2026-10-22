@@ -561,9 +561,9 @@
               <span class="text-base">🔔</span>
               <span>Suara Notifikasi</span>
             </button>
-            <button onclick="keluarDariPasarRT36(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
-              <span class="text-base">🚪</span>
-              <span>Keluar Akun (Logout)</span>
+            <button onclick="toggleBoxChat(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
+              <span class="text-base">❌</span>
+              <span>Tutup Chat</span>
             </button>
           </div>
         </div>
@@ -582,7 +582,7 @@
         </div>
       </div>
 
-      <!-- TEKS OTOMATIS 24 JAM (Baru muncul saat ada pesan di room chat) -->
+      <!-- TEKS OTOMATIS 24 JAM -->
       <div id="teksNotif24Jam" class="hidden mt-1.5 bg-black/20 rounded-md py-0.5 px-2 text-[9.5px] text-amber-200 italic flex items-center gap-1 justify-center">
         <span>🕒</span> Pesan otomatis terhapus setelah 24 jam
       </div>
@@ -690,7 +690,7 @@
     .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
 
-<!-- LOGIKA JAVASCRIPT APLIKASI -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
@@ -1481,26 +1481,26 @@
 
       if (p.classList.contains('hidden')) {
         p.classList.remove('hidden');
-        b.classList.add('hidden');
-        b.classList.remove('icon-goyang');
-        b.classList.remove('bg-red-600');
-        b.classList.add('bg-emerald-600');
+        if(b) {
+          b.classList.add('hidden');
+          b.classList.remove('icon-goyang');
+          b.classList.remove('bg-red-600');
+          b.classList.add('bg-emerald-600');
+        }
         
         let box = document.getElementById('boxChatWarga');
         if(box) { box.scrollTop = box.scrollHeight; }
 
-        // Tambah state history agar tombol back HP dapat menutup panel chat
         try {
           history.pushState({ chatOpen: true }, '');
         } catch(e) {}
       } else {
         p.classList.add('hidden');
-        b.classList.remove('hidden');
+        if(b) b.classList.remove('hidden');
         tutupMenuHeaderChat();
       }
     }
 
-    // Menangani penutupan panel chat saat tombol Kembali (Back) pada HP ditekan
     window.addEventListener('popstate', function(e) {
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
@@ -1965,5 +1965,5 @@
       }
     }
   </script>
-  </body>
+</body>
 </html>
