@@ -1022,7 +1022,7 @@
         harga: parseInt(document.getElementById('edit-harga').value),
         kategori: document.getElementById('edit-kategori').value,
         penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
-        lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
+        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
         wa: document.getElementById('edit-whatsapp').value,
         catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
         foto: produkLama.foto,
@@ -1892,6 +1892,28 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
+    // --- FUNGSI KHUSUS KONFIRMASI PIN WARGA BARU VIA LINK ---
+    function prosesKonfirmasiDirect(verifyToken, verifyNama, verifyWa) {
+      let inputPin = prompt(`APPROVAL WARGA BARU\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT untuk memverifikasi:`);
+      if (inputPin !== null) {
+        if (inputPin === pinAdminAktif) {
+          pendingWargaRef.child(verifyToken).set({
+            nama: verifyNama,
+            wa: verifyWa,
+            status: 'approved',
+            approvedAt: Date.now()
+          }).then(() => {
+            alert(`BERHASIL! Akun warga atas nama "${verifyNama}" (${verifyWa}) telah disetujui & diaktifkan.`);
+            let btn = document.getElementById('btn-notif-approval-link');
+            if (btn) btn.remove();
+            window.history.replaceState({}, document.title, window.location.pathname);
+          });
+        } else {
+          alert("PIN Admin RT Salah! Ditolak.");
+        }
+      }
+    }
+
     // --- PENANGANAN OTOMATIS SAAT LINK PERSETUJUAN DIKLIK ADMIN ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
@@ -1902,28 +1924,19 @@
       let verifyNama = urlParams.get('nama');
       let verifyWa = urlParams.get('wa');
 
-      // Jika URL membawa token verifikasi dari link WhatsApp
+      // Jika URL membawa token verifikasi dari link WhatsApp, tampilkan Banner Tombol Melayang
       if (verifyToken && verifyNama) {
-        setTimeout(function() {
-          // Memicu kotak dialog PIN Admin secara langsung tanpa masuk mode admin penuh
-          let inputPin = prompt(`Konfirmasi Persetujuan Warga:\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT untuk menyetujui:`);
-          
-          if (inputPin !== null) {
-            if (inputPin === pinAdminAktif) {
-              pendingWargaRef.child(verifyToken).set({
-                nama: verifyNama,
-                wa: verifyWa,
-                status: 'approved',
-                approvedAt: Date.now()
-              }).then(() => {
-                alert(`BERHASIL! Akun warga atas nama "${verifyNama}" (${verifyWa}) telah disetujui & diaktifkan.`);
-                window.history.replaceState({}, document.title, window.location.pathname);
-              });
-            } else {
-              alert("PIN Admin RT Salah! Ditolak.");
-            }
-          }
-        }, 300);
+        let btnApproval = document.createElement('div');
+        btnApproval.id = 'btn-notif-approval-link';
+        btnApproval.className = 'fixed top-4 left-4 right-4 z-[9999] bg-emerald-600 text-white p-4 rounded-xl shadow-2xl border-2 border-white flex flex-col items-center justify-center gap-2 text-center animate-bounce';
+        btnApproval.innerHTML = `
+          <div class="font-bold text-sm">🔔 PERMINTAAN APPROVAL WARGA</div>
+          <div class="text-xs">Warga: <b>${verifyNama}</b> (${verifyWa})</div>
+          <button onclick="prosesKonfirmasiDirect('${verifyToken}', '${verifyNama}', '${verifyWa}')" class="mt-1 bg-white text-emerald-800 font-bold text-xs px-4 py-2 rounded-lg shadow active:scale-95">
+            🔑 Klik Disini & Masukkan PIN Admin
+          </button>
+        `;
+        document.body.appendChild(btnApproval);
       }
     });
 
