@@ -568,7 +568,7 @@
               <div id="dropdownAvatar" class="w-8 h-8 rounded-full overflow-hidden bg-emerald-600 flex items-center justify-center font-bold text-xs text-white flex-shrink-0"></div>
               <div class="overflow-hidden">
                 <p class="text-[10px] text-gray-500 font-medium">Akun Login:</p>
-                <p id="dropdownNamaLogin" class="font-bold text-emerald-800 truncate text-[11px]">Tamu</p>
+                <p id="dropdownNamaLogin" class="font-bold text-emerald-800 truncate text-[11px]">Warga Tamu</p>
               </div>
             </div>
             <button onclick="bukaModalGantiProfil(); tutupMenuHeaderChat();" class="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2.5 font-medium border-b">
@@ -726,6 +726,7 @@
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
     const pendingWargaRef = database.ref('warga_pending_approval');
+    const profilWargaDbRef = database.ref('profil_warga_login');
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
@@ -1131,6 +1132,7 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
+        muatDaftarWargaOnline(); // Refresh daftar warga online agar tombol hapus profil muncul untuk admin
 
         let urlParams = new URLSearchParams(window.location.search);
         let verifyToken = urlParams.get('verify');
@@ -1157,6 +1159,7 @@
       document.getElementById('banner-admin').classList.add('hidden');
       document.getElementById('label-admin').innerText = 'Admin';
       terapkanFilterDanPencarian();
+      muatDaftarWargaOnline();
     }
     function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin() { document.getElementById('modal-ganti-pin').classList.add('hidden'); }
@@ -1389,6 +1392,7 @@
       if (nomorWarga.startsWith('0')) nomorWarga = '62' + nomorWarga.slice(1);
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      let myUniqueId = 'warga_' + nomorWarga.slice(-4);
 
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
@@ -1397,11 +1401,19 @@
         timestamp: Date.now()
       });
 
+      // Simpan juga database profil aktif agar Admin bisa memantau dan menghapus profil jika diperlukan
+      profilWargaDbRef.child(myUniqueId).set({
+        userId: myUniqueId,
+        nama: nama,
+        wa: nomorWarga,
+        lastLogin: Date.now()
+      });
+
       try {
         localStorage.setItem('verified_wa_rt36', nomorWarga);
         localStorage.setItem('verified_nama_rt36', nama);
         localStorage.setItem('status_verif_rt36', 'pending');
-        localStorage.setItem('my_chat_id', 'warga_' + nomorWarga.slice(-4));
+        localStorage.setItem('my_chat_id', myUniqueId);
       } catch(e) {}
 
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
@@ -1529,6 +1541,23 @@
         perbaruiInfoProfilUI();
         alert('Nama profil berhasil diperbarui!');
         location.reload();
+      }
+    }
+
+    // --- FUNGSI ADMIN: HAPUS PROFIL WARGA YANG SUDAH LOGIN ---
+    function adminHapusProfilWarga(userIdWarga, namaWarga) {
+      if (!isAdmin) {
+        alert("Maaf bosku, fitur hapus profil warga hanya dapat diakses melalui Mode Admin RT!");
+        return;
+      }
+
+      if (confirm(`Yakin ingin menghapus / mereset profil login warga "${namaWarga}"? Akun dan data chat terkait warga ini akan dibersihkan.`)) {
+        profilWargaDbRef.child(userIdWarga).remove().then(() => {
+          alert(`Profil warga "${namaWarga}" berhasil dihapus oleh Admin!`);
+          muatDaftarWargaOnline();
+        }).catch(err => {
+          alert("Gagal menghapus profil warga: " + err.message);
+        });
       }
     }
 
@@ -1880,40 +1909,36 @@
       inisialisasiChatLive();
     }
 
-    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (LINGKARAN MERAH) ---
+    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (DENGAN TOMBOL HAPUS PROFIL JIKA ADMIN AKTIF) ---
     function muatDaftarWargaOnline() {
       let barOnline = document.getElementById('daftarWargaOnlineBar');
       if(!barOnline) return;
 
       let htmlGrup = `<button onclick="tutupChatPribadi()" class="bg-emerald-700/80 text-white px-2 py-1 rounded-md font-bold border border-emerald-500/30 whitespace-nowrap flex items-center gap-1">👥 Grup RT</button>`;
       
-      database.ref('pesan_warga').limitToLast(50).on('value', snapshot => {
-        let data = snapshot.val();
-        let wargaUnik = {};
+      profilWargaDbRef.on('value', snapshot => {
+        let dataProfil = snapshot.val();
+        let htmlWarga = htmlGrup;
         let myId = '';
         try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
 
-        if(data) {
-          Object.values(data).forEach(msg => {
-            if(msg.userId && msg.userId !== myId) {
-              wargaUnik[msg.userId] = {
-                nama: msg.nama || 'Warga',
-                foto: msg.fotoProfil || ''
-              };
+        if(dataProfil) {
+          Object.keys(dataProfil).forEach(uid => {
+            let w = dataProfil[uid];
+            if(uid !== myId) {
+              let avatarMini = `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama ? w.nama.charAt(0) : 'W'}</span>`;
+              
+              let tombolHapusProfilAdmin = isAdmin ? ` <span onclick="event.stopPropagation(); adminHapusProfilWarga('${uid}', '${w.nama}')" class="text-red-300 hover:text-red-100 font-bold ml-1 text-xs" title="Hapus Profil Warga">❌</span>` : '';
+
+              htmlWarga += `
+                <div class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all">
+                  <span onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="cursor-pointer flex items-center gap-1" title="Klik untuk chat pribadi">${avatarMini} ${w.nama}</span>
+                  ${tombolHapusProfilAdmin}
+                </div>
+              `;
             }
           });
         }
-
-        let htmlWarga = htmlGrup;
-        Object.keys(wargaUnik).forEach(uid => {
-          let w = wargaUnik[uid];
-          let avatarMini = w.foto ? `<img src="${w.foto}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama.charAt(0)}</span>`;
-          htmlWarga += `
-            <button onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all" title="Klik untuk chat pribadi dengan ${w.nama}">
-              ${avatarMini} ${w.nama}
-            </button>
-          `;
-        });
         barOnline.innerHTML = htmlWarga;
       });
     }
