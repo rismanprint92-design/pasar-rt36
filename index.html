@@ -171,7 +171,7 @@
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
-    <span>⚠️ Mode Admin RT Aktif</span>
+    <span>⚠️ Mode Admin RT Aktif (Login Warga Dilewati)</span>
     <div class="flex gap-2 items-center">
       <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">Ubah PIN</button>
       <button onclick="keluarAdmin()" class="underline text-[11px]">Keluar</button>
@@ -286,7 +286,8 @@
   <!-- Modal Ganti Profil & Foto Warga -->
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4">
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3">
-      <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
+      <h3 id="judulModalGantiProfil" class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
+      <input type="hidden" id="editAdminTargetUserId" value="">
       <div>
         <label class="block font-medium mb-1">Nama / Blok Rumah</label>
         <input type="text" id="editNamaWarga" class="w-full border p-2 rounded-lg" placeholder="Nama anda">
@@ -631,7 +632,7 @@
           
           <div class="flex-1 relative min-h-[32px] flex items-center mx-1">
             <div id="areaKetikNormal" class="w-full flex items-center">
-              <!-- Ketika diklik dan belum login, memunculkan pemberitahuan sebelum dialihkan ke modal login -->
+              <!-- Ketika diklik dan belum login, memunculkan pemberitahuan sebelum dialihkan ke modal login (Dilewati jika Mode Admin Aktif) -->
               <textarea id="teksPesanWarga" placeholder="Ketik pesan..." rows="1" class="w-full bg-transparent border-0 text-[15px] px-2 py-1.5 focus:outline-none resize-none max-h-24 overflow-y-auto" onfocus="handleFokusKetik(event)" oninput="cekKetik(); this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); kirimPesanWarga();}"></textarea>
             </div>
             <div id="areaRekamDalamKotak" class="hidden w-full flex items-center gap-2 px-2"><span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span><span class="text-[14px] text-red-600 font-medium flex-1">Merekam... <span id="timerRekamDalam">00:00</span></span></div>
@@ -1132,7 +1133,11 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
-        muatDaftarWargaOnline(); // Refresh daftar warga online agar tombol hapus profil muncul untuk admin
+        muatDaftarWargaOnline(); // Refresh daftar warga online agar tombol edit & hapus profil muncul untuk admin
+
+        // Sembunyikan atau tutup modal login warga secara otomatis jika sedang terbuka saat admin aktif
+        let modalVerif = document.getElementById('modalVerifWA');
+        if (modalVerif) modalVerif.classList.add('hidden');
 
         let urlParams = new URLSearchParams(window.location.search);
         let verifyToken = urlParams.get('verify');
@@ -1270,13 +1275,15 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = 'Warga Tamu';
+      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga Tamu';
       let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
+      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        if (!isAdmin) {
+          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        }
       } catch(e) {}
       
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1337,8 +1344,10 @@
       }
     });
 
-    // --- CEK VERIFIKASI CHAT DENGAN PEMBERITAHUAN SEBELUM DIALIHKAN ---
+    // --- CEK VERIFIKASI CHAT DENGAN PEMBERITAHUAN & BYPASS JIKA MODE ADMIN AKTIF ---
     function handleFokusKetik(event) {
+      if (isAdmin) return; // JIKA MODE ADMIN AKTIF, BYPASS / LEWATI HALAMAN LOGIN
+
       let verifiedPhone = null;
       let verifiedNama = null;
       try {
@@ -1355,6 +1364,8 @@
     }
 
     function cekVerifikasiChat() {
+      if (isAdmin) return true; // JIKA MODE ADMIN AKTIF, OTOMATIS IZINKAN TANPA LOGIN
+
       let verifiedPhone = null;
       let verifiedNama = null;
       try {
@@ -1401,7 +1412,7 @@
         timestamp: Date.now()
       });
 
-      // Simpan juga database profil aktif agar Admin bisa memantau dan menghapus profil jika diperlukan
+      // Simpan juga database profil aktif agar Admin bisa memantau, mengedit, dan menghapus profil jika diperlukan
       profilWargaDbRef.child(myUniqueId).set({
         userId: myUniqueId,
         nama: nama,
@@ -1459,11 +1470,15 @@
     }
 
     function perbaruiInfoProfilUI() {
-      let nama = 'Warga Tamu';
+      let nama = isAdmin ? 'Admin RT.36' : 'Warga Tamu';
       let foto = '';
       try {
-        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        foto = localStorage.getItem('verified_foto_rt36') || '';
+        if (!isAdmin) {
+          nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+          foto = localStorage.getItem('verified_foto_rt36') || '';
+        } else {
+          nama = 'Admin RT.36';
+        }
       } catch(e) {}
       
       let dropdownNama = document.getElementById('dropdownNamaLogin');
@@ -1488,8 +1503,32 @@
       }
     }
 
-    // --- PENGUBAHAN PROFIL DIBUKA UTUH SETELAH LOGIN/VERIFIKASI ---
-    function bukaModalGantiProfil() {
+    // --- PENGUBAHAN PROFIL (PRIBADI & OLEH ADMIN) ---
+    function bukaModalGantiProfil(adminTargetUserId, currentNama) {
+      let modal = document.getElementById('modal-ganti-profil');
+      let inputNama = document.getElementById('editNamaWarga');
+      let inputTarget = document.getElementById('editAdminTargetUserId');
+      let judulModal = document.getElementById('judulModalGantiProfil');
+
+      if (adminTargetUserId && isAdmin) {
+        // Mode Admin Mengedit Profil Warga Lain
+        if(inputTarget) inputTarget.value = adminTargetUserId;
+        if(inputNama) inputNama.value = currentNama || '';
+        if(judulModal) judulModal.innerText = `Edit Profil Warga: ${currentNama}`;
+        if(modal) modal.classList.remove('hidden');
+        return;
+      }
+
+      // Jika Mode Admin Aktif dan bukan edit target lain, izinkan ubah nama admin langsung tanpa verifikasi warga
+      if (isAdmin) {
+        if(inputTarget) inputTarget.value = '';
+        if(judulModal) judulModal.innerText = 'Ganti Nama Admin';
+        if(inputNama) inputNama.value = 'Admin RT.36';
+        if(modal) modal.classList.remove('hidden');
+        return;
+      }
+
+      // Mode Warga Mengedit Profil Sendiri
       let verifiedPhone = null;
       let verifiedNama = null;
       try {
@@ -1499,13 +1538,13 @@
 
       if (!verifiedPhone || !verifiedNama) {
         alert("Silakan melakukan verifikasi terlebih dahulu untuk mendapatkan akses mengubah profil.");
-        let modal = document.getElementById('modalVerifWA');
-        if (modal) modal.classList.remove('hidden');
+        let modalVerif = document.getElementById('modalVerifWA');
+        if (modalVerif) modalVerif.classList.remove('hidden');
         return;
       }
 
-      let modal = document.getElementById('modal-ganti-profil');
-      let inputNama = document.getElementById('editNamaWarga');
+      if(inputTarget) inputTarget.value = '';
+      if(judulModal) judulModal.innerText = 'Ganti Profil Warga';
       try {
         if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
       } catch(e) {}
@@ -1520,13 +1559,51 @@
     function simpanProfilBaru() {
       let namaBaru = document.getElementById('editNamaWarga').value.trim();
       let fileInput = document.getElementById('editFotoWarga');
-      if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
+      let adminTargetUserId = document.getElementById('editAdminTargetUserId').value;
       
+      if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
+
+      if (adminTargetUserId && isAdmin) {
+        // Admin menyimpan perubahan profil warga lain di Firebase
+        let prosesSimpanAdmin = (fotoBase64) => {
+          let updateData = { nama: namaBaru };
+          if(fotoBase64) updateData.foto = fotoBase64;
+          
+          profilWargaDbRef.child(adminTargetUserId).update(updateData).then(() => {
+            tutupModalGantiProfil();
+            alert(`Profil warga berhasil diperbarui oleh Admin!`);
+            muatDaftarWargaOnline();
+          }).catch(err => {
+            alert("Gagal memperbarui profil: " + err.message);
+          });
+        };
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          kompresGambar(fileInput.files[0], function(base64Foto) {
+            prosesSimpanAdmin(base64Foto);
+          });
+        } else {
+          prosesSimpanAdmin(null);
+        }
+        return;
+      }
+
+      if (isAdmin) {
+        tutupModalGantiProfil();
+        alert('Nama Admin diperbarui!');
+        return;
+      }
+      
+      // Warga biasa menyimpan profilnya sendiri di localStorage
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
           try {
             localStorage.setItem('verified_nama_rt36', namaBaru);
             localStorage.setItem('verified_foto_rt36', base64Foto);
+            let myId = localStorage.getItem('my_chat_id');
+            if(myId) {
+              profilWargaDbRef.child(myId).update({ nama: namaBaru, foto: base64Foto });
+            }
           } catch(e) {}
           tutupModalGantiProfil();
           perbaruiInfoProfilUI();
@@ -1536,6 +1613,10 @@
       } else {
         try {
           localStorage.setItem('verified_nama_rt36', namaBaru);
+          let myId = localStorage.getItem('my_chat_id');
+          if(myId) {
+            profilWargaDbRef.child(myId).update({ nama: namaBaru });
+          }
         } catch(e) {}
         tutupModalGantiProfil();
         perbaruiInfoProfilUI();
@@ -1662,14 +1743,16 @@
       let pesan = teksInput.value.trim();
       if (!pesan) return;
       
-      let verifiedNama = 'Warga';
+      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
       let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
+      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
       
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        if (!isAdmin) {
+          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        }
       } catch(e) {}
 
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1723,13 +1806,15 @@
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
       if(!input.files[0]) return;
-      let verifiedNama = 'Warga';
+      let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
       let verifiedFoto = '';
-      let myId = 'tamu_' + Date.now();
+      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        if (!isAdmin) {
+          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        }
       } catch(e) {}
 
       kompresGambar(input.files[0], function(base64Img) {
@@ -1752,13 +1837,15 @@
       if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
         let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = 'Warga';
+        let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
         let verifiedFoto = '';
-        let myId = 'tamu_' + Date.now();
+        let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
         try {
-          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+          if (!isAdmin) {
+            verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+            verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+            myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+          }
         } catch(e) {}
 
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1792,13 +1879,15 @@
           let blob = new Blob(audioChunks, {type:'audio/webm'});
           let reader = new FileReader();
           reader.onload = e => {
-            let verifiedNama = 'Warga';
+            let verifiedNama = isAdmin ? 'Admin RT.36' : 'Warga';
             let verifiedFoto = '';
-            let myId = 'tamu_' + Date.now();
+            let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
             try {
-              verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-              verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-              myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+              if (!isAdmin) {
+                verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+                verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+                myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+              }
             } catch(ex) {}
 
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1879,9 +1968,9 @@
 
     // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
-      let myId = null;
+      let myId = isAdmin ? 'admin_rt_36' : null;
       try {
-        myId = localStorage.getItem('my_chat_id');
+        if (!isAdmin) myId = localStorage.getItem('my_chat_id');
       } catch(e) {}
 
       if (myId === userIdLawan) {
@@ -1909,7 +1998,7 @@
       inisialisasiChatLive();
     }
 
-    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (DENGAN TOMBOL HAPUS PROFIL JIKA ADMIN AKTIF) ---
+    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (DENGAN TOMBOL EDIT & HAPUS PROFIL JIKA ADMIN AKTIF) ---
     function muatDaftarWargaOnline() {
       let barOnline = document.getElementById('daftarWargaOnlineBar');
       if(!barOnline) return;
@@ -1919,21 +2008,21 @@
       profilWargaDbRef.on('value', snapshot => {
         let dataProfil = snapshot.val();
         let htmlWarga = htmlGrup;
-        let myId = '';
-        try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
+        let myId = isAdmin ? 'admin_rt_36' : '';
+        try { if(!isAdmin) myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
 
         if(dataProfil) {
           Object.keys(dataProfil).forEach(uid => {
             let w = dataProfil[uid];
             if(uid !== myId) {
-              let avatarMini = `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama ? w.nama.charAt(0) : 'W'}</span>`;
+              let avatarMini = w.foto ? `<img src="${w.foto}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama ? w.nama.charAt(0) : 'W'}</span>`;
               
-              let tombolHapusProfilAdmin = isAdmin ? ` <span onclick="event.stopPropagation(); adminHapusProfilWarga('${uid}', '${w.nama}')" class="text-red-300 hover:text-red-100 font-bold ml-1 text-xs" title="Hapus Profil Warga">❌</span>` : '';
+              let tombolAksiAdmin = isAdmin ? ` <span onclick="event.stopPropagation(); bukaModalGantiProfil('${uid}', '${w.nama}')" class="text-blue-300 hover:text-blue-100 font-bold ml-1 text-xs" title="Edit Profil Warga">✏️</span> <span onclick="event.stopPropagation(); adminHapusProfilWarga('${uid}', '${w.nama}')" class="text-red-300 hover:text-red-100 font-bold ml-0.5 text-xs" title="Hapus Profil Warga">❌</span>` : '';
 
               htmlWarga += `
                 <div class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all">
                   <span onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="cursor-pointer flex items-center gap-1" title="Klik untuk chat pribadi">${avatarMini} ${w.nama}</span>
-                  ${tombolHapusProfilAdmin}
+                  ${tombolAksiAdmin}
                 </div>
               `;
             }
@@ -1944,12 +2033,17 @@
     }
 
     function inisialisasiChatLive() {
-      let myId = 'tamu_' + Date.now();
+      let myId = isAdmin ? 'admin_rt_36' : ('tamu_' + Date.now());
       try {
-        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-        let lbl = document.getElementById('dropdownNamaLogin');
-        if(lbl) lbl.innerText = verifiedNama;
+        if (!isAdmin) {
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+          let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+          let lbl = document.getElementById('dropdownNamaLogin');
+          if(lbl) lbl.innerText = verifiedNama;
+        } else {
+          let lbl = document.getElementById('dropdownNamaLogin');
+          if(lbl) lbl.innerText = 'Admin RT.36';
+        }
       } catch(e) {}
 
       let audio = document.getElementById('notifSound');
@@ -1970,7 +2064,7 @@
 
       box.innerHTML = '';
 
-      ref.limitToLast(80).on('value', snap => {
+      ref.limitToLast80().on('value', snap => {
         let dataMap = snap.val();
         let teksNotif = document.getElementById('teksNotif24Jam');
         
@@ -1983,7 +2077,7 @@
         }
       });
 
-      ref.limitToLast(80).on('child_added', snap => {
+      ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
 
