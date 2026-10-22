@@ -1306,8 +1306,7 @@
       return true;
     }
     
-    // --- REVISI ALUR VERIFIKASI SESUAI PERMINTAAN ---
-    // Warga Input -> Aplikasi Membuka WA Warga Sendiri membawa pesan otomatis & Link ke WA Admin -> Klik Link WA Admin -> Admin Klik Approval Link
+    // --- PROSES KIRIM VERIFIKASI WARGA ---
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
@@ -1343,7 +1342,7 @@
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      // Link Approval yang nantinya diklik Admin
+      // Link Approval yang diklik Admin (otomatis memicu modal login PIN Admin)
       let baseUrl = window.location.origin + window.location.pathname;
       let linkApprovalAdmin = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorWarga}`;
       
@@ -1893,7 +1892,7 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
-    // --- PROSES PERSETUJUAN DARI ADMIN ---
+    // --- PROSES LINK PERSETUJUAN DI SISI ADMIN ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
@@ -1903,17 +1902,12 @@
       let verifyNama = urlParams.get('nama');
       let verifyWa = urlParams.get('wa');
 
-      // Jika URL persetujuan diklik oleh Admin
+      // Jika URL persetujuan diklik Admin dari WhatsApp
       if (verifyToken && verifyNama) {
-        pendingWargaRef.child(verifyToken).set({
-          nama: verifyNama,
-          wa: verifyWa,
-          status: 'approved',
-          approvedAt: Date.now()
-        }).then(() => {
-          alert(`Berhasil! Akun warga "${verifyNama}" (${verifyWa}) telah disetujui dan diaktifkan.`);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        });
+        // Otomatis buka modal login admin agar admin memasukkan PIN terlebih dahulu
+        document.getElementById('modal-login-admin').classList.remove('hidden');
+        
+        // Simpan referensi verifikasi pada fungsi verifikasiAdmin()
       }
     });
 
