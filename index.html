@@ -1067,6 +1067,34 @@
 
     // --- ADMIN MODE ---
     function toggleModeAdmin() {
+      // Cek apakah URL membawa parameter verifikasi warga
+      let urlParams = new URLSearchParams(window.location.search);
+      let verifyToken = urlParams.get('verify');
+      let verifyNama = urlParams.get('nama');
+      let verifyWa = urlParams.get('wa');
+
+      if (verifyToken && verifyNama) {
+        let inputPin = prompt(`APPROVAL WARGA BARU\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT:`);
+        if (inputPin !== null) {
+          if (inputPin === pinAdminAktif) {
+            pendingWargaRef.child(verifyToken).set({
+              nama: verifyNama,
+              wa: verifyWa,
+              status: 'approved',
+              approvedAt: Date.now()
+            }).then(() => {
+              alert(`BERHASIL! Akun warga atas nama "${verifyNama}" telah disetujui & diaktifkan.`);
+              window.history.replaceState({}, document.title, window.location.pathname);
+              location.reload();
+            });
+          } else {
+            alert("PIN Admin RT Salah!");
+          }
+        }
+        return; // Berhenti di sini khusus untuk proses approval warga via link
+      }
+
+      // Jika normal (bukan dari link approval), jalankan fungsi login admin seperti biasa
       if (isAdmin) { keluarAdmin(); }
       else { 
         let modalAdmin = document.getElementById('modal-login-admin');
