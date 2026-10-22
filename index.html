@@ -1022,7 +1022,7 @@
         harga: parseInt(document.getElementById('edit-harga').value),
         kategori: document.getElementById('edit-kategori').value,
         penjual: bersihkanTeks(document.getElementById('edit-penjual').value),
-        lokasi: bersihkanTeks(document.getElementById('lokasi').value),
+        lokasi: bersihkanTeks(document.getElementById('edit-lokasi').value),
         wa: document.getElementById('edit-whatsapp').value,
         catatan: bersihkanTeks(document.getElementById('edit-catatan').value),
         foto: produkLama.foto,
@@ -1065,9 +1065,8 @@
       tutupModalShare();
     }
 
-    // --- ADMIN MODE ---
+    // --- ADMIN MODE & INTERSEPSI LINK APPROVAL WHATSAPP ---
     function toggleModeAdmin() {
-      // Cek apakah URL membawa parameter verifikasi warga
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
       let verifyNama = urlParams.get('nama');
@@ -1091,10 +1090,9 @@
             alert("PIN Admin RT Salah!");
           }
         }
-        return; // Berhenti di sini khusus untuk proses approval warga via link
+        return;
       }
 
-      // Jika normal (bukan dari link approval), jalankan fungsi login admin seperti biasa
       if (isAdmin) { keluarAdmin(); }
       else { 
         let modalAdmin = document.getElementById('modal-login-admin');
@@ -1107,6 +1105,7 @@
         }
       }
     }
+
     function tutupModalAdmin() { document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value = ''; }
     
     function verifikasiAdmin() {
@@ -1323,16 +1322,14 @@
     function cekVerifikasiChat() {
       let verifiedPhone = null;
       let verifiedNama = null;
-      let statusVerif = null;
       try {
         verifiedPhone = localStorage.getItem('verified_wa_rt36');
         verifiedNama = localStorage.getItem('verified_nama_rt36');
-        statusVerif = localStorage.getItem('status_verif_rt36');
       } catch(e) {}
 
       let modal = document.getElementById('modalVerifWA');
 
-      if (!verifiedPhone || !verifiedNama || statusVerif !== 'approved') {
+      if (!verifiedPhone || !verifiedNama) {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
@@ -1497,32 +1494,31 @@
     }
 
     function cekKetik() {
-      if (!cekVerifikasiChat()) return;
-      
       let teksInput = document.getElementById('teksPesanWarga');
+      if (!teksInput) return;
+      
       let ada = teksInput.value.trim() !== '';
       let mic = document.getElementById('iconMic');
       let send = document.getElementById('iconSend');
       let iconDalamKotak = document.getElementById('iconDalamKotak');
 
-      if(isRekam) return;
+      if (isRekam) return;
       
       if (mic) mic.classList.toggle('hidden', ada);
       if (send) send.classList.toggle('hidden', !ada);
-      if (iconDalamKotak) {
-        iconDalamKotak.classList.toggle('hidden', ada);
-      }
+      if (iconDalamKotak) iconDalamKotak.classList.toggle('hidden', ada);
     }
 
     function handleAksi(){
-      if (!cekVerifikasiChat()) return;
-
-      let txt = document.getElementById('teksPesanWarga').value.trim();
-      if(txt !== ''){ 
+      let txtInput = document.getElementById('teksPesanWarga');
+      if (!txtInput) return;
+      
+      let txt = txtInput.value.trim();
+      if (txt !== '') { 
         kirimPesanWarga(); 
         return; 
       } 
-      if(!isRekam){ 
+      if (!isRekam) { 
         mulaiRekam(); 
       } else { 
         stopRekam(); 
@@ -1554,16 +1550,16 @@
     }
 
     function kirimPesanWarga(){
-      if (!cekVerifikasiChat()) return;
-
       let teksInput = document.getElementById('teksPesanWarga');
-      if(!teksInput) return;
+      if (!teksInput) return;
+      
       let pesan = teksInput.value.trim();
-      if(!pesan) return;
+      if (!pesan) return;
       
       let verifiedNama = 'Warga';
       let verifiedFoto = '';
       let myId = 'tamu_' + Date.now();
+      
       try {
         verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
         verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
@@ -1584,10 +1580,11 @@
           timestamp: Date.now()
         }).then(() => {
           teksInput.value = '';
+          teksInput.style.height = 'auto';
           batalkanBalasChat();
           cekKetik();
         }).catch(err => {
-          alert('Gagal mengirim pesan pribadi: ' + err.message);
+          alert('Gagal mengirim pesan: ' + err.message);
         });
         return;
       }
@@ -1607,9 +1604,9 @@
         dataKirim.replyContent = pesanBalasanData.pesan;
       }
 
-      database.ref('pesan_warga').push(dataKirim).then(()=>{
+      database.ref('pesan_warga').push(dataKirim).then(() => {
         teksInput.value = '';
-        if(teksInput) teksInput.style.height = 'auto';
+        teksInput.style.height = 'auto';
         batalkanBalasChat();
         cekKetik();
       }).catch(err => {
@@ -1920,52 +1917,10 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
-    // --- FUNGSI KHUSUS KONFIRMASI PIN WARGA BARU VIA LINK ---
-    function prosesKonfirmasiDirect(verifyToken, verifyNama, verifyWa) {
-      let inputPin = prompt(`APPROVAL WARGA BARU\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT untuk memverifikasi:`);
-      if (inputPin !== null) {
-        if (inputPin === pinAdminAktif) {
-          pendingWargaRef.child(verifyToken).set({
-            nama: verifyNama,
-            wa: verifyWa,
-            status: 'approved',
-            approvedAt: Date.now()
-          }).then(() => {
-            alert(`BERHASIL! Akun warga atas nama "${verifyNama}" (${verifyWa}) telah disetujui & diaktifkan.`);
-            let btn = document.getElementById('btn-notif-approval-link');
-            if (btn) btn.remove();
-            window.history.replaceState({}, document.title, window.location.pathname);
-          });
-        } else {
-          alert("PIN Admin RT Salah! Ditolak.");
-        }
-      }
-    }
-
-    // --- PENANGANAN OTOMATIS SAAT LINK PERSETUJUAN DIKLIK ADMIN ---
+    // --- INISIALISASI SAAT HALAMAN DIMUAT ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
-      
-      let urlParams = new URLSearchParams(window.location.search);
-      let verifyToken = urlParams.get('verify');
-      let verifyNama = urlParams.get('nama');
-      let verifyWa = urlParams.get('wa');
-
-      // Jika URL membawa token verifikasi dari link WhatsApp, tampilkan Banner Tombol Melayang
-      if (verifyToken && verifyNama) {
-        let btnApproval = document.createElement('div');
-        btnApproval.id = 'btn-notif-approval-link';
-        btnApproval.className = 'fixed top-4 left-4 right-4 z-[9999] bg-emerald-600 text-white p-4 rounded-xl shadow-2xl border-2 border-white flex flex-col items-center justify-center gap-2 text-center animate-bounce';
-        btnApproval.innerHTML = `
-          <div class="font-bold text-sm">🔔 PERMINTAAN APPROVAL WARGA</div>
-          <div class="text-xs">Warga: <b>${verifyNama}</b> (${verifyWa})</div>
-          <button onclick="prosesKonfirmasiDirect('${verifyToken}', '${verifyNama}', '${verifyWa}')" class="mt-1 bg-white text-emerald-800 font-bold text-xs px-4 py-2 rounded-lg shadow active:scale-95">
-            🔑 Klik Disini & Masukkan PIN Admin
-          </button>
-        `;
-        document.body.appendChild(btnApproval);
-      }
     });
 
     function keluarDariPasarRT36(){
