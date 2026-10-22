@@ -535,27 +535,56 @@
   <!-- PANEL LIVE CHAT WARGA -->
   <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
     
-    <!-- HEADER CHAT -->
-    <div class="bg-[#075E54] text-white p-3 flex justify-between items-center shadow-md">
-      <div class="flex items-center gap-3">
-        <div id="headerAvatar" class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden">RT</div>
-        <div>
-          <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
-          <div class="flex items-center gap-1.5 mt-0.5">
-            <span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span>
-            <p id="statusOnline" class="text-[11px] font-bold">1 Online</p>
-            <span id="myWALabel" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1"></span>
+    <!-- HEADER CHAT DIBAHARUI DENGAN MENU TITIK 3 & PROFIL DISESUAIKAN -->
+    <div class="bg-[#075E54] text-white p-3 shadow-md relative">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div id="headerAvatar" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden flex-shrink-0 ring-2 ring-emerald-300/40">RT</div>
+          <div>
+            <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span>
+              <p id="statusOnline" class="text-[11px] font-bold">1 Online</p>
+            </div>
           </div>
-          <p class="text-[9px] text-amber-200 mt-0.5 italic flex items-center gap-1">
-            <span>🕒</span> Pesan otomatis terhapus setelah 24 jam
-          </p>
+        </div>
+
+        <!-- Tombol Titik Tiga (Option Menu) -->
+        <div class="relative">
+          <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-xl text-white transition-all">
+            <i class="ph ph-dots-three-vertical font-bold"></i>
+          </button>
+          
+          <!-- Dropdown Opsi Titik 3 -->
+          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
+            <button onclick="toggleNotifikasi(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2.5 font-medium border-b">
+              <span class="text-base">🔔</span>
+              <span>Suara Notifikasi</span>
+            </button>
+            <button onclick="keluarDariPasarRT36(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
+              <span class="text-base">🚪</span>
+              <span>Keluar Akun (Logout)</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Sisi Kanan Header -->
-      <div class="flex gap-2 items-center">
-        <button onclick="toggleNotifikasi()" id="btnToggleNotif" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-[16px]" title="Pilih Suara Notifikasi">🔔</button>
-        <button onclick="keluarDariPasarRT36()" class="w-8 h-8 bg-red-600/80 hover:bg-red-600 rounded-full flex items-center justify-center text-[14px] text-white shadow" title="Keluar Akun">🚪</button>
+      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP & PROFIL AKUN LOGIN -->
+      <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
+        <div class="flex items-center gap-1">
+          <span class="bg-emerald-700/60 text-emerald-200 px-2 py-0.5 rounded-md font-medium border border-emerald-500/30">
+            👥 Grup Warga RT.36
+          </span>
+        </div>
+        <div class="flex items-center gap-1 truncate max-w-[170px]">
+          <span class="text-white/70">Login:</span>
+          <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
+        </div>
+      </div>
+
+      <!-- TEKS OTOMATIS 24 JAM (Baru muncul saat ada pesan di room chat) -->
+      <div id="teksNotif24Jam" class="hidden mt-1.5 bg-black/20 rounded-md py-0.5 px-2 text-[9.5px] text-amber-200 italic flex items-center gap-1 justify-center">
+        <span>🕒</span> Pesan otomatis terhapus setelah 24 jam
       </div>
     </div>
 
@@ -704,7 +733,22 @@
       {nama:'Digital Beep', url:'https://assets.mixkit.co/active_storage/sfx/2860/2860-preview.mp3'},
       {nama:'Crystal Chime', url:'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'}
     ];
-    let suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
+    let suaraIndex = '0';
+    try {
+      suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
+    } catch(e) {}
+
+    // Unlock Audio untuk Browser Modern
+    document.addEventListener('click', function unlockAudio() {
+      let audio = document.getElementById('notifSound');
+      if (audio) {
+        audio.play().then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }).catch(() => {});
+      }
+      document.removeEventListener('click', unlockAudio);
+    }, { once: true });
 
     function bersihkanTeks(teks) {
       if (!teks) return '';
@@ -1075,6 +1119,25 @@
       });
     }
 
+    // --- MENU TITIK TIGA DI HEADER CHAT ---
+    function toggleMenuHeaderChat(event) {
+      if (event) event.stopPropagation();
+      let menu = document.getElementById('dropdownHeaderChat');
+      if (menu) menu.classList.toggle('hidden');
+    }
+    function tutupMenuHeaderChat() {
+      let menu = document.getElementById('dropdownHeaderChat');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      let btn = document.getElementById('btnMenuHeader');
+      let menu = document.getElementById('dropdownHeaderChat');
+      if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
     // --- LOGIKA LIVE CHAT & CHAT PRIBADI ---
     function tutupSemuaMenuSub() {
       let s = document.getElementById('menuPilihanSuara');
@@ -1152,11 +1215,16 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      let verifiedNama = 'Warga Tamu';
+      let verifiedFoto = '';
+      let myId = 'tamu_' + Date.now();
+      try {
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      } catch(e) {}
       
+      let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       database.ref('pesan_warga').push({
         nama: verifiedNama,
         fotoProfil: verifiedFoto,
@@ -1171,7 +1239,10 @@
 
     function gantiSuara(idx) {
       suaraIndex = idx;
-      localStorage.setItem('suara_pilihan_rt36', idx);
+      try {
+        localStorage.setItem('suara_pilihan_rt36', idx);
+      } catch(e) {}
+      
       let audio = document.getElementById('notifSound');
       if(idx !== 'off' && audio && suaraList[idx]) {
         audio.src = suaraList[idx].url;
@@ -1212,10 +1283,14 @@
     });
 
     function cekVerifikasiChat() {
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36');
-      let verifiedNama = localStorage.getItem('verified_nama_rt36');
+      let verifiedPhone = null;
+      let verifiedNama = null;
+      try {
+        verifiedPhone = localStorage.getItem('verified_wa_rt36');
+        verifiedNama = localStorage.getItem('verified_nama_rt36');
+      } catch(e) {}
+
       let modal = document.getElementById('modalVerifWA');
-      
       if (!verifiedPhone || !verifiedNama) {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
@@ -1226,7 +1301,7 @@
       return true;
     }
     
-    // --- Alur Baru: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
+    // --- Alur Verifikasi: Warga Input No -> Link Verifikasi WA Aktif -> Kirim ke WA Admin -> Masuk Login Admin ---
     function prosesKirimVerifikasiWA(event) {
       let elNama = document.getElementById('inputNama');
       let elPhone = document.getElementById('inputWA');
@@ -1248,16 +1323,24 @@
         timestamp: Date.now()
       });
 
-      localStorage.setItem('verified_wa_rt36', nomorBersih);
-      localStorage.setItem('verified_nama_rt36', nama);
-      localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
+      try {
+        localStorage.setItem('verified_wa_rt36', nomorBersih);
+        localStorage.setItem('verified_nama_rt36', nama);
+        localStorage.setItem('my_chat_id', 'warga_' + nomorBersih.slice(-4));
+      } catch(e) {}
       
       let nomorAdmin = adminWaAktif.replace(/\D/g, '');
       if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
 
-      // Link verifikasi aktif warga yang langsung mengarah ke halaman login/persetujuan admin
-      let linkVerifikasiWarga = `${window.location.origin}${window.location.pathname}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
-      let teksWaAdmin = `Halo Admin RT.36,\n\nWarga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n*Nama/Blok:* ${nama}\n*No. WA:* ${nomorBersih}\n\nSilakan klik link verifikasi di bawah ini untuk menyetujui dan masuk otomatis ke halaman login Admin:\n${linkVerifikasiWarga}`;
+      let baseUrl = window.location.origin + window.location.pathname;
+      let linkVerifikasiWarga = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorBersih}`;
+      
+      let teksWaAdmin = "Halo Admin RT.36,\n\n" +
+        "Warga berikut memasukkan nomor WA untuk verifikasi keaktifan:\n" +
+        "*Nama/Blok:* " + nama + "\n" +
+        "*No. WA:* " + nomorBersih + "\n\n" +
+        "Silakan klik link verifikasi di bawah ini untuk menyetujui dan masuk ke halaman login Admin:\n" +
+        linkVerifikasiWarga;
 
       window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksWaAdmin)}`, '_blank');
       
@@ -1268,8 +1351,12 @@
     }
 
     function perbaruiInfoProfilUI() {
-      let nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let foto = localStorage.getItem('verified_foto_rt36') || '';
+      let nama = 'Warga Tamu';
+      let foto = '';
+      try {
+        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        foto = localStorage.getItem('verified_foto_rt36') || '';
+      } catch(e) {}
       
       let lbl = document.getElementById('myWALabel');
       if(lbl) lbl.innerText = nama;
@@ -1290,7 +1377,9 @@
       
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
-      if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
+      try {
+        if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
+      } catch(e) {}
       if(modal) modal.classList.remove('hidden');
     }
 
@@ -1306,15 +1395,19 @@
       
       if (fileInput && fileInput.files && fileInput.files[0]) {
         kompresGambar(fileInput.files[0], function(base64Foto) {
-          localStorage.setItem('verified_nama_rt36', namaBaru);
-          localStorage.setItem('verified_foto_rt36', base64Foto);
+          try {
+            localStorage.setItem('verified_nama_rt36', namaBaru);
+            localStorage.setItem('verified_foto_rt36', base64Foto);
+          } catch(e) {}
           tutupModalGantiProfil();
           perbaruiInfoProfilUI();
           alert('Profil dan foto berhasil diperbarui!');
           location.reload();
         });
       } else {
-        localStorage.setItem('verified_nama_rt36', namaBaru);
+        try {
+          localStorage.setItem('verified_nama_rt36', namaBaru);
+        } catch(e) {}
         tutupModalGantiProfil();
         perbaruiInfoProfilUI();
         alert('Nama profil berhasil diperbarui!');
@@ -1406,9 +1499,15 @@
       let pesan = teksInput.value.trim();
       if(!pesan) return;
       
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      let verifiedNama = 'Warga';
+      let verifiedFoto = '';
+      let myId = 'tamu_' + Date.now();
+      try {
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      } catch(e) {}
+
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       
       if (targetChatPribadiId) {
@@ -1459,9 +1558,15 @@
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
       if(!input.files[0]) return;
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-      let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      let verifiedNama = 'Warga';
+      let verifiedFoto = '';
+      let myId = 'tamu_' + Date.now();
+      try {
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+        verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+      } catch(e) {}
+
       kompresGambar(input.files[0], function(base64Img) {
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         if (targetChatPribadiId) {
@@ -1482,9 +1587,15 @@
       if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
         let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-        let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        let verifiedNama = 'Warga';
+        let verifiedFoto = '';
+        let myId = 'tamu_' + Date.now();
+        try {
+          verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+          verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+          myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        } catch(e) {}
+
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         if (targetChatPribadiId) {
           let roomKey = [myId, targetChatPribadiId].sort().join('_');
@@ -1516,9 +1627,15 @@
           let blob = new Blob(audioChunks, {type:'audio/webm'});
           let reader = new FileReader();
           reader.onload = e => {
-            let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-            let verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
-            let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+            let verifiedNama = 'Warga';
+            let verifiedFoto = '';
+            let myId = 'tamu_' + Date.now();
+            try {
+              verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
+              verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
+              myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+            } catch(ex) {}
+
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             if (targetChatPribadiId) {
               let roomKey = [myId, targetChatPribadiId].sort().join('_');
@@ -1560,7 +1677,11 @@
     }
 
     function hapusPesanWarga(keyPesan, idPengirim) {
-      let myId = localStorage.getItem('my_chat_id');
+      let myId = null;
+      try {
+        myId = localStorage.getItem('my_chat_id');
+      } catch(e) {}
+
       if (isAdmin || myId === idPengirim) {
         if (confirm('Hapus pesan ini?')) {
           isProsesHapus = true; 
@@ -1591,7 +1712,11 @@
 
     // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
-      let myId = localStorage.getItem('my_chat_id');
+      let myId = null;
+      try {
+        myId = localStorage.getItem('my_chat_id');
+      } catch(e) {}
+
       if (myId === userIdLawan) {
         alert("Ini adalah akun Anda sendiri.");
         return;
@@ -1618,12 +1743,13 @@
     }
 
     function inisialisasiChatLive() {
-      let verifiedPhone = localStorage.getItem('verified_wa_rt36') || 'tamu';
-      let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
-      let myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-
-      let lbl = document.getElementById('myWALabel');
-      if(lbl) lbl.innerText = verifiedNama;
+      let myId = 'tamu_' + Date.now();
+      try {
+        myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        let lbl = document.getElementById('myWALabel');
+        if(lbl) lbl.innerText = verifiedNama;
+      } catch(e) {}
 
       let audio = document.getElementById('notifSound');
       if(suaraIndex !== 'off' && suaraList[suaraIndex]) {
@@ -1642,6 +1768,20 @@
       if(!box) return;
 
       box.innerHTML = '';
+
+      ref.limitToLast80().on('value', snap => {
+        let dataMap = snap.val();
+        let teksNotif = document.getElementById('teksNotif24Jam');
+        
+        // Cek jika obrolan kosong vs ada pesan untuk menampilkan teks 24 jam
+        if (teksNotif) {
+          if (dataMap && Object.keys(dataMap).length > 0) {
+            teksNotif.classList.remove('hidden');
+          } else {
+            teksNotif.classList.add('hidden');
+          }
+        }
+      });
 
       ref.limitToLast80().on('child_added', snap => {
         let data = snap.val(), key = snap.key;
@@ -1713,6 +1853,7 @@
         `;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
+        bunyikanNotifikasi();
       });
 
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
@@ -1725,14 +1866,19 @@
       let urlParams = new URLSearchParams(window.location.search);
       let verifyToken = urlParams.get('verify');
       if (verifyToken) {
-        // Otomatis buka modal login admin saat admin mengklik link verifikasi warga dari WhatsApp
-        document.getElementById('modal-login-admin').classList.remove('hidden');
+        let modalLogin = document.getElementById('modal-login-admin');
+        if (modalLogin) {
+          modalLogin.classList.remove('hidden');
+          modalLogin.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     });
 
     function keluarDariPasarRT36(){
       if(confirm('Yakin mau keluar akun?')){
-        localStorage.clear();
+        try {
+          localStorage.clear();
+        } catch(e) {}
         location.reload();
       }
     }
