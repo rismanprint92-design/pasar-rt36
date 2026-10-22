@@ -502,7 +502,7 @@
     <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
   </div>
 
-  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH -->
+  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH (DEFAULT HIDDEN PANEL CHAT SAAT PAGE LOAD) -->
   <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
     <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
     <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -532,10 +532,9 @@
     </div>
   </div>
 
-  <!-- PANEL LIVE CHAT WARGA -->
+  <!-- PANEL LIVE CHAT WARGA (DISET HIDDEN SECARA DEFAULT SAAT PAGE LOAD/REFRESH) -->
   <div id="panelChatWarga" class="hidden fixed inset-0 md:inset-auto md:bottom-20 md:right-5 z-[999] w-full h-[100dvh] md:w-[400px] md:h-[85vh] bg-[#E5DDD5] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border">
     
-    <!-- HEADER CHAT DIBAHARUI DENGAN MENU TITIK 3 & PROFIL DISESUAIKAN -->
     <!-- HEADER CHAT UTAMA -->
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
@@ -571,8 +570,8 @@
         </div>
       </div>
 
-      <!-- SUB-HEADER: Lingkaran Merah (Daftar Warga Online) & Lingkaran Biru (Profil Login) -->
-      <div class="mt-2 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
+      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP & PROFIL AKUN LOGIN -->
+      <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
         <!-- Lingkaran Merah: Daftar Warga Online untuk Chat Pribadi -->
         <div id="daftarWargaOnlineBar" class="flex items-center gap-1.5 overflow-x-auto max-w-[220px] pb-1 no-scrollbar">
           <span class="bg-emerald-700/70 text-emerald-200 px-2 py-1 rounded-md font-medium border border-emerald-500/30 whitespace-nowrap">
@@ -583,40 +582,6 @@
         <!-- Lingkaran Biru: Profil Akun Login (Klik untuk Ganti Foto/Nama) -->
         <div onclick="bukaModalGantiProfil()" class="flex items-center gap-1 truncate max-w-[140px] cursor-pointer bg-emerald-800/70 px-2 py-1 rounded-lg border border-emerald-500/30 hover:bg-emerald-700 transition-all flex-shrink-0" title="Klik untuk ganti foto & nama profil">
           <div id="miniAvatarBar" class="w-4 h-4 rounded-full overflow-hidden bg-emerald-600 flex items-center justify-center font-bold text-[9px] text-white flex-shrink-0"></div>
-          <span class="text-white/70">Login:</span>
-          <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
-        </div>
-      </div>
-    </div>
-
-        <!-- Tombol Titik Tiga (Option Menu) -->
-        <div class="relative">
-          <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-xl text-white transition-all">
-            <i class="ph ph-dots-three-vertical font-bold"></i>
-          </button>
-          
-          <!-- Dropdown Opsi Titik 3 -->
-          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
-            <button onclick="toggleNotifikasi(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2.5 font-medium border-b">
-              <span class="text-base">🔔</span>
-              <span>Suara Notifikasi</span>
-            </button>
-            <button onclick="toggleBoxChat(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
-              <span class="text-base">❌</span>
-              <span>Tutup Chat</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP & PROFIL AKUN LOGIN -->
-      <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
-        <div class="flex items-center gap-1">
-          <span class="bg-emerald-700/60 text-emerald-200 px-2 py-0.5 rounded-md font-medium border border-emerald-500/30">
-            👥 Grup Warga RT.36
-          </span>
-        </div>
-        <div class="flex items-center gap-1 truncate max-w-[170px]">
           <span class="text-white/70">Login:</span>
           <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
         </div>
@@ -1396,7 +1361,7 @@
       if (nomorWarga.startsWith('0')) nomorWarga = '62' + nomorWarga.slice(1);
       
       let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-      
+
       pendingWargaRef.child(tokenVerif).set({
         nama: nama,
         wa: nomorWarga,
@@ -1523,7 +1488,7 @@
       }
     }
 
-    // --- FUNGSI TAMPIL / TUTUP CHAT & DEFAULT KE OBROLAN WARGA RT.36 ---
+    // --- FUNGSI TOGGLE BOX CHAT (MEMPERBAIKI MASALAH TAMPILAN AWAL & KLIK IKON CHAT) ---
     function toggleBoxChat() {
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
@@ -1877,7 +1842,7 @@
 
       let htmlGrup = `<button onclick="tutupChatPribadi()" class="bg-emerald-700/80 text-white px-2 py-1 rounded-md font-bold border border-emerald-500/30 whitespace-nowrap flex items-center gap-1">👥 Grup RT</button>`;
       
-      database.ref('pesan_warga').limitToLast50().on('value', snapshot => {
+      database.ref('pesan_warga').limitToLast(50).on('value', snapshot => {
         let data = snapshot.val();
         let wargaUnik = {};
         let myId = '';
@@ -1935,7 +1900,7 @@
 
       box.innerHTML = '';
 
-      ref.limitToLast80().on('value', snap => {
+      ref.limitToLast(80).on('value', snap => {
         let dataMap = snap.val();
         let teksNotif = document.getElementById('teksNotif24Jam');
         
@@ -1948,7 +1913,7 @@
         }
       });
 
-      ref.limitToLast80().on('child_added', snap => {
+      ref.limitToLast(80).on('child_added', snap => {
         let data = snap.val(), key = snap.key;
         if(!data) return;
 
