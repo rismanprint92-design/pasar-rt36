@@ -539,7 +539,6 @@
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <!-- Logo Header (Foto profil dihapus dari baris utama header sesuai permintaan) -->
           <div>
             <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
             <div class="flex items-center gap-1.5 mt-0.5">
@@ -557,7 +556,7 @@
           
           <!-- Dropdown Opsi Titik 3 -->
           <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
-            <!-- Diisi dinamis via JS / Inisialisasi -->
+            <!-- Diisi dinamis via JS -->
           </div>
         </div>
       </div>
@@ -1113,7 +1112,7 @@
       }
     });
 
-    // --- LOGIKA LIVE CHAT & PIN LOGIN WARGA (1 Perangkat Saja) ---
+    // --- LOGIKA LIVE CHAT & PIN LOGIN WARGA ---
     function tutupSemuaMenuSub() {
       let s = document.getElementById('menuPilihanSuara');
       let l = document.getElementById('menuLampiran');
@@ -1284,8 +1283,10 @@
       if(modal) modal.classList.add('hidden');
     }
 
-    // --- PROSES LOGIN PIN (SATU PIN HANYA SATU PERANGKAT) ---
+    // --- PROSES LOGIN PIN (DIPERBAIKI) ---
     function prosesLoginPinWarga(event) {
+      if(event) event.preventDefault();
+      
       let elNama = document.getElementById('inputNamaPin');
       let elPin = document.getElementById('inputPinSederhana');
       if(!elNama || !elPin) return;
@@ -1303,7 +1304,7 @@
         else localStorage.setItem('my_device_uid', deviceUniqueId);
       } catch(e){}
 
-      // Cek apakah PIN ini sudah dipakai di perangkat lain
+      // Cek apakah PIN ini sudah dipakai di perangkat lain via Firebase
       activeDeviceRef.child(pin).once('value', snapshot => {
         let activeDev = snapshot.val();
         if(activeDev && activeDev !== deviceUniqueId) {
@@ -1311,7 +1312,7 @@
           return;
         }
 
-        // Daftarkan perangkat ini ke PIN tersebut di Firebase
+        // Daftarkan perangkat ini ke PIN tersebut
         activeDeviceRef.child(pin).set(deviceUniqueId).then(() => {
           try {
             localStorage.setItem('chat_pin_rt36', pin);
@@ -1324,6 +1325,27 @@
           perbaruiInfoProfilUI();
           inisialisasiChatLive();
           muatDaftarWargaOnline();
+          
+          // Langsung buka panel chat setelah sukses login
+          let panel = document.getElementById('panelChatWarga');
+          let btnBuka = document.getElementById('btnBukaChat');
+          if(panel) panel.classList.remove('hidden');
+          if(btnBuka) btnBuka.classList.add('hidden');
+        }).catch(err => {
+          // Fallback jika database belum rule-ready, simpan lokal langsung
+          try {
+            localStorage.setItem('chat_pin_rt36', pin);
+            localStorage.setItem('verified_nama_rt36', nama);
+            localStorage.setItem('my_chat_id', 'user_pin_' + pin);
+          } catch(e) {}
+          tutupModalLoginPin();
+          perbaruiInfoProfilUI();
+          inisialisasiChatLive();
+          muatDaftarWargaOnline();
+          let panel = document.getElementById('panelChatWarga');
+          let btnBuka = document.getElementById('btnBukaChat');
+          if(panel) panel.classList.remove('hidden');
+          if(btnBuka) btnBuka.classList.add('hidden');
         });
       });
     }
@@ -1659,7 +1681,6 @@
       }catch(e){}
     }
 
-    // --- FITUR HAPUS & EDIT PESAN (Bisa dilakukan oleh pengirim pesan sendiri / login chat) ---
     function hapusPesanWarga(keyPesan, idPengirim) {
       let myId = '';
       try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
@@ -1701,7 +1722,6 @@
       }).catch(err => { alert("Gagal mengedit pesan: " + err.message); });
     }
 
-    // --- FUNGSI MASUK KE HALAMAN CHAT PRIBADI ---
     function bukaChatPribadi(userIdLawan, namaLawan) {
       let myId = null;
       try {
@@ -1886,7 +1906,6 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
-    // --- INISIALISASI MENU TITIK TIGA DI HEADER CHAT ---
     function updateHeaderDropdownMenu() {
       let dropHeader = document.getElementById('dropdownHeaderChat');
       if(dropHeader) {
@@ -1907,7 +1926,6 @@
       }
     }
 
-    // --- INISIALISASI SAAT HALAMAN DIMUAT ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
