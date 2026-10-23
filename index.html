@@ -561,15 +561,9 @@
         </div>
       </div>
 
-      <!-- SUB-HEADER INFORMASI PROFIL & GRUP -->
-      <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
-        <div id="daftarWargaOnlineBar" class="flex items-center gap-1.5 overflow-x-auto max-w-[220px] pb-1 no-scrollbar">
-          <span class="bg-emerald-700/70 text-emerald-200 px-2 py-1 rounded-md font-medium border border-emerald-500/30 whitespace-nowrap">
-            👥 Grup RT
-          </span>
-        </div>
-
-        <div class="flex items-center gap-1 truncate max-w-[140px] bg-emerald-800/70 px-2 py-1 rounded-lg border border-emerald-500/30 flex-shrink-0">
+      <!-- SUB-HEADER INFORMASI PROFIL (BARIS DAFTAR WARGA ONLINE TELAH DIHAPUS) -->
+      <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-end text-[10px] text-emerald-100">
+        <div class="flex items-center gap-1 truncate max-w-[180px] bg-emerald-800/70 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex-shrink-0">
           <span class="text-white/70">Login:</span>
           <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
         </div>
@@ -701,8 +695,6 @@
     let pesanBalasanData = null;
     let isProsesHapus = false; 
     let menuSubAktif = null;
-    let targetChatPribadiId = null;
-    let targetChatPribadiNama = '';
     
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false;
     let chatPertamaLoad = true;
@@ -1283,7 +1275,7 @@
       if(modal) modal.classList.add('hidden');
     }
 
-    // --- FUNGSI LOGIN PIN WARGA (BAGIAN YANG DIPERBAIKI AGAR LANGSUNG RESPON & MASUK) ---
+    // --- FUNGSI LOGIN PIN WARGA (DENGAN CEK 1 PERANGKAT KECUALI LOGOUT) ---
     function prosesLoginPinWarga() {
       let elNama = document.getElementById('inputNamaPin');
       let elPin = document.getElementById('inputPinSederhana');
@@ -1302,29 +1294,48 @@
         else localStorage.setItem('my_device_uid', deviceUniqueId);
       } catch(e){}
 
-      // Simpan data login secara lokal langsung agar proses instan tanpa hambatan
-      try {
-        localStorage.setItem('chat_pin_rt36', pin);
-        localStorage.setItem('verified_nama_rt36', nama);
-        localStorage.setItem('my_chat_id', 'user_pin_' + pin);
-      } catch(e) {}
+      // Cek apakah PIN ini sedang aktif di perangkat lain
+      activeDeviceRef.child(pin).once('value', snapshot => {
+        let activeDev = snapshot.val();
+        if(activeDev && activeDev !== deviceUniqueId) {
+          alert('⚠️ PIN ini sedang Aktif / Digunakan di perangkat lain!\n\nSatu PIN hanya bisa digunakan pada satu perangkat dalam satu waktu, kecuali perangkat sebelumnya melakukan Logout.');
+          return;
+        }
 
-      // Sinkronisasi perangkat aktif ke Firebase di latar belakang
-      activeDeviceRef.child(pin).set(deviceUniqueId).catch(() => {});
+        // Daftarkan perangkat ini ke PIN tersebut
+        activeDeviceRef.child(pin).set(deviceUniqueId).then(() => {
+          try {
+            localStorage.setItem('chat_pin_rt36', pin);
+            localStorage.setItem('verified_nama_rt36', nama);
+            localStorage.setItem('my_chat_id', 'user_pin_' + pin);
+          } catch(e) {}
 
-      tutupModalLoginPin();
-      perbaruiInfoProfilUI();
-      inisialisasiChatLive();
-      muatDaftarWargaOnline();
-      
-      // Langsung buka panel chat setelah sukses login
-      let panel = document.getElementById('panelChatWarga');
-      let btnBuka = document.getElementById('btnBukaChat');
-      if(panel) panel.classList.remove('hidden');
-      if(btnBuka) btnBuka.classList.add('hidden');
+          tutupModalLoginPin();
+          perbaruiInfoProfilUI();
+          inisialisasiChatLive();
+          
+          let panel = document.getElementById('panelChatWarga');
+          let btnBuka = document.getElementById('btnBukaChat');
+          if(panel) panel.classList.remove('hidden');
+          if(btnBuka) btnBuka.classList.add('hidden');
+        }).catch(err => {
+          try {
+            localStorage.setItem('chat_pin_rt36', pin);
+            localStorage.setItem('verified_nama_rt36', nama);
+            localStorage.setItem('my_chat_id', 'user_pin_' + pin);
+          } catch(e) {}
+          tutupModalLoginPin();
+          perbaruiInfoProfilUI();
+          inisialisasiChatLive();
+          let panel = document.getElementById('panelChatWarga');
+          let btnBuka = document.getElementById('btnBukaChat');
+          if(panel) panel.classList.remove('hidden');
+          if(btnBuka) btnBuka.classList.add('hidden');
+        });
+      });
     }
 
-    // Tambahan event listener agar tombol Enter pada input PIN ikut memicu login
+    // Event listener agar tombol Enter pada input PIN ikut memicu login
     document.addEventListener('DOMContentLoaded', function() {
       let pinInputEl = document.getElementById('inputPinSederhana');
       if(pinInputEl) {
@@ -1339,10 +1350,8 @@
 
     function perbaruiInfoProfilUI() {
       let nama = 'Warga';
-      let foto = '';
       try {
         nama = localStorage.getItem('verified_nama_rt36') || 'Warga';
-        foto = localStorage.getItem('verified_foto_rt36') || '';
       } catch(e) {}
       
       let lbl = document.getElementById('myWALabel');
@@ -1403,7 +1412,6 @@
         if(b) {
           b.classList.add('hidden');
         }
-        tutupChatPribadi();
         try {
           history.pushState({ chatOpen: true }, '');
         } catch(e) {}
@@ -1500,27 +1508,6 @@
       } catch(e) {}
 
       let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      
-      if (targetChatPribadiId) {
-        let roomKey = [myId, targetChatPribadiId].sort().join('_');
-        database.ref('chat_pribadi/' + roomKey).push({
-          senderId: myId,
-          senderName: verifiedNama,
-          receiverId: targetChatPribadiId,
-          receiverName: targetChatPribadiNama,
-          pesan: pesan,
-          waktu: jam,
-          timestamp: Date.now()
-        }).then(() => {
-          teksInput.value = '';
-          teksInput.style.height = 'auto';
-          batalkanBalasChat();
-          cekKetik();
-        }).catch(err => {
-          alert('Gagal mengirim pesan: ' + err.message);
-        });
-        return;
-      }
 
       let dataKirim = {
         nama: verifiedNama, 
@@ -1561,15 +1548,7 @@
 
       kompresGambar(input.files[0], function(base64Img) {
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        if (targetChatPribadiId) {
-          let roomKey = [myId, targetChatPribadiId].sort().join('_');
-          database.ref('chat_pribadi/' + roomKey).push({
-            senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
-            pesan: base64Img, waktu: jam, timestamp: Date.now(), tipe: 'foto'
-          });
-        } else {
-          database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: base64Img, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
-        }
+        database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: base64Img, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
       });
       input.value='';
     }
@@ -1589,15 +1568,7 @@
         } catch(e) {}
 
         let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        if (targetChatPribadiId) {
-          let roomKey = [myId, targetChatPribadiId].sort().join('_');
-          database.ref('chat_pribadi/' + roomKey).push({
-            senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
-            pesan: mapsLink, waktu: jam, timestamp: Date.now(), tipe: 'lokasi'
-          });
-        } else {
-          database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: mapsLink, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'lokasi'});
-        }
+        database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: mapsLink, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'lokasi'});
       });
     }
 
@@ -1629,15 +1600,7 @@
             } catch(ex) {}
 
             let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            if (targetChatPribadiId) {
-              let roomKey = [myId, targetChatPribadiId].sort().join('_');
-              database.ref('chat_pribadi/' + roomKey).push({
-                senderId: myId, senderName: verifiedNama, receiverId: targetChatPribadiId, receiverName: targetChatPribadiNama,
-                pesan: e.target.result, waktu: jam, timestamp: Date.now(), tipe: 'voice'
-              });
-            } else {
-              database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'voice'});
-            }
+            database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: e.target.result, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'voice'});
           };
           reader.readAsDataURL(blob);
         };
@@ -1709,74 +1672,6 @@
       }).catch(err => { alert("Gagal mengedit pesan: " + err.message); });
     }
 
-    function bukaChatPribadi(userIdLawan, namaLawan) {
-      let myId = null;
-      try {
-        myId = localStorage.getItem('my_chat_id');
-      } catch(e) {}
-
-      if (myId === userIdLawan) {
-        alert("Ini adalah akun Anda sendiri.");
-        return;
-      }
-      targetChatPribadiId = userIdLawan;
-      targetChatPribadiNama = namaLawan;
-
-      let judulChat = document.getElementById('judulHeaderChat');
-      if (judulChat) {
-        judulChat.innerHTML = `Chat Pribadi: ${namaLawan} <button onclick="tutupChatPribadi()" class="ml-2 bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded">Kembali ke Grup</button>`;
-      }
-
-      inisialisasiChatLive();
-    }
-
-    function tutupChatPribadi() {
-      targetChatPribadiId = null;
-      targetChatPribadiNama = '';
-      let judulChat = document.getElementById('judulHeaderChat');
-      if (judulChat) {
-        judulChat.innerHTML = `Obrolan Warga RT.36`;
-      }
-      inisialisasiChatLive();
-    }
-
-    function muatDaftarWargaOnline() {
-      let barOnline = document.getElementById('daftarWargaOnlineBar');
-      if(!barOnline) return;
-
-      let htmlGrup = `<button onclick="tutupChatPribadi()" class="bg-emerald-700/80 text-white px-2 py-1 rounded-md font-bold border border-emerald-500/30 whitespace-nowrap flex items-center gap-1">👥 Grup RT</button>`;
-      
-      database.ref('pesan_warga').limitToLast(50).on('value', snapshot => {
-        let data = snapshot.val();
-        let wargaUnik = {};
-        let myId = '';
-        try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
-
-        if(data) {
-          Object.values(data).forEach(msg => {
-            if(msg.userId && msg.userId !== myId) {
-              wargaUnik[msg.userId] = {
-                nama: msg.nama || 'Warga',
-                foto: msg.fotoProfil || ''
-              };
-            }
-          });
-        }
-
-        let htmlWarga = htmlGrup;
-        Object.keys(wargaUnik).forEach(uid => {
-          let w = wargaUnik[uid];
-          let avatarMini = w.foto ? `<img src="${w.foto}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">${w.nama.charAt(0)}</span>`;
-          htmlWarga += `
-            <button onclick="bukaChatPribadi('${uid}', '${w.nama}')" class="bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md text-[10px] font-medium border border-white/20 whitespace-nowrap flex items-center gap-1 transition-all" title="Klik untuk chat pribadi dengan ${w.nama}">
-              ${avatarMini} ${w.nama}
-            </button>
-          `;
-        });
-        barOnline.innerHTML = htmlWarga;
-      });
-    }
-
     function inisialisasiChatLive() {
       let myId = 'tamu_' + Date.now();
       try {
@@ -1791,14 +1686,7 @@
         audio.src = suaraList[suaraIndex].url;
       }
 
-      let ref;
-      if (targetChatPribadiId) {
-        let roomKey = [myId, targetChatPribadiId].sort().join('_');
-        ref = database.ref('chat_pribadi/' + roomKey);
-      } else {
-        ref = database.ref('pesan_warga');
-      }
-
+      let ref = database.ref('pesan_warga');
       let box = document.getElementById('boxChatWarga');
       if(!box) return;
 
@@ -1821,9 +1709,9 @@
         let data = snap.val(), key = snap.key;
         if(!data) return;
 
-        let isMe = targetChatPribadiId ? (data.senderId === myId) : (data.userId === myId);
-        let pengirimNama = targetChatPribadiId ? data.senderName : data.nama;
-        let pengirimId = targetChatPribadiId ? data.senderId : data.userId;
+        let isMe = (data.userId === myId);
+        let pengirimNama = data.nama;
+        let pengirimId = data.userId;
 
         let div = document.createElement('div');
         div.className = isMe ? 'flex flex-col items-end my-1' : 'flex flex-col items-start my-1';
@@ -1859,7 +1747,7 @@
         }
 
         let tombolAksiChat = '';
-        if (!targetChatPribadiId && (isMe || isAdmin) && data.tipe === 'teks') {
+        if ((isMe || isAdmin) && data.tipe === 'teks') {
           tombolAksiChat = `
             <div class="flex gap-1.5 items-center">
               <button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`, '${pengirimId}')" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
@@ -1869,14 +1757,12 @@
         }
 
         let statusEdit = data.diedit ? ' <span class="text-[9px] text-gray-400 italic">(diedit)</span>' : '';
-        let klikNamaAksi = targetChatPribadiId ? '' : `onclick="event.stopPropagation(); bukaChatPribadi('${pengirimId}', '${pengirimNama}')" title="Klik untuk membuka chat pribadi"`;
-        let kursorStyle = targetChatPribadiId ? '' : 'cursor-pointer hover:underline text-emerald-800';
 
         div.innerHTML = `
           <div class="bubble-wa ${isMe ? 'bubble-me' : 'bubble-other'} cursor-pointer" onclick="if(!event.target.closest('button')) mulaiBalasPesan('${pengirimNama}', '${data.tipe === 'teks' ? data.pesan : '[Media]'}')">
             <div class="flex justify-between items-center gap-2">
-              <span class="nama-atas flex items-center ${kursorStyle}" ${klikNamaAksi}>
-                ${avatarHtml}${pengirimNama} ${targetChatPribadiId ? '' : '💬'}
+              <span class="nama-atas flex items-center text-emerald-800">
+                ${avatarHtml}${pengirimNama}
               </span>
               ${tombolAksiChat}
             </div>
@@ -1916,7 +1802,6 @@
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
-      muatDaftarWargaOnline();
       updateHeaderDropdownMenu();
     });
 
