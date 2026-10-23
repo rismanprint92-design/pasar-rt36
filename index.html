@@ -147,27 +147,11 @@
       <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
         + Jual
       </button>
-      <button onclick="toggleMenuPengaturan(event)" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow">
+      <button onclick="toggleModeAdmin()" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow" title="Mode Admin RT">
         <i class="ph ph-gear text-base"></i>
       </button>
     </div>
   </header>
-
-  <!-- MENU DROPDOWN GERIGI -->
-  <div id="dropdown-pengaturan" class="hidden fixed w-48 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-gray-100 py-1 z-[99999] text-xs">
-    <button onclick="toggleModeAdmin(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
-      <i class="ph ph-shield-check text-lg text-emerald-600"></i>
-      <span id="label-admin">Mode Admin RT</span>
-    </button>
-    <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3 py-3 hover:bg-emerald-50 text-gray-700 font-medium flex items-center gap-2.5 border-b">
-      <i class="ph ph-user-circle text-lg text-emerald-600"></i>
-      <span>Ganti Nama & Foto Profil</span>
-    </button>
-    <button onclick="keluarDariPasarRT36(); document.getElementById('dropdown-pengaturan').classList.add('hidden');" class="w-full text-left px-3 py-3 hover:bg-red-50 text-red-600 font-bold flex items-center gap-2.5">
-      <i class="ph ph-sign-out text-lg text-red-600"></i>
-      <span>Keluar Akun (Logout)</span>
-    </button>
-  </div>
 
   <!-- Banner Pengumuman Admin -->
   <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
@@ -548,7 +532,7 @@
           </div>
         </div>
 
-        <!-- Tombol Titik Tiga (Menu Pengaturan / Profil / Notifikasi / Logout) -->
+        <!-- Tombol Titik Tiga (Menu Pengaturan / Notifikasi / Logout) -->
         <div class="relative">
           <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-xl text-white transition-all">
             <i class="ph ph-dots-three-vertical font-bold"></i>
@@ -1052,7 +1036,6 @@
       if (pinInputVal === pinAdminAktif) {
         isAdmin = true;
         document.getElementById('banner-admin').classList.remove('hidden');
-        document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
       } else { alert('PIN Admin RT Salah!'); }
@@ -1061,7 +1044,6 @@
     function keluarAdmin() {
       isAdmin = false;
       document.getElementById('banner-admin').classList.add('hidden');
-      document.getElementById('label-admin').innerText = 'Admin';
       terapkanFilterDanPencarian();
     }
     function bukaModalGantiPin() { document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
@@ -1217,30 +1199,6 @@
       tutupSemuaMenuSub();
     }
 
-    function toggleMenuPengaturan(event) {
-      if (event) event.stopPropagation();
-      let menu = document.getElementById('dropdown-pengaturan');
-      let btn = document.getElementById('btn-pengaturan');
-      if (menu && btn) {
-        if (menu.classList.contains('hidden')) {
-          let rect = btn.getBoundingClientRect();
-          menu.style.top = (rect.bottom + 8) + 'px';
-          menu.style.right = (window.innerWidth - rect.right) + 'px';
-          menu.classList.remove('hidden');
-        } else {
-          menu.classList.add('hidden');
-        }
-      }
-    }
-
-    document.addEventListener('click', function(e) {
-      let btn = document.getElementById('btn-pengaturan');
-      let menu = document.getElementById('dropdown-pengaturan');
-      if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
-    });
-
     function cekVerifikasiChat() {
       let pinLogin = null;
       let verifiedNama = null;
@@ -1315,7 +1273,6 @@
         } catch(e) {}
 
         tutupModalLoginPin();
-        perbaruiInfoProfilUI();
         inisialisasiChatLive();
         
         let panel = document.getElementById('panelChatWarga');
@@ -1329,7 +1286,6 @@
           localStorage.setItem('my_chat_id', 'user_pin_' + pin);
         } catch(e) {}
         tutupModalLoginPin();
-        perbaruiInfoProfilUI();
         inisialisasiChatLive();
         let panel = document.getElementById('panelChatWarga');
         let btnBuka = document.getElementById('btnBukaChat');
@@ -1350,53 +1306,6 @@
         });
       }
     });
-
-    function perbaruiInfoProfilUI() {
-      // Fungsi penyeimbang UI profil jika diperlukan
-    }
-
-    // --- GANTI PROFIL (NAMA & FOTO) DI DALAM MENU TITIK TIGA ---
-    function bukaModalGantiProfil() {
-      tutupMenuHeaderChat();
-      let modal = document.getElementById('modal-ganti-profil');
-      let inputNama = document.getElementById('editNamaWarga');
-      try {
-        if(inputNama) inputNama.value = localStorage.getItem('verified_nama_rt36') || '';
-      } catch(e) {}
-      if(modal) modal.classList.remove('hidden');
-    }
-
-    function tutupModalGantiProfil() {
-      let modal = document.getElementById('modal-ganti-profil');
-      if(modal) modal.classList.add('hidden');
-    }
-
-    function simpanProfilBaru() {
-      let namaBaru = document.getElementById('editNamaWarga').value.trim();
-      let fileInput = document.getElementById('editFotoWarga');
-      if (!namaBaru) { alert('Nama tidak boleh kosong'); return; }
-      
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        kompresGambar(fileInput.files[0], function(base64Foto) {
-          try {
-            localStorage.setItem('verified_nama_rt36', namaBaru);
-            localStorage.setItem('verified_foto_rt36', base64Foto);
-          } catch(e) {}
-          tutupModalGantiProfil();
-          perbaruiInfoProfilUI();
-          alert('Profil dan foto berhasil diperbarui!');
-          location.reload();
-        });
-      } else {
-        try {
-          localStorage.setItem('verified_nama_rt36', namaBaru);
-        } catch(e) {}
-        tutupModalGantiProfil();
-        perbaruiInfoProfilUI();
-        alert('Nama profil berhasil diperbarui!');
-        location.reload();
-      }
-    }
 
     // --- FUNGSI TOGGLE BOX CHAT ---
     function toggleBoxChat() {
@@ -1777,9 +1686,6 @@
       let dropHeader = document.getElementById('dropdownHeaderChat');
       if(dropHeader) {
         dropHeader.innerHTML = `
-          <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
-            <i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil
-          </button>
           <button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
             <i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi
           </button>
