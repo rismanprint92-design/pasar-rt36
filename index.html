@@ -133,6 +133,15 @@
       animation: pop .25s ease-out !important;
     }
     @keyframes pop{ from{ transform:scale(0.9); opacity:0 } to{ transform:scale(1); opacity:1 } }
+    
+    @keyframes shakeSlow {
+      0%, 100% { transform: rotate(0deg); }
+      20%, 60% { transform: rotate(-10deg); }
+      40%, 80% { transform: rotate(10deg); }
+    }
+    .shake-icon {
+      animation: shakeSlow 0.6s infinite ease-in-out;
+    }
   </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
@@ -267,21 +276,21 @@
     </div>
   </div>
 
-  <!-- Modal Ganti Profil & Foto Warga -->
+  <!-- Modal Ganti Profil & Foto Warga yang Login -->
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4">
-    <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3">
-      <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Warga</h3>
+    <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3 shadow-2xl">
+      <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Chat Anda</h3>
       <div>
-        <label class="block font-medium mb-1">Nama / Blok Rumah</label>
-        <input type="text" id="editNamaWarga" class="w-full border p-2 rounded-lg" placeholder="Nama anda">
+        <label class="block font-medium mb-1 text-gray-700">Nama / Blok Rumah Baru</label>
+        <input type="text" id="editNamaWarga" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-medium" placeholder="Nama anda">
       </div>
       <div>
-        <label class="block font-medium mb-1">Foto Profil Baru (Opsional)</label>
-        <input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px]">
+        <label class="block font-medium mb-1 text-gray-700">Foto Profil Baru (Opsional)</label>
+        <input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px] bg-gray-50">
       </div>
       <div class="flex gap-2 pt-2">
-        <button onclick="tutupModalGantiProfil()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button>
-        <button onclick="simpanProfilBaru()" class="w-1/2 bg-emerald-600 text-white py-2 rounded-lg font-bold">Simpan</button>
+        <button onclick="tutupModalGantiProfil()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button>
+        <button onclick="simpanProfilBaru()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold hover:bg-emerald-700">Simpan</button>
       </div>
     </div>
   </div>
@@ -486,8 +495,8 @@
     <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
   </div>
 
-  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH -->
-  <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
+  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH (BERGONCHANG / RED BALASAN) -->
+  <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-colors">
     <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
     <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
   </button>
@@ -522,7 +531,11 @@
     <!-- HEADER CHAT UTAMA -->
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
+          <!-- IKON / LOGO OBROLAN WARGA RT.36 -->
+          <div class="w-9 h-9 rounded-full bg-emerald-700 border border-emerald-400 flex items-center justify-center font-bold text-white text-xs shadow-sm flex-shrink-0">
+            RT36
+          </div>
           <div>
             <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
             <div class="flex items-center gap-1.5 mt-0.5">
@@ -532,14 +545,14 @@
           </div>
         </div>
 
-        <!-- Tombol Titik Tiga (Menu Pengaturan / Notifikasi / Logout) -->
+        <!-- TOMBOL GERIGI (GANTI TITIK TIGA) -->
         <div class="relative">
-          <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-xl text-white transition-all">
-            <i class="ph ph-dots-three-vertical font-bold"></i>
+          <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-lg text-white transition-all" title="Pengaturan Chat">
+            <i class="ph ph-gear font-bold"></i>
           </button>
           
-          <!-- Dropdown Opsi Titik 3 -->
-          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
+          <!-- Dropdown Opsi Gerigi -->
+          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
             <!-- Diisi dinamis via JS -->
           </div>
         </div>
@@ -671,7 +684,8 @@
     let pesanBalasanData = null;
     let isProsesHapus = false; 
     let menuSubAktif = null;
-    
+    let isChatInitialized = false; // Mencegah duplikasi pesan/listener saat login ulang
+
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false;
     let chatPertamaLoad = true;
 
@@ -1058,7 +1072,36 @@
       });
     }
 
-    // --- MENU TITIK TIGA DI HEADER CHAT ---
+    // --- FUNGSI GANTI PROFIL WARGA (NAMA & FOTO) ---
+    function bukaModalGantiProfil() {
+      tutupMenuHeaderChat();
+      let namaSaatIni = localStorage.getItem('verified_nama_rt36') || '';
+      document.getElementById('editNamaWarga').value = namaSaatIni;
+      document.getElementById('modal-ganti-profil').classList.remove('hidden');
+    }
+    function tutupModalGantiProfil() {
+      document.getElementById('modal-ganti-profil').classList.add('hidden');
+    }
+    function simpanProfilBaru() {
+      let namaBaru = document.getElementById('editNamaWarga').value.trim();
+      if(namaBaru.length < 2) { alert('Isi nama minimal 2 karakter!'); return; }
+
+      let fileFoto = document.getElementById('editFotoWarga').files[0];
+      if (fileFoto) {
+        kompresGambar(fileFoto, function(base64Foto) {
+          localStorage.setItem('verified_nama_rt36', namaBaru);
+          localStorage.setItem('verified_foto_rt36', base64Foto);
+          tutupModalGantiProfil();
+          alert('Profil berhasil diperbarui!');
+        });
+      } else {
+        localStorage.setItem('verified_nama_rt36', namaBaru);
+        tutupModalGantiProfil();
+        alert('Nama profil berhasil diperbarui!');
+      }
+    }
+
+    // --- MENU GERIGI DI HEADER CHAT ---
     function toggleMenuHeaderChat(event) {
       if (event) event.stopPropagation();
       let menu = document.getElementById('dropdownHeaderChat');
@@ -1224,7 +1267,6 @@
       if(modal) modal.classList.add('hidden');
     }
 
-    // --- PERBAIKAN UTAMA: FUNGSI LOGIN PIN WARGA YANG DIPERCOBAAN AGAR LANGSUNG BERFUNGSI ---
     function prosesLoginPinWarga() {
       let elNama = document.getElementById('inputNamaPin');
       let elPin = document.getElementById('inputPinSederhana');
@@ -1243,14 +1285,12 @@
         else localStorage.setItem('my_device_uid', deviceUniqueId);
       } catch(e){}
 
-      // Langsung simpan sesi ke localStorage dan aktifkan chat tanpa kendala blokir perangkat
       try {
         localStorage.setItem('chat_pin_rt36', pin);
         localStorage.setItem('verified_nama_rt36', nama);
         localStorage.setItem('my_chat_id', 'user_pin_' + pin);
       } catch(e) {}
 
-      // Sinkronisasi ringan ke Firebase di latar belakang tanpa menghambat respon tombol
       try {
         activeDeviceRef.child(pin).set(deviceUniqueId);
       } catch(e) {}
@@ -1286,6 +1326,8 @@
         p.classList.remove('hidden');
         if(b) {
           b.classList.add('hidden');
+          b.classList.remove('shake-icon', 'bg-red-500');
+          b.classList.add('bg-[#25D366]');
         }
         try {
           history.pushState({ chatOpen: true }, '');
@@ -1307,7 +1349,6 @@
       }
     });
 
-    // --- PENANGANAN DETEKSI KETIKAN TEKS ---
     function cekKetik() {
       let teksInput = document.getElementById('teksPesanWarga');
       if (!teksInput) return;
@@ -1365,6 +1406,7 @@
       if(containerPreview) containerPreview.innerHTML = '';
     }
 
+    // KIRIM PESAN WARGA (DENGAN PENCEGAHAN PESAN TERKIRIM GANDA)
     function kirimPesanWarga(){
       let teksInput = document.getElementById('teksPesanWarga');
       if (!teksInput) return;
@@ -1399,12 +1441,13 @@
         dataKirim.replyContent = pesanBalasanData.pesan;
       }
 
-      database.ref('pesan_warga').push(dataKirim).then(() => {
-        teksInput.value = '';
-        teksInput.style.height = 'auto';
-        batalkanBalasChat();
-        cekKetik();
-      }).catch(err => {
+      // Bersihkan teks input langsung agar pengguna tidak klik berulang
+      teksInput.value = '';
+      teksInput.style.height = 'auto';
+      batalkanBalasChat();
+      cekKetik();
+
+      database.ref('pesan_warga').push(dataKirim).catch(err => {
         alert('Gagal mengirim pesan: ' + err.message);
       });
     }
@@ -1495,15 +1538,19 @@
       if(iconKotak) iconKotak.classList.remove('hidden');
     }
 
-    function bunyikanNotifikasi(){
-      if(isProsesHapus || suaraIndex === 'off' || chatPertamaLoad) return; 
-      try{ 
-        let audio = document.getElementById('notifSound');
-        if(audio) {
-          audio.currentTime = 0;
-          audio.play().catch(()=>{});
+    function triggerNotifChat(isBalasan) {
+      let panel = document.getElementById('panelChatWarga');
+      let btnBuka = document.getElementById('btnBukaChat');
+
+      // Jika panel chat sedang tertutup
+      if (panel && panel.classList.contains('hidden') && btnBuka) {
+        btnBuka.classList.add('shake-icon');
+        if (isBalasan) {
+          // Warna Merah + Goyang saat ada balasan
+          btnBuka.classList.remove('bg-[#25D366]');
+          btnBuka.classList.add('bg-red-500');
         }
-      }catch(e){}
+      }
     }
 
     function hapusPesanWarga(keyPesan, idPengirim) {
@@ -1548,9 +1595,14 @@
     }
 
     function inisialisasiChatLive() {
+      if (isChatInitialized) return; // Mencegah pendaftaran ganda event listener Firebase
+      isChatInitialized = true;
+
       let myId = 'tamu_' + Date.now();
+      let myNama = '';
       try {
         myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
+        myNama = localStorage.getItem('verified_nama_rt36') || '';
       } catch(e) {}
 
       let audio = document.getElementById('notifSound');
@@ -1645,7 +1697,12 @@
         `;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
-        bunyikanNotifikasi();
+
+        // Goyangkan tombol chat jika ada pesan masuk, dan jadikan merah jika berupa balasan ke user
+        if (!chatPertamaLoad && !isMe) {
+          let isBalasanKeSaya = (data.replyTo && myNama && data.replyTo.toLowerCase() === myNama.toLowerCase());
+          triggerNotifChat(isBalasanKeSaya);
+        }
       });
 
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
@@ -1655,6 +1712,9 @@
       let dropHeader = document.getElementById('dropdownHeaderChat');
       if(dropHeader) {
         dropHeader.innerHTML = `
+          <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
+            <i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil
+          </button>
           <button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
             <i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi
           </button>
