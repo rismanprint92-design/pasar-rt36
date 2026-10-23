@@ -70,14 +70,17 @@
     }
     body{ background:#f6f7f9 !important; font-family: 'Inter', system-ui, sans-serif !important; }
     header{ backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important; }
-    input[placeholder*="Cari"]{
-      border-radius:9999px !important;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
-      border:1px solid #eef2f7 !important;
-      background:white !important;
-      padding-top:12px !important;
-      padding-bottom:12px !important;
+    
+    /* Desain Kotak Pencarian Baru sesuai referensi gambar */
+    .search-box-custom {
+      border-radius: 9999px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+      border: 1px solid #e2e8f0 !important;
+      background: white !important;
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
     }
+
     #filter-kategori button, .kategori-btn{
       background:white !important;
       border:1px solid #eef2f7 !important;
@@ -147,7 +150,7 @@
 <body class="bg-gray-100 pb-24 font-sans">
 
   <!-- HEADER UTAMA BARIS PALING ATAS -->
-  <header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center relative">
+  <header class="bg-[#075E54] text-white py-3 px-4 shadow-md flex justify-between items-center sticky top-0 z-40">
     <div>
       <h1 class="font-bold text-[16px] md:text-[18px]">Pasar RT. 36 AR & Metroland</h1>
       <p class="text-[11px] text-emerald-100">Beli dari tetangga, bantu ekonomi warga</p>
@@ -163,7 +166,7 @@
   </header>
 
   <!-- Banner Pengumuman Admin -->
-  <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[50px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
+  <div id="banner-admin" class="hidden bg-amber-500 text-white text-xs p-2.5 sticky top-[57px] z-30 shadow-inner flex justify-between items-center px-4 max-w-md mx-auto font-medium">
     <span>⚠️ Mode Admin RT Aktif</span>
     <div class="flex gap-2 items-center">
       <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">Ubah PIN</button>
@@ -171,15 +174,15 @@
     </div>
   </div>
 
-  <!-- Filter & Pencarian -->
+  <!-- Filter & Pencarian (Posisi Sticky tepat di bawah header agar tidak turun saat scroll) -->
   <main class="max-w-md mx-auto p-4">
-    <div id="search-bar-container" class="sticky top-[56px] z-30 bg-gray-100 pt-1 pb-2">
+    <div id="search-bar-container" class="sticky top-[57px] z-30 bg-gray-100 pt-2 pb-2">
       <div class="flex gap-2 items-center">
         <div class="relative flex-1">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-            <i class="ph ph-magnifying-glass text-base"></i>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-orange-500">
+            <i class="ph ph-magnifying-glass text-lg font-bold"></i>
           </span>
-          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-emerald-500 shadow-sm">
+          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
         </div>
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
           <i class="ph ph-chat-circle-dots text-lg"></i>
@@ -495,7 +498,7 @@
     <button onclick="geserFotoZoom(1)" class="absolute right-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❯</button>
   </div>
 
-  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH (BERGONCHANG / RED BALASAN) -->
+  <!-- TOMBOL FLOATING CHAT DI KANAN BAWAH -->
   <button onclick="toggleBoxChat()" id="btnBukaChat" class="fixed bottom-5 right-5 z-[998] bg-[#25D366] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-colors">
     <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M20.5 11C20.5 16.24 16.24 20.5 11 20.5C8.82 20.5 6.8 19.74 5.2 18.45L2 20.5L3.75 16.8C2.66 15.2 2 13.2 2 11C2 5.76 6.24 1.5 11.5 1.5S20.5 5.76 20.5 11Z"></path><circle cx="8" cy="11" r="1.5" fill="#075E54"></circle><circle cx="12" cy="11" r="1.5" fill="#075E54"></circle><circle cx="16" cy="11" r="1.5" fill="#075E54"></circle></svg>
     <span id="badgeBaru" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">!</span>
@@ -532,7 +535,6 @@
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2.5">
-          <!-- IKON / LOGO OBROLAN WARGA RT.36 -->
           <div class="w-9 h-9 rounded-full bg-emerald-700 border border-emerald-400 flex items-center justify-center font-bold text-white text-xs shadow-sm flex-shrink-0">
             RT36
           </div>
@@ -545,13 +547,12 @@
           </div>
         </div>
 
-        <!-- TOMBOL GERIGI (GANTI TITIK TIGA) -->
+        <!-- TOMBOL GERIGI -->
         <div class="relative">
           <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-lg text-white transition-all" title="Pengaturan Chat">
             <i class="ph ph-gear font-bold"></i>
           </button>
           
-          <!-- Dropdown Opsi Gerigi -->
           <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
             <!-- Diisi dinamis via JS -->
           </div>
@@ -684,7 +685,7 @@
     let pesanBalasanData = null;
     let isProsesHapus = false; 
     let menuSubAktif = null;
-    let isChatInitialized = false; // Mencegah duplikasi pesan/listener saat login ulang
+    let isChatInitialized = false;
 
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false;
     let chatPertamaLoad = true;
@@ -1406,7 +1407,6 @@
       if(containerPreview) containerPreview.innerHTML = '';
     }
 
-    // KIRIM PESAN WARGA (DENGAN PENCEGAHAN PESAN TERKIRIM GANDA)
     function kirimPesanWarga(){
       let teksInput = document.getElementById('teksPesanWarga');
       if (!teksInput) return;
@@ -1441,7 +1441,6 @@
         dataKirim.replyContent = pesanBalasanData.pesan;
       }
 
-      // Bersihkan teks input langsung agar pengguna tidak klik berulang
       teksInput.value = '';
       teksInput.style.height = 'auto';
       batalkanBalasChat();
@@ -1538,19 +1537,20 @@
       if(iconKotak) iconKotak.classList.remove('hidden');
     }
 
+    // Memperbaiki notifikasi agar selain bergetar/merah, juga membunyikan suara
     function triggerNotifChat(isBalasan) {
       let panel = document.getElementById('panelChatWarga');
       let btnBuka = document.getElementById('btnBukaChat');
 
-      // Jika panel chat sedang tertutup
       if (panel && panel.classList.contains('hidden') && btnBuka) {
         btnBuka.classList.add('shake-icon');
         if (isBalasan) {
-          // Warna Merah + Goyang saat ada balasan
           btnBuka.classList.remove('bg-[#25D366]');
           btnBuka.classList.add('bg-red-500');
         }
       }
+      // Bunyikan suara notifikasi secara aktif
+      bunyikanNotifikasi();
     }
 
     function hapusPesanWarga(keyPesan, idPengirim) {
@@ -1595,7 +1595,7 @@
     }
 
     function inisialisasiChatLive() {
-      if (isChatInitialized) return; // Mencegah pendaftaran ganda event listener Firebase
+      if (isChatInitialized) return;
       isChatInitialized = true;
 
       let myId = 'tamu_' + Date.now();
@@ -1698,7 +1698,6 @@
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
 
-        // Goyangkan tombol chat jika ada pesan masuk, dan jadikan merah jika berupa balasan ke user
         if (!chatPertamaLoad && !isMe) {
           let isBalasanKeSaya = (data.replyTo && myNama && data.replyTo.toLowerCase() === myNama.toLowerCase());
           triggerNotifChat(isBalasanKeSaya);
