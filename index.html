@@ -71,6 +71,7 @@
     body{ background:#f6f7f9 !important; font-family: 'Inter', system-ui, sans-serif !important; }
     header{ backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important; }
     
+    /* Desain Kotak Pencarian Baru sesuai referensi gambar */
     .search-box-custom {
       border-radius: 9999px !important;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
@@ -173,7 +174,7 @@
     </div>
   </div>
 
-  <!-- Filter & Pencarian -->
+  <!-- Filter & Pencarian (Posisi Sticky tepat di bawah header agar tidak turun saat scroll) -->
   <main class="max-w-md mx-auto p-4">
     <div id="search-bar-container" class="sticky top-[57px] z-30 bg-gray-100 pt-2 pb-2">
       <div class="flex gap-2 items-center">
@@ -278,7 +279,7 @@
     </div>
   </div>
 
-  <!-- Modal Ganti Profil & Foto Warga yang Login (Dilengkapi kompres otomatis & maks 3 foto) -->
+  <!-- Modal Ganti Profil & Foto Warga yang Login -->
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4">
     <div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3 shadow-2xl">
       <h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Chat Anda</h3>
@@ -287,7 +288,7 @@
         <input type="text" id="editNamaWarga" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-medium" placeholder="Nama anda">
       </div>
       <div>
-        <label class="block font-medium mb-1 text-gray-700">Foto Profil Baru (Maks 1 Foto, Kompres Otomatis)</label>
+        <label class="block font-medium mb-1 text-gray-700">Foto Profil Baru (Opsional)</label>
         <input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px] bg-gray-50">
       </div>
       <div class="flex gap-2 pt-2">
@@ -488,7 +489,7 @@
   </div>
 
   <!-- Modal Zoom Foto -->
-  <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-[1050] p-2">
+  <div id="modal-zoom" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center z-50 p-2">
     <button onclick="tutupModalZoom()" class="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 px-3 py-1 rounded-full hover:bg-black z-10">✕</button>
     <button onclick="geserFotoZoom(-1)" class="absolute left-4 text-white text-3xl font-bold bg-black/50 px-4 py-2 rounded-full hover:bg-black z-10">❮</button>
     <div class="relative max-w-full max-h-[80vh] flex items-center justify-center overflow-auto">
@@ -852,7 +853,6 @@
       tutupModalInfoAdmin();
     }
 
-    // Fungsi otomatis kompres gambar dengan batas ukuran optimal
     function kompresGambar(file, callback) {
       if (file.size < 200 * 1024) {
         const reader = new FileReader();
@@ -1073,7 +1073,7 @@
       });
     }
 
-    // --- FUNGSI GANTI PROFIL WARGA (NAMA & FOTO) DENGAN KOMPRES OTOMATIS ---
+    // --- FUNGSI GANTI PROFIL WARGA (NAMA & FOTO) ---
     function bukaModalGantiProfil() {
       tutupMenuHeaderChat();
       let namaSaatIni = localStorage.getItem('verified_nama_rt36') || '';
@@ -1301,14 +1301,7 @@
       
       let panel = document.getElementById('panelChatWarga');
       let btnBuka = document.getElementById('btnBukaChat');
-      if(panel) {
-        panel.classList.remove('hidden');
-        // Scroll otomatis ke bawah / chat terbaru saat pertama kali dibuka
-        setTimeout(() => {
-          let box = document.getElementById('boxChatWarga');
-          if(box) box.scrollTop = box.scrollHeight;
-        }, 150);
-      }
+      if(panel) panel.classList.remove('hidden');
       if(btnBuka) btnBuka.classList.add('hidden');
     }
 
@@ -1337,12 +1330,6 @@
           b.classList.remove('shake-icon', 'bg-red-500');
           b.classList.add('bg-[#25D366]');
         }
-        // Scroll otomatis ke chat terbaru saat panel dibuka
-        setTimeout(() => {
-          let box = document.getElementById('boxChatWarga');
-          if(box) box.scrollTop = box.scrollHeight;
-        }, 100);
-
         try {
           history.pushState({ chatOpen: true }, '');
         } catch(e) {}
@@ -1464,17 +1451,9 @@
       });
     }
 
-    // Kirim foto di chat dengan kompres otomatis dan maksimal 3 foto (penanganan single file / multiple)
     function kirimFoto(input){
       if(!cekVerifikasiChat()) return;
-      if(!input.files || input.files.length === 0) return;
-      
-      let filesToUpload = Array.from(input.files);
-      if(filesToUpload.length > 3) {
-        alert('Maksimal mengirim 3 foto sekaligus!');
-        return;
-      }
-
+      if(!input.files[0]) return;
       let verifiedNama = 'Warga';
       let verifiedFoto = '';
       let myId = 'tamu_' + Date.now();
@@ -1484,19 +1463,9 @@
         myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
 
-      filesToUpload.forEach(file => {
-        kompresGambar(file, function(base64Img) {
-          let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-          database.ref('pesan_warga').push({
-            nama: verifiedNama, 
-            fotoProfil: verifiedFoto, 
-            pesan: base64Img, 
-            waktu: jam, 
-            userId: myId, 
-            timestamp: Date.now(), 
-            tipe: 'foto'
-          });
-        });
+      kompresGambar(input.files[0], function(base64Img) {
+        let jam = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        database.ref('pesan_warga').push({nama: verifiedNama, fotoProfil: verifiedFoto, pesan: base64Img, waktu: jam, userId: myId, timestamp: Date.now(), tipe: 'foto'});
       });
       input.value='';
     }
@@ -1568,7 +1537,7 @@
       if(iconKotak) iconKotak.classList.remove('hidden');
     }
 
-    // Fungsi notifikasi lengkap: tombol goyang, berubah merah jika balasan, dan membunyikan suara
+    // Memperbaiki notifikasi agar selain bergetar/merah, juga membunyikan suara
     function triggerNotifChat(isBalasan) {
       let panel = document.getElementById('panelChatWarga');
       let btnBuka = document.getElementById('btnBukaChat');
@@ -1580,6 +1549,7 @@
           btnBuka.classList.add('bg-red-500');
         }
       }
+      // Bunyikan suara notifikasi secara aktif
       bunyikanNotifikasi();
     }
 
@@ -1681,8 +1651,7 @@
 
         let isiPesan = data.pesan;
         if (data.tipe === 'foto') {
-          // Dilengkapi fungsi dblclick untuk zoom foto dengan 2 kali klik
-          isiPesan = `<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)" ondblclick="bukaModalZoom(['${data.pesan}'], 0)" title="Klik 2 kali untuk Zoom">`;
+          isiPesan = `<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)">`;
         } else if (data.tipe === 'voice') {
           isiPesan = `<audio controls src="${data.pesan}" class="max-w-[220px] h-10"></audio>`;
         } else if (data.tipe === 'lokasi') {
