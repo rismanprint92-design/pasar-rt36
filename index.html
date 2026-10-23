@@ -147,8 +147,9 @@
       <button onclick="bukaModalJual()" class="bg-white text-emerald-600 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-emerald-50">
         + Jual
       </button>
+      <!-- IKON GERIGI DIGANTI IKON ADMIN (PERISAI) -->
       <button onclick="toggleModeAdmin()" id="btn-pengaturan" class="bg-emerald-700 text-white p-2 rounded-lg border border-emerald-500 hover:bg-emerald-800 flex items-center justify-center shadow" title="Mode Admin RT">
-        <i class="ph ph-gear text-base"></i>
+        <i class="ph ph-shield-check text-base"></i>
       </button>
     </div>
   </header>
@@ -1244,7 +1245,6 @@
         else localStorage.setItem('my_device_uid', deviceUniqueId);
       } catch(e){}
 
-      // Cek apakah PIN ini sedang aktif di perangkat lain
       activeDeviceRef.child(pin).once('value', snapshot => {
         let activeDev = snapshot.val();
         if(activeDev && activeDev !== deviceUniqueId) {
@@ -1294,7 +1294,6 @@
       });
     }
 
-    // Event listener agar tombol Enter pada input PIN ikut memicu login
     document.addEventListener('DOMContentLoaded', function() {
       let pinInputEl = document.getElementById('inputPinSederhana');
       if(pinInputEl) {
