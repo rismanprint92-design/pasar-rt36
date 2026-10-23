@@ -510,24 +510,24 @@
 
   <audio id="notifSound" preload="auto" playsinline></audio>
 
-  <!-- MODAL LOGIN / VERIFIKASI WARGA -->
+  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (1 Perangkat Saja) -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-[28px] p-8 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
-      <div class="w-28 h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-[0_8px_30px_rgba(37,211,102,0.3)] ring-4 ring-[#25D366]/20 ring-offset-2"><img src="logo_rt36_bulat.png" class="w-full h-full object-cover"></div>
-      <h2 class="font-bold text-[18px] text-[#075E54] text-center">Login Warga RT.36</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Silakan isi nama & no. HP WA Anda sendiri untuk verifikasi ke Admin RT.</p>
+    <div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50">
+      <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div>
+      <h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2>
+      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan Nama dan PIN Anda. 1 PIN hanya dapat aktif di 1 perangkat secara bersamaan.</p>
       
-      <div class="mt-3 bg-gradient-to-r from-[#075E54] to-[#128C7E] rounded-full py-2 overflow-hidden">
-        <div id="runningTextOnline" class="flex whitespace-nowrap" style="animation: marquee 12s linear infinite;">
-          <span class="text-white text-[11px] font-bold mx-4">✨ SELAMAT DATANG DI PASAR RT.36 ✨</span>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH</label>
+          <input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
         </div>
-      </div>
-      <style>@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</style>
-
-      <div id="step1Verif" class="mt-5 space-y-3">
-        <div><label class="text-[11px] font-bold">NAMA / BLOK RUMAH</label><input type="text" id="inputNama" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <div><label class="text-[11px] font-bold">NO. WA ANDA SENDIRI</label><input type="tel" id="inputWA" placeholder="0852xxxx" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none transition-all"></div>
-        <button onclick="prosesKirimVerifikasiWA(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl active:scale-[0.98] transition-all mt-2">Minta Persetujuan via WA Admin 📲</button>
+        <div>
+          <label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label>
+          <input type="password" id="inputPinSederhana" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+        </div>
+        <button onclick="prosesLoginPinWarga(event)" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">Masuk Chat 💬</button>
+        <button onclick="tutupModalLoginPin()" class="w-full bg-gray-100 text-gray-600 font-medium py-2.5 rounded-xl text-xs">Batal</button>
       </div>
     </div>
   </div>
@@ -539,8 +539,7 @@
     <div class="bg-[#075E54] text-white p-3 shadow-md relative">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <!-- Lingkaran Hijau: Klik untuk Ganti Profil -->
-          <div id="headerAvatar" onclick="bukaModalGantiProfil()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#075E54] font-bold text-sm overflow-hidden flex-shrink-0 ring-2 ring-emerald-300/45 cursor-pointer hover:opacity-90 transition-all" title="Klik untuk ganti foto & nama profil">RT</div>
+          <!-- Logo Header (Foto profil dihapus dari baris utama header sesuai permintaan) -->
           <div>
             <h4 id="judulHeaderChat" class="font-bold text-[14px] leading-tight">Obrolan Warga RT.36</h4>
             <div class="flex items-center gap-1.5 mt-0.5">
@@ -550,44 +549,33 @@
           </div>
         </div>
 
-        <!-- Tombol Titik Tiga (Option Menu) -->
+        <!-- Tombol Titik Tiga (Menu Pengaturan / Profil / Notifikasi / Logout) -->
         <div class="relative">
           <button onclick="toggleMenuHeaderChat(event)" id="btnMenuHeader" class="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center text-xl text-white transition-all">
             <i class="ph ph-dots-three-vertical font-bold"></i>
           </button>
           
           <!-- Dropdown Opsi Titik 3 -->
-          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
-            <button onclick="toggleNotifikasi(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50 flex items-center gap-2.5 font-medium border-b">
-              <span class="text-base">🔔</span>
-              <span>Suara Notifikasi</span>
-            </button>
-            <button onclick="toggleBoxChat(); tutupMenuHeaderChat();" class="w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-bold">
-              <span class="text-base">❌</span>
-              <span>Tutup Chat</span>
-            </button>
+          <div id="dropdownHeaderChat" class="hidden absolute right-0 top-10 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-[1000] text-xs text-gray-700">
+            <!-- Diisi dinamis via JS / Inisialisasi -->
           </div>
         </div>
       </div>
 
-      <!-- SUB-HEADER INFORMASI PROFIL CHAT GROUP & PROFIL AKUN LOGIN -->
+      <!-- SUB-HEADER INFORMASI PROFIL & GRUP -->
       <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-emerald-100">
-        <!-- Lingkaran Merah: Daftar Warga Online untuk Chat Pribadi -->
         <div id="daftarWargaOnlineBar" class="flex items-center gap-1.5 overflow-x-auto max-w-[220px] pb-1 no-scrollbar">
           <span class="bg-emerald-700/70 text-emerald-200 px-2 py-1 rounded-md font-medium border border-emerald-500/30 whitespace-nowrap">
             👥 Grup RT
           </span>
         </div>
 
-        <!-- Lingkaran Biru: Profil Akun Login (Klik untuk Ganti Foto/Nama) -->
-        <div onclick="bukaModalGantiProfil()" class="flex items-center gap-1 truncate max-w-[140px] cursor-pointer bg-emerald-800/70 px-2 py-1 rounded-lg border border-emerald-500/30 hover:bg-emerald-700 transition-all flex-shrink-0" title="Klik untuk ganti foto & nama profil">
-          <div id="miniAvatarBar" class="w-4 h-4 rounded-full overflow-hidden bg-emerald-600 flex items-center justify-center font-bold text-[9px] text-white flex-shrink-0"></div>
+        <div class="flex items-center gap-1 truncate max-w-[140px] bg-emerald-800/70 px-2 py-1 rounded-lg border border-emerald-500/30 flex-shrink-0">
           <span class="text-white/70">Login:</span>
           <span id="myWALabel" class="font-bold text-amber-300 truncate"></span>
         </div>
       </div>
 
-      <!-- TEKS OTOMATIS 24 JAM -->
       <div id="teksNotif24Jam" class="hidden mt-1.5 bg-black/20 rounded-md py-0.5 px-2 text-[9.5px] text-amber-200 italic flex items-center gap-1 justify-center">
         <span>🕒</span> Pesan otomatis terhapus setelah 24 jam
       </div>
@@ -596,7 +584,7 @@
     <!-- MENU PILIHAN SUARA NOTIFIKASI -->
     <div id="menuPilihanSuara" class="hidden bg-white border-b p-3 shadow-lg">
       <div class="flex justify-between items-center mb-2">
-        <p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI (6 PILIHAN):</p>
+        <p class="text-[11px] font-bold text-[#075E54]">PILIH SUARA NOTIFIKASI:</p>
         <span class="text-[10px] text-gray-400 italic">Tekan Back HP untuk tutup</span>
       </div>
       <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
@@ -684,15 +672,6 @@
     .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } 
     .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; }
     .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }
-    
-    @keyframes goyangHalus {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-5deg); }
-      50% { transform: rotate(5deg); }
-      75% { transform: rotate(-5deg); }
-      100% { transform: rotate(0deg); }
-    }
-    .icon-goyang { animation: goyangHalus 0.5s infinite ease-in-out; }
   </style>
 
   <!-- LOGIKA JAVASCRIPT APLIKASI -->
@@ -715,7 +694,7 @@
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
-    const pendingWargaRef = database.ref('warga_pending_approval');
+    const activeDeviceRef = database.ref('active_device_pins');
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
@@ -743,7 +722,6 @@
       suaraIndex = localStorage.getItem('suara_pilihan_rt36') || '0';
     } catch(e) {}
 
-    // Unlock Audio untuk Browser Modern
     document.addEventListener('click', function unlockAudio() {
       let audio = document.getElementById('notifSound');
       if (audio) {
@@ -771,7 +749,6 @@
       btn.innerText = teks.classList.contains('buka') ? 'Sembunyikan ▲' : 'Lihat selengkapnya ▼';
     }
 
-    // --- PENGATURAN ADMIN & FIREBASE REALTIME PRODUK ---
     pinRef.on('value', (snapshot) => {
       const pinDb = snapshot.val();
       if (pinDb) { pinAdminAktif = pinDb; }
@@ -1004,6 +981,7 @@
         muatDataKeFormEdit(id);
       } else { alert('PIN Penjual salah!'); }
     }
+
     function muatDataKeFormEdit(id) {
       const produk = produkData.find(p => p.id === id);
       if (!produk) return;
@@ -1070,34 +1048,7 @@
       tutupModalShare();
     }
 
-    // --- ADMIN MODE ---
     function toggleModeAdmin() {
-      let urlParams = new URLSearchParams(window.location.search);
-      let verifyToken = urlParams.get('verify');
-      let verifyNama = urlParams.get('nama');
-      let verifyWa = urlParams.get('wa');
-
-      if (verifyToken && verifyNama) {
-        let inputPin = prompt(`APPROVAL WARGA BARU\n\nNama/Blok: ${verifyNama}\nNo WA: ${verifyWa}\n\nMasukkan PIN Admin RT:`);
-        if (inputPin !== null) {
-          if (inputPin === pinAdminAktif) {
-            pendingWargaRef.child(verifyToken).set({
-              nama: verifyNama,
-              wa: verifyWa,
-              status: 'approved',
-              approvedAt: Date.now()
-            }).then(() => {
-              alert(`BERHASIL! Akun warga atas nama "${verifyNama}" telah disetujui & diaktifkan.`);
-              window.history.replaceState({}, document.title, window.location.pathname);
-              location.reload();
-            });
-          } else {
-            alert("PIN Admin RT Salah!");
-          }
-        }
-        return;
-      }
-
       if (isAdmin) { keluarAdmin(); }
       else { 
         let modalAdmin = document.getElementById('modal-login-admin');
@@ -1121,24 +1072,6 @@
         document.getElementById('label-admin').innerText = 'Pengurus (Aktif)';
         tutupModalAdmin();
         terapkanFilterDanPencarian();
-
-        let urlParams = new URLSearchParams(window.location.search);
-        let verifyToken = urlParams.get('verify');
-        let verifyNama = urlParams.get('nama');
-        let verifyWa = urlParams.get('wa');
-        if (verifyToken && verifyNama) {
-          if (confirm(`Setujui nomor warga aktif "${verifyNama}" (${verifyWa})?`)) {
-            pendingWargaRef.child(verifyToken).set({
-              nama: verifyNama,
-              wa: verifyWa,
-              status: 'approved',
-              approvedAt: Date.now()
-            }).then(() => {
-              alert(`Berhasil! Nomor WA warga ${verifyNama} telah dikonfirmasi dan disetujui.`);
-              window.history.replaceState({}, document.title, window.location.pathname);
-            });
-          }
-        }
       } else { alert('PIN Admin RT Salah!'); }
     }
 
@@ -1180,7 +1113,7 @@
       }
     });
 
-    // --- LOGIKA LIVE CHAT & CHAT PRIBADI ---
+    // --- LOGIKA LIVE CHAT & PIN LOGIN WARGA (1 Perangkat Saja) ---
     function tutupSemuaMenuSub() {
       let s = document.getElementById('menuPilihanSuara');
       let l = document.getElementById('menuLampiran');
@@ -1204,6 +1137,7 @@
         m.classList.add('hidden');
         menuSubAktif = null;
       }
+      tutupMenuHeaderChat();
     }
 
     function toggleMenuLampiran() {
@@ -1257,11 +1191,11 @@
 
     function kirimStiker(teksStiker) {
       if(!cekVerifikasiChat()) return;
-      let verifiedNama = 'Warga Tamu';
+      let verifiedNama = 'Warga';
       let verifiedFoto = '';
       let myId = 'tamu_' + Date.now();
       try {
-        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
         verifiedFoto = localStorage.getItem('verified_foto_rt36') || '';
         myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
       } catch(e) {}
@@ -1325,16 +1259,16 @@
     });
 
     function cekVerifikasiChat() {
-      let verifiedPhone = null;
+      let pinLogin = null;
       let verifiedNama = null;
       try {
-        verifiedPhone = localStorage.getItem('verified_wa_rt36');
+        pinLogin = localStorage.getItem('chat_pin_rt36');
         verifiedNama = localStorage.getItem('verified_nama_rt36');
       } catch(e) {}
 
       let modal = document.getElementById('modalVerifWA');
 
-      if (!verifiedPhone || !verifiedNama) {
+      if (!pinLogin || !verifiedNama) {
         if (modal) modal.classList.remove('hidden');
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
@@ -1345,117 +1279,70 @@
       return true;
     }
     
-    // --- PROSES KIRIM VERIFIKASI WARGA ---
-    function prosesKirimVerifikasiWA(event) {
-      let elNama = document.getElementById('inputNama');
-      let elPhone = document.getElementById('inputWA');
-      if(!elNama || !elPhone) return;
-      
-      let nama = elNama.value.trim();
-      let phone = elPhone.value.trim();
-      
-      if(nama.length < 3){ alert('Isi nama lengkap / blok rumah dulu bosku!'); return; }
-      if(phone.length < 10){ alert('Isi No. WA milik Anda sendiri dulu bosku!'); return; }
-      
-      let nomorWarga = phone.replace(/\D/g,'');
-      if (nomorWarga.startsWith('0')) nomorWarga = '62' + nomorWarga.slice(1);
-      
-      let tokenVerif = 'VERIF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-      pendingWargaRef.child(tokenVerif).set({
-        nama: nama,
-        wa: nomorWarga,
-        status: 'pending',
-        timestamp: Date.now()
-      });
-
-      try {
-        localStorage.setItem('verified_wa_rt36', nomorWarga);
-        localStorage.setItem('verified_nama_rt36', nama);
-        localStorage.setItem('status_verif_rt36', 'pending');
-        localStorage.setItem('my_chat_id', 'warga_' + nomorWarga.slice(-4));
-      } catch(e) {}
-
-      let nomorAdmin = adminWaAktif.replace(/\D/g, '');
-      if (nomorAdmin.startsWith('0')) nomorAdmin = '62' + nomorAdmin.slice(1);
-
-      let baseUrl = window.location.origin + window.location.pathname;
-      let linkApprovalAdmin = `${baseUrl}?verify=${tokenVerif}&nama=${encodeURIComponent(nama)}&wa=${nomorWarga}`;
-      
-      let teksUntukAdmin = "Halo Admin RT.36,\n\nSaya ingin meminta persetujuan aktivasi akun warga:\n*Nama / Blok:* " + nama + "\n*No. WA Saya:* " + nomorWarga + "\n\nSilakan klik link di bawah untuk menyetujui:\n" + linkApprovalAdmin;
-
-      let linkWaAdminDirect = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksUntukAdmin)}`;
-
-      let pesanKeWaWargaSendiri = "Halo " + nama + ",\n\nIni adalah draf permintaan persetujuan akun warga RT.36.\n\n" +
-        "Silakan KLIK LINK WHATSAPP ADMIN di bawah ini untuk membuka chat dengan Admin dan mengirimkan pesan persetujuan:\n\n" +
-        "👉 " + linkWaAdminDirect;
-
-      window.open(`https://wa.me/${nomorWarga}?text=${encodeURIComponent(pesanKeWaWargaSendiri)}`, '_blank');
-      
-      document.getElementById('modalVerifWA').classList.add('hidden');
-      alert('Pesan draf telah dibuka di WhatsApp Anda! Silakan klik link WhatsApp Admin yang ada di dalam chat tersebut untuk meneruskan persetujuan ke Admin RT.');
-      perbaruiInfoProfilUI();
-      pantauPersetujuanWarga(tokenVerif);
+    function tutupModalLoginPin() {
+      let modal = document.getElementById('modalVerifWA');
+      if(modal) modal.classList.add('hidden');
     }
 
-    function pantauPersetujuanWarga(token) {
-      if (!token) return;
-      pendingWargaRef.child(token).on('value', snapshot => {
-        let val = snapshot.val();
-        if (val && val.status === 'approved') {
+    // --- PROSES LOGIN PIN (SATU PIN HANYA SATU PERANGKAT) ---
+    function prosesLoginPinWarga(event) {
+      let elNama = document.getElementById('inputNamaPin');
+      let elPin = document.getElementById('inputPinSederhana');
+      if(!elNama || !elPin) return;
+      
+      let nama = elNama.value.trim();
+      let pin = elPin.value.trim();
+      
+      if(nama.length < 2){ alert('Isi nama atau blok rumah dulu!'); return; }
+      if(pin.length < 3){ alert('Isi PIN minimal 3 digit!'); return; }
+      
+      let deviceUniqueId = 'dev_' + Math.random().toString(36).substring(2, 10);
+      try {
+        let existingDev = localStorage.getItem('my_device_uid');
+        if(existingDev) deviceUniqueId = existingDev;
+        else localStorage.setItem('my_device_uid', deviceUniqueId);
+      } catch(e){}
+
+      // Cek apakah PIN ini sudah dipakai di perangkat lain
+      activeDeviceRef.child(pin).once('value', snapshot => {
+        let activeDev = snapshot.val();
+        if(activeDev && activeDev !== deviceUniqueId) {
+          alert('⚠️ PIN ini sedang Aktif / Digunakan di perangkat lain!\n\nSatu PIN hanya bisa digunakan pada satu perangkat dalam satu waktu, kecuali perangkat sebelumnya melakukan Logout.');
+          return;
+        }
+
+        // Daftarkan perangkat ini ke PIN tersebut di Firebase
+        activeDeviceRef.child(pin).set(deviceUniqueId).then(() => {
           try {
-            localStorage.setItem('status_verif_rt36', 'approved');
+            localStorage.setItem('chat_pin_rt36', pin);
+            localStorage.setItem('verified_nama_rt36', nama);
+            localStorage.setItem('my_chat_id', 'user_pin_' + pin);
           } catch(e) {}
-          alert('Selamat! Akun warga Anda telah disetujui dan diaktifkan oleh Admin RT!');
-          document.getElementById('modalVerifWA').classList.add('hidden');
+
+          tutupModalLoginPin();
+          alert('Berhasil masuk chat!');
           perbaruiInfoProfilUI();
           inisialisasiChatLive();
-        }
+          muatDaftarWargaOnline();
+        });
       });
     }
 
     function perbaruiInfoProfilUI() {
-      let nama = 'Warga Tamu';
+      let nama = 'Warga';
       let foto = '';
       try {
-        nama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        nama = localStorage.getItem('verified_nama_rt36') || 'Warga';
         foto = localStorage.getItem('verified_foto_rt36') || '';
       } catch(e) {}
       
       let lbl = document.getElementById('myWALabel');
       if(lbl) lbl.innerText = nama;
-      
-      let headerAvatar = document.getElementById('headerAvatar');
-      if(headerAvatar) {
-        if(foto) {
-          headerAvatar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
-        } else {
-          headerAvatar.innerHTML = `<div class="w-full h-full bg-emerald-700 text-white flex items-center justify-center font-bold">${nama.charAt(0).toUpperCase()}</div>`;
-        }
-      }
-
-      let miniBar = document.getElementById('miniAvatarBar');
-      if(miniBar) {
-        if(foto) {
-          miniBar.innerHTML = `<img src="${foto}" class="w-full h-full object-cover">`;
-        } else {
-          miniBar.innerHTML = `<span>${nama.charAt(0).toUpperCase()}</span>`;
-        }
-      }
     }
 
-    // --- PENGUBAHAN PROFIL DIKUNCI HANYA UNTUK ADMIN ---
+    // --- GANTI PROFIL (NAMA & FOTO) DI DALAM MENU TITIK TIGA ---
     function bukaModalGantiProfil() {
-      if (!isAdmin) {
-        alert("Maaf bosku, pengubahan nama atau foto profil/obrolan warga RT.36 hanya dapat diakses melalui Mode Admin RT!");
-        let menu = document.getElementById('dropdown-pengaturan');
-        if(menu) menu.classList.add('hidden');
-        return;
-      }
-
-      let menu = document.getElementById('dropdown-pengaturan');
-      if(menu) menu.classList.add('hidden');
-      
+      tutupMenuHeaderChat();
       let modal = document.getElementById('modal-ganti-profil');
       let inputNama = document.getElementById('editNamaWarga');
       try {
@@ -1498,6 +1385,7 @@
 
     // --- FUNGSI TOGGLE BOX CHAT ---
     function toggleBoxChat() {
+      if (!cekVerifikasiChat()) return;
       let p = document.getElementById('panelChatWarga');
       let b = document.getElementById('btnBukaChat');
 
@@ -1505,13 +1393,8 @@
         p.classList.remove('hidden');
         if(b) {
           b.classList.add('hidden');
-          b.classList.remove('icon-goyang');
-          b.classList.remove('bg-red-600');
-          b.classList.add('bg-emerald-600');
         }
-        
         tutupChatPribadi();
-
         try {
           history.pushState({ chatOpen: true }, '');
         } catch(e) {}
@@ -1776,14 +1659,17 @@
       }catch(e){}
     }
 
-    // --- FITUR HAPUS CHAT DIKUNCI HANYA UNTUK ADMIN ---
+    // --- FITUR HAPUS & EDIT PESAN (Bisa dilakukan oleh pengirim pesan sendiri / login chat) ---
     function hapusPesanWarga(keyPesan, idPengirim) {
-      if (!isAdmin) {
-        alert('Maaf bosku, fitur hapus chat/pesan hanya dapat diakses melalui Mode Admin RT!');
+      let myId = '';
+      try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
+
+      if (idPengirim !== myId && !isAdmin) {
+        alert('Anda hanya dapat menghapus pesan yang Anda kirim sendiri!');
         return;
       }
 
-      if (confirm('Hapus pesan ini secara permanen?')) {
+      if (confirm('Hapus pesan ini?')) {
         isProsesHapus = true; 
         database.ref('pesan_warga').child(keyPesan).remove().then(() => {
           setTimeout(() => { isProsesHapus = false; }, 2000);
@@ -1794,14 +1680,17 @@
       }
     }
 
-    function mulaiEditPesan(keyPesan, encodedPesan) {
-      if (!isAdmin) {
-        alert('Maaf bosku, fitur edit pesan hanya dapat diakses melalui Mode Admin RT!');
+    function mulaiEditPesan(keyPesan, encodedPesan, idPengirim) {
+      let myId = '';
+      try { myId = localStorage.getItem('my_chat_id') || ''; } catch(e){}
+
+      if (idPengirim !== myId && !isAdmin) {
+        alert('Anda hanya dapat mengedit pesan yang Anda kirim sendiri!');
         return;
       }
 
       let pesanLama = decodeURIComponent(encodedPesan);
-      let pesanBaru = prompt("Edit pesan warga:", pesanLama);
+      let pesanBaru = prompt("Edit pesan:", pesanLama);
       if (pesanBaru === null) return;
       pesanBaru = pesanBaru.trim();
       if (!pesanBaru) { alert("Pesan tidak boleh kosong!"); return; }
@@ -1844,7 +1733,6 @@
       inisialisasiChatLive();
     }
 
-    // --- FUNGSI MEMUAT DAFTAR WARGA ONLINE (LINGKARAN MERAH) ---
     function muatDaftarWargaOnline() {
       let barOnline = document.getElementById('daftarWargaOnlineBar');
       if(!barOnline) return;
@@ -1886,7 +1774,7 @@
       let myId = 'tamu_' + Date.now();
       try {
         myId = localStorage.getItem('my_chat_id') || ('tamu_' + Date.now());
-        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga Tamu';
+        let verifiedNama = localStorage.getItem('verified_nama_rt36') || 'Warga';
         let lbl = document.getElementById('myWALabel');
         if(lbl) lbl.innerText = verifiedNama;
       } catch(e) {}
@@ -1964,10 +1852,10 @@
         }
 
         let tombolAksiChat = '';
-        if (!targetChatPribadiId && (isAdmin && data.tipe === 'teks')) {
+        if (!targetChatPribadiId && (isMe || isAdmin) && data.tipe === 'teks') {
           tombolAksiChat = `
             <div class="flex gap-1.5 items-center">
-              <button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`)" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
+              <button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`, '${pengirimId}')" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit Pesan">✏️</button>
               <button onclick="event.stopPropagation(); hapusPesanWarga('${key}', '${pengirimId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus Pesan">🗑️</button>
             </div>
           `;
@@ -1998,28 +1886,42 @@
       setTimeout(() => { chatPertamaLoad = false; }, 3000);
     }
 
+    // --- INISIALISASI MENU TITIK TIGA DI HEADER CHAT ---
+    function updateHeaderDropdownMenu() {
+      let dropHeader = document.getElementById('dropdownHeaderChat');
+      if(dropHeader) {
+        dropHeader.innerHTML = `
+          <button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
+            <i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil
+          </button>
+          <button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium">
+            <i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi
+          </button>
+          <button onclick="keluarDariPasarRT36()" class="w-full text-left px-3.5 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2 border-b">
+            <i class="ph ph-sign-out text-base text-red-600"></i> Keluar Akun (Logout)
+          </button>
+          <button onclick="toggleBoxChat()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-600 hover:bg-gray-100 flex items-center gap-2 font-medium">
+            <i class="ph ph-x text-base"></i> Tutup Chat
+          </button>
+        `;
+      }
+    }
+
     // --- INISIALISASI SAAT HALAMAN DIMUAT ---
     window.addEventListener('load', function(){
       perbaruiInfoProfilUI();
       inisialisasiChatLive();
       muatDaftarWargaOnline();
-
-      let dropHeader = document.getElementById('dropdownHeaderChat');
-      if(dropHeader) {
-        dropHeader.innerHTML = `
-          <button onclick="toggleNotifikasi()" class="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b">
-            🔔 Pilihan Suara Notifikasi
-          </button>
-          <button onclick="toggleBoxChat()" class="w-full text-left px-4 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2">
-            ❌ Tutup Chat
-          </button>
-        `;
-      }
+      updateHeaderDropdownMenu();
     });
 
     function keluarDariPasarRT36(){
-      if(confirm('Yakin mau keluar akun?')){
+      if(confirm('Yakin mau keluar akun & hapus sesi perangkat ini?')){
         try {
+          let pin = localStorage.getItem('chat_pin_rt36');
+          if(pin) {
+            activeDeviceRef.child(pin).remove();
+          }
           localStorage.clear();
         } catch(e) {}
         location.reload();
