@@ -181,7 +181,6 @@
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-orange-500">
             <i class="ph ph-magnifying-glass text-lg font-bold"></i>
           </span>
-          <!-- Menggunakan readonly di awal lalu dibuka untuk mencegah Chrome autofill nomor WA -->
           <input type="text" id="input-pencarian" name="no_autofill_search_rt36" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" spellcheck="false" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
         </div>
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
@@ -287,20 +286,20 @@
       <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan PIN terdaftar atau buat akun baru di bawah.</p>
       
       <div class="space-y-3 mt-2">
-        <!-- Kotak Masuk PIN Sebelumnya -->
+        <!-- Kotak Masuk PIN Sebelumnya dengan readonly & autocomplete off untuk cegah pop-up sandi -->
         <div>
           <label class="text-[11px] font-bold text-[#075E54]">Masuk dengan PIN Sebelumnya</label>
-          <input type="password" id="inputPinSebelumnya" placeholder="••••" class="w-full mt-1 border border-emerald-300 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+          <input type="password" id="inputPinSebelumnya" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" placeholder="••••" class="w-full mt-1 border border-emerald-300 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
         </div>
 
         <div class="border-t pt-2 space-y-2">
           <div>
             <label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH (Untuk Daftar Baru)</label>
-            <input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-xs focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+            <input type="text" id="inputNamaPin" autocomplete="off" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-xs focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
           </div>
           <div>
             <label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label>
-            <input type="password" id="inputPinDaftarBaru" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-center font-bold tracking-widest text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+            <input type="password" id="inputPinDaftarBaru" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-center font-bold tracking-widest text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
           </div>
         </div>
 
@@ -687,6 +686,7 @@
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
     const activeDeviceRef = database.ref('active_device_pins');
+    const wargaRef = database.ref('warga_terdaftar'); // Database untuk mencatat PIN warga yang terdaftar
 
     let isAdmin = false;
     let pinAdminAktif = "1234";
@@ -1279,39 +1279,54 @@
       if(modal) modal.classList.add('hidden');
     }
 
-    // --- LOGIKA UTAMA: MASUK DENGAN PIN SEBELUMNYA ATAU DAFTAR BARU ---
+    // --- LOGIKA UTAMA: MASUK DENGAN PIN TERDAFTAR / SEBELUMNYA ATAU DAFTAR BARU (TERHUBUNG KE FIREBASE) ---
     function prosesLoginAtauDaftarWarga() {
       let pinSebelumnya = document.getElementById('inputPinSebelumnya').value.trim();
       let namaBaru = document.getElementById('inputNamaPin').value.trim();
       let pinBaru = document.getElementById('inputPinDaftarBaru').value.trim();
 
-      let savedPin = '';
-      let savedNama = '';
-      try {
-        savedPin = localStorage.getItem('chat_pin_rt36');
-        savedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
-      // Skenario 1: Warga mengisi kotak "Masuk dengan PIN Sebelumnya"
+      // Skenario 1: Warga mengetik PIN di kotak "Masuk dengan PIN Sebelumnya"
       if (pinSebelumnya !== "") {
-        if (!savedPin || !savedNama) {
-          alert('⚠️ Belum ada profil yang tersimpan di perangkat ini. Silakan daftar baru di bawah!');
-          return;
-        }
-        if (pinSebelumnya !== savedPin) {
-          alert('❌ PIN yang Anda masukkan salah!');
-          document.getElementById('inputPinSebelumnya').value = '';
-          document.getElementById('inputPinSebelumnya').focus();
-          return;
-        }
-        // Sukses masuk menggunakan profil sebelumnya
-        tutupModalLoginPin();
-        inisialisasiChatLive();
-        bukaPanelChatLangsung();
+        wargaRef.child(pinSebelumnya).once('value', snapshot => {
+          let dataWarga = snapshot.val();
+          if (dataWarga) {
+            // PIN ditemukan di database, login berhasil meskipun habis logout!
+            try {
+              localStorage.setItem('chat_pin_rt36', pinSebelumnya);
+              localStorage.setItem('verified_nama_rt36', dataWarga.nama);
+              localStorage.setItem('my_chat_id', dataWarga.myId || ('user_pin_' + pinSebelumnya));
+              if(dataWarga.foto) localStorage.setItem('verified_foto_rt36', dataWarga.foto);
+            } catch(e) {}
+
+            tutupModalLoginPin();
+            document.getElementById('inputPinSebelumnya').value = '';
+            inisialisasiChatLive();
+            bukaPanelChatLangsung();
+          } else {
+            // Cek cadangan di localStorage jika offline / belum tersinkron
+            let savedPin = '';
+            let savedNama = '';
+            try {
+              savedPin = localStorage.getItem('chat_pin_rt36');
+              savedNama = localStorage.getItem('verified_nama_rt36');
+            } catch(e) {}
+
+            if (savedPin && pinSebelumnya === savedPin) {
+              tutupModalLoginPin();
+              document.getElementById('inputPinSebelumnya').value = '';
+              inisialisasiChatLive();
+              bukaPanelChatLangsung();
+            } else {
+              alert('❌ PIN tidak terdaftar! Silakan daftar baru di bawah atau periksa kembali PIN Anda.');
+              document.getElementById('inputPinSebelumnya').value = '';
+              document.getElementById('inputPinSebelumnya').focus();
+            }
+          }
+        });
         return;
       }
 
-      // Skenario 2: Warga mengisi form Daftar Baru (Nama & PIN Rahasia)
+      // Skenario 2: Warga mendaftar baru (Nama & PIN Rahasia)
       if (namaBaru !== "" || pinBaru !== "") {
         if (namaBaru.length < 2) {
           alert('⚠️ Masukkan Nama / Blok Rumah minimal 2 karakter!');
@@ -1324,26 +1339,41 @@
           return;
         }
 
-        try {
-          localStorage.setItem('chat_pin_rt36', pinBaru);
-          localStorage.setItem('verified_nama_rt36', namaBaru);
-          localStorage.setItem('my_chat_id', 'user_pin_' + pinBaru);
-        } catch(e) {}
+        let myUniqueId = 'user_pin_' + pinBaru;
+        let dataWargaBaru = {
+          nama: namaBaru,
+          pin: pinBaru,
+          myId: myUniqueId,
+          timestamp: Date.now()
+        };
 
-        let deviceUniqueId = 'dev_' + Math.random().toString(36).substring(2, 10);
-        try {
-          let existingDev = localStorage.getItem('my_device_uid');
-          if(existingDev) deviceUniqueId = existingDev;
-          else localStorage.setItem('my_device_uid', deviceUniqueId);
-        } catch(e){}
+        // Simpan ke database Firebase agar tetap tersimpan permanen meskipun logout
+        wargaRef.child(pinBaru).set(dataWargaBaru).then(() => {
+          try {
+            localStorage.setItem('chat_pin_rt36', pinBaru);
+            localStorage.setItem('verified_nama_rt36', namaBaru);
+            localStorage.setItem('my_chat_id', myUniqueId);
+          } catch(e) {}
 
-        try {
-          activeDeviceRef.child(pinBaru).set(deviceUniqueId);
-        } catch(e) {}
+          let deviceUniqueId = 'dev_' + Math.random().toString(36).substring(2, 10);
+          try {
+            let existingDev = localStorage.getItem('my_device_uid');
+            if(existingDev) deviceUniqueId = existingDev;
+            else localStorage.setItem('my_device_uid', deviceUniqueId);
+          } catch(e){}
 
-        tutupModalLoginPin();
-        inisialisasiChatLive();
-        bukaPanelChatLangsung();
+          try {
+            activeDeviceRef.child(pinBaru).set(deviceUniqueId);
+          } catch(e) {}
+
+          tutupModalLoginPin();
+          document.getElementById('inputNamaPin').value = '';
+          document.getElementById('inputPinDaftarBaru').value = '';
+          inisialisasiChatLive();
+          bukaPanelChatLangsung();
+        }).catch(err => {
+          alert('Gagal mendaftar: ' + err.message);
+        });
         return;
       }
 
