@@ -181,7 +181,8 @@
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-orange-500">
             <i class="ph ph-magnifying-glass text-lg font-bold"></i>
           </span>
-          <input type="text" id="input-pencarian" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
+          <!-- Ditambahkan autocomplete="off" dan name/id random untuk mencegah browser mengisi nomor admin -->
+          <input type="text" id="input-pencarian" name="pencarian_produk_rt36" autocomplete="off" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
         </div>
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
           <i class="ph ph-chat-circle-dots text-lg"></i>
@@ -1265,12 +1266,14 @@
       if (!pinLogin || !verifiedNama) {
         if (modal) {
           modal.classList.remove('hidden');
-          // Cek ulang apakah ada sesi tersimpan untuk menampilkan tombol login cepat
+          
+          // Memeriksa sesi tersimpan untuk menampilkan tombol login cepat (PIN sebelumnya) secara instan
           let savedNama = '';
           try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e) {}
           let labelNama = document.getElementById('label-saved-nama-warga');
           let containerCepat = document.getElementById('container-login-cepat-warga');
           let formManual = document.getElementById('form-login-manual-warga');
+          
           if (savedNama && labelNama && containerCepat && formManual) {
             labelNama.innerText = savedNama;
             containerCepat.classList.remove('hidden');
@@ -1830,25 +1833,6 @@
         location.reload();
       }
     }
-
-    // Cek otomatis sesi login saat halaman dimuat (Tanpa mengganggu kotak pencarian)
-    document.addEventListener('DOMContentLoaded', function() {
-      let pinLogin = null;
-      let savedNama = null;
-      try {
-        pinLogin = localStorage.getItem('chat_pin_rt36');
-        savedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
-      if (pinLogin && savedNama) {
-        let labelNama = document.getElementById('label-saved-nama-warga');
-        let containerCepat = document.getElementById('container-login-cepat-warga');
-        let formManual = document.getElementById('form-login-manual-warga');
-        if (labelNama) labelNama.innerText = savedNama;
-        if (containerCepat) containerCepat.classList.remove('hidden');
-        if (formManual) formManual.classList.add('hidden');
-      }
-    });
   </script>
 </body>
 </html>
