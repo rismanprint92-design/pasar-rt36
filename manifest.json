@@ -1,8 +1,8 @@
 {
   "name": "Pasar RT. 36 AR Regency",
   "short_name": "Pasar RT36",
-  "id": "./",
-  "start_url": "./",
+  "id": "/",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
