@@ -181,8 +181,8 @@
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-orange-500">
             <i class="ph ph-magnifying-glass text-lg font-bold"></i>
           </span>
-          <!-- Ditambahkan autocomplete="off" dan name/id random untuk mencegah browser mengisi nomor admin -->
-          <input type="text" id="input-pencarian" name="pencarian_produk_rt36" autocomplete="off" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
+          <!-- Input pencarian diamankan dari autofill -->
+          <input type="search" id="input-pencarian" name="search_query_random_99" autocomplete="new-password" spellcheck="false" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
         </div>
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
           <i class="ph ph-chat-circle-dots text-lg"></i>
@@ -279,25 +279,22 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (Dilengkapi Tombol Login Cepat Sesi Sebelumnya) -->
+  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (Tombol Login Cepat Selalu Tampil di Awal) -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3">
       <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2>
       <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan Nama dan PIN Anda. 1 PIN hanya dapat aktif di 1 perangkat secara bersamaan.</p>
       
-      <!-- Tombol Login Cepat jika ada sesi tersimpan sebelumnya -->
-      <div id="container-login-cepat-warga" class="hidden bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center space-y-2">
-        <p class="text-[11px] text-emerald-800 font-medium">Ditemukan login sebelumnya (<span id="label-saved-nama-warga" class="font-bold"></span>)</p>
+      <!-- Tombol Login Cepat selalu tampil di awal halaman login -->
+      <div id="container-login-cepat-warga" class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center space-y-2">
+        <p class="text-[11px] text-emerald-800 font-medium">Sesi Cepat: <span id="label-saved-nama-warga" class="font-bold">Warga</span></p>
         <button type="button" onclick="loginCepatWargaChat()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl font-bold hover:bg-[#128C7E] text-xs shadow-sm cursor-pointer">
           Masuk dengan PIN Sebelumnya ⚡
         </button>
-        <div class="border-t border-emerald-200 pt-1">
-          <span class="text-[10px] text-gray-500 cursor-pointer underline" onclick="tampilkanFormLoginBaruChat()">Atau masuk sebagai warga lain</span>
-        </div>
       </div>
 
-      <div id="form-login-manual-warga" class="mt-4 space-y-3">
+      <div id="form-login-manual-warga" class="mt-2 space-y-3">
         <div>
           <label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH</label>
           <input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
@@ -1267,20 +1264,12 @@
         if (modal) {
           modal.classList.remove('hidden');
           
-          // Memeriksa sesi tersimpan untuk menampilkan tombol login cepat (PIN sebelumnya) secara instan
+          // Memperbarui label nama pada tombol login cepat jika sudah ada riwayat
           let savedNama = '';
           try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e) {}
           let labelNama = document.getElementById('label-saved-nama-warga');
-          let containerCepat = document.getElementById('container-login-cepat-warga');
-          let formManual = document.getElementById('form-login-manual-warga');
-          
-          if (savedNama && labelNama && containerCepat && formManual) {
-            labelNama.innerText = savedNama;
-            containerCepat.classList.remove('hidden');
-            formManual.classList.add('hidden');
-          } else if (containerCepat && formManual) {
-            containerCepat.classList.add('hidden');
-            formManual.classList.remove('hidden');
+          if (labelNama) {
+            labelNama.innerText = savedNama ? savedNama : 'Belum Ada';
           }
         }
         let txtArea = document.getElementById('teksPesanWarga');
@@ -1772,12 +1761,16 @@
       }
     }
 
+    // --- REVISI: TOMBOL LOGIN CEPAT SELALU MUNCUL & CEK RIWAYAT SESI ---
     function loginCepatWargaChat() {
+      let savedPin = '';
       let savedNama = '';
       try {
-        savedNama = localStorage.getItem('verified_nama_rt36') || '';
+        savedPin = localStorage.getItem('chat_pin_rt36');
+        savedNama = localStorage.getItem('verified_nama_rt36');
       } catch(e) {}
-      if (savedNama) {
+
+      if (savedPin && savedNama) {
         tutupModalLoginPin();
         inisialisasiChatLive();
         let panel = document.getElementById('panelChatWarga');
@@ -1785,15 +1778,8 @@
         if (panel) panel.classList.remove('hidden');
         if (btnBuka) btnBuka.classList.add('hidden');
       } else {
-        tampilkanFormLoginBaruChat();
+        alert('⚠️ Belum pernah masuk atau daftar PIN. Silakan isi Nama dan PIN Rahasia di bawah terlebih dahulu!');
       }
-    }
-
-    function tampilkanFormLoginBaruChat() {
-      let cepat = document.getElementById('container-login-cepat-warga');
-      let manual = document.getElementById('form-login-manual-warga');
-      if (cepat) cepat.classList.add('hidden');
-      if (manual) manual.classList.remove('hidden');
     }
 
     function updateHeaderDropdownMenu() {
@@ -1819,6 +1805,14 @@
     window.addEventListener('load', function(){
       inisialisasiChatLive();
       updateHeaderDropdownMenu();
+      
+      // Tampilkan nama tersimpan di tombol cepat jika ada
+      let savedNama = '';
+      try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e){}
+      let labelNama = document.getElementById('label-saved-nama-warga');
+      if (labelNama && savedNama) {
+        labelNama.innerText = savedNama;
+      }
     });
 
     function keluarDariPasarRT36(){
