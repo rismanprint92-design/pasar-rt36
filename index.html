@@ -279,33 +279,33 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN -->
+  <!-- MODAL LOGIN / DAFTAR WARGA -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3">
       <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2>
-      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan Nama dan PIN Anda. 1 PIN hanya dapat aktif di 1 perangkat secara bersamaan.</p>
+      <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan PIN terdaftar atau buat akun baru di bawah.</p>
       
-      <!-- Tombol Login Cepat: Mengarahkan fokus langsung ke kotak PIN di bawah -->
-      <div id="container-login-cepat-warga" class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center space-y-2">
-        <p class="text-[11px] text-emerald-800 font-medium">Sesi Cepat: <span id="label-saved-nama-warga" class="font-bold">Belum Ada</span></p>
-        <button type="button" onclick="fokusKeKotakPin()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl font-bold hover:bg-[#128C7E] text-xs shadow-sm cursor-pointer">
-          Masuk dengan PIN Sebelumnya ⚡
-        </button>
-      </div>
+      <div class="space-y-3 mt-2">
+        <!-- Kotak Masuk PIN Sebelumnya -->
+        <div>
+          <label class="text-[11px] font-bold text-[#075E54]">Masuk dengan PIN Sebelumnya</label>
+          <input type="password" id="inputPinSebelumnya" placeholder="••••" class="w-full mt-1 border border-emerald-300 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+        </div>
 
-      <!-- Form Pendaftaran / Masuk PIN Warga -->
-      <div id="form-login-manual-warga" class="mt-2 space-y-3">
-        <div>
-          <label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH (Untuk Daftar Baru)</label>
-          <input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+        <div class="border-t pt-2 space-y-2">
+          <div>
+            <label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH (Untuk Daftar Baru)</label>
+            <input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-xs focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label>
+            <input type="password" id="inputPinDaftarBaru" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-center font-bold tracking-widest text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
+          </div>
         </div>
-        <div>
-          <label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label>
-          <input type="password" id="inputPinSederhana" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none">
-        </div>
-        <button type="button" onclick="prosesLoginPinWarga()" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer">Masuk / Daftar Chat 💬</button>
-        <button type="button" onclick="tutupModalLoginPin()" class="w-full bg-gray-100 text-gray-600 font-medium py-2.5 rounded-xl text-xs">Batal</button>
+
+        <button type="button" onclick="prosesLoginAtauDaftarWarga()" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer text-xs">Masuk / Daftar Chat 💬</button>
+        <button type="button" onclick="tutupModalLoginPin()" class="w-full bg-gray-100 text-gray-600 font-medium py-2 rounded-xl text-xs">Batal</button>
       </div>
     </div>
   </div>
@@ -1264,13 +1264,6 @@
       if (!pinLogin || !verifiedNama) {
         if (modal) {
           modal.classList.remove('hidden');
-          
-          let savedNama = '';
-          try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e) {}
-          let labelNama = document.getElementById('label-saved-nama-warga');
-          if (labelNama) {
-            labelNama.innerText = savedNama ? savedNama : 'Belum Ada';
-          }
         }
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
@@ -1286,65 +1279,78 @@
       if(modal) modal.classList.add('hidden');
     }
 
-    // --- FITUR BARU: KLIK TOMBOL PIN SEBELUMNYA LANGSUNG FOKUS KE KOTAK PIN ---
-    function fokusKeKotakPin() {
-      let elPinInput = document.getElementById('inputPinSederhana');
-      if (elPinInput) {
-        elPinInput.focus();
-        elPinInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
+    // --- LOGIKA UTAMA: MASUK DENGAN PIN SEBELUMNYA ATAU DAFTAR BARU ---
+    function prosesLoginAtauDaftarWarga() {
+      let pinSebelumnya = document.getElementById('inputPinSebelumnya').value.trim();
+      let namaBaru = document.getElementById('inputNamaPin').value.trim();
+      let pinBaru = document.getElementById('inputPinDaftarBaru').value.trim();
 
-    function prosesLoginPinWarga() {
-      let elNama = document.getElementById('inputNamaPin');
-      let elPin = document.getElementById('inputPinSederhana');
-      if(!elNama || !elPin) return;
-      
-      let nama = elNama.value.trim();
-      let pin = elPin.value.trim();
-      
       let savedPin = '';
-      try { savedPin = localStorage.getItem('chat_pin_rt36'); } catch(e){}
-
-      // Jika sudah ada sesi tersimpan di browser, lakukan verifikasi PIN
-      if (savedPin) {
-        if (pin === "") {
-          alert('⚠️ Silakan masukkan PIN Anda pada kolom PIN Rahasia!');
-          elPin.focus();
-          return;
-        }
-        if (pin !== savedPin) {
-          alert('❌ PIN yang Anda masukkan salah!');
-          elPin.value = '';
-          elPin.focus();
-          return;
-        }
-      } else {
-        // Jika belum pernah daftar sama sekali, wajib isi nama & buat PIN baru
-        if(nama.length < 2){ alert('Isi nama atau blok rumah dulu untuk daftar!'); elNama.focus(); return; }
-        if(pin.length < 3){ alert('Isi PIN minimal 3 digit!'); elPin.focus(); return; }
-
-        try {
-          localStorage.setItem('chat_pin_rt36', pin);
-          localStorage.setItem('verified_nama_rt36', nama);
-          localStorage.setItem('my_chat_id', 'user_pin_' + pin);
-        } catch(e) {}
-      }
-      
-      let deviceUniqueId = 'dev_' + Math.random().toString(36).substring(2, 10);
+      let savedNama = '';
       try {
-        let existingDev = localStorage.getItem('my_device_uid');
-        if(existingDev) deviceUniqueId = existingDev;
-        else localStorage.setItem('my_device_uid', deviceUniqueId);
-      } catch(e){}
-
-      try {
-        activeDeviceRef.child(pin).set(deviceUniqueId);
+        savedPin = localStorage.getItem('chat_pin_rt36');
+        savedNama = localStorage.getItem('verified_nama_rt36');
       } catch(e) {}
 
-      tutupModalLoginPin();
-      inisialisasiChatLive();
-      
+      // Skenario 1: Warga mengisi kotak "Masuk dengan PIN Sebelumnya"
+      if (pinSebelumnya !== "") {
+        if (!savedPin || !savedNama) {
+          alert('⚠️ Belum ada profil yang tersimpan di perangkat ini. Silakan daftar baru di bawah!');
+          return;
+        }
+        if (pinSebelumnya !== savedPin) {
+          alert('❌ PIN yang Anda masukkan salah!');
+          document.getElementById('inputPinSebelumnya').value = '';
+          document.getElementById('inputPinSebelumnya').focus();
+          return;
+        }
+        // Sukses masuk menggunakan profil sebelumnya
+        tutupModalLoginPin();
+        inisialisasiChatLive();
+        bukaPanelChatLangsung();
+        return;
+      }
+
+      // Skenario 2: Warga mengisi form Daftar Baru (Nama & PIN Rahasia)
+      if (namaBaru !== "" || pinBaru !== "") {
+        if (namaBaru.length < 2) {
+          alert('⚠️ Masukkan Nama / Blok Rumah minimal 2 karakter!');
+          document.getElementById('inputNamaPin').focus();
+          return;
+        }
+        if (pinBaru.length < 3) {
+          alert('⚠️ PIN Rahasia minimal 3 digit!');
+          document.getElementById('inputPinDaftarBaru').focus();
+          return;
+        }
+
+        try {
+          localStorage.setItem('chat_pin_rt36', pinBaru);
+          localStorage.setItem('verified_nama_rt36', namaBaru);
+          localStorage.setItem('my_chat_id', 'user_pin_' + pinBaru);
+        } catch(e) {}
+
+        let deviceUniqueId = 'dev_' + Math.random().toString(36).substring(2, 10);
+        try {
+          let existingDev = localStorage.getItem('my_device_uid');
+          if(existingDev) deviceUniqueId = existingDev;
+          else localStorage.setItem('my_device_uid', deviceUniqueId);
+        } catch(e){}
+
+        try {
+          activeDeviceRef.child(pinBaru).set(deviceUniqueId);
+        } catch(e) {}
+
+        tutupModalLoginPin();
+        inisialisasiChatLive();
+        bukaPanelChatLangsung();
+        return;
+      }
+
+      alert('⚠️ Silakan masukkan PIN terdaftar Anda atau isi form pendaftaran baru di bawah!');
+    }
+
+    function bukaPanelChatLangsung() {
       let panel = document.getElementById('panelChatWarga');
       let btnBuka = document.getElementById('btnBukaChat');
       if(panel) {
@@ -1358,12 +1364,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      let pinInputEl = document.getElementById('inputPinSederhana');
-      if(pinInputEl) {
-        pinInputEl.addEventListener('keydown', function(e) {
+      let pinPrevEl = document.getElementById('inputPinSebelumnya');
+      if(pinPrevEl) {
+        pinPrevEl.addEventListener('keydown', function(e) {
           if(e.key === 'Enter') {
             e.preventDefault();
-            prosesLoginPinWarga();
+            prosesLoginAtauDaftarWarga();
           }
         });
       }
@@ -1812,13 +1818,6 @@
     window.addEventListener('load', function(){
       inisialisasiChatLive();
       updateHeaderDropdownMenu();
-      
-      let savedNama = '';
-      try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e){}
-      let labelNama = document.getElementById('label-saved-nama-warga');
-      if (labelNama && savedNama) {
-        labelNama.innerText = savedNama;
-      }
     });
 
     function keluarDariPasarRT36(){
