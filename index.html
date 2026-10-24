@@ -278,7 +278,7 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (1 Perangkat Saja & Tombol Login Sesi Sebelumnya) -->
+  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (Dilengkapi Tombol Login Cepat Sesi Sebelumnya) -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3">
       <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div>
@@ -288,7 +288,7 @@
       <!-- Tombol Login Cepat jika ada sesi tersimpan sebelumnya -->
       <div id="container-login-cepat-warga" class="hidden bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center space-y-2">
         <p class="text-[11px] text-emerald-800 font-medium">Ditemukan login sebelumnya (<span id="label-saved-nama-warga" class="font-bold"></span>)</p>
-        <button type="button" onclick="loginCepatWargaChat()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl font-bold hover:bg-[#128C7E] text-xs shadow-sm">
+        <button type="button" onclick="loginCepatWargaChat()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl font-bold hover:bg-[#128C7E] text-xs shadow-sm cursor-pointer">
           Masuk dengan PIN Sebelumnya ⚡
         </button>
         <div class="border-t border-emerald-200 pt-1">
@@ -1263,7 +1263,23 @@
       let modal = document.getElementById('modalVerifWA');
 
       if (!pinLogin || !verifiedNama) {
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+          modal.classList.remove('hidden');
+          // Cek ulang apakah ada sesi tersimpan untuk menampilkan tombol login cepat
+          let savedNama = '';
+          try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e) {}
+          let labelNama = document.getElementById('label-saved-nama-warga');
+          let containerCepat = document.getElementById('container-login-cepat-warga');
+          let formManual = document.getElementById('form-login-manual-warga');
+          if (savedNama && labelNama && containerCepat && formManual) {
+            labelNama.innerText = savedNama;
+            containerCepat.classList.remove('hidden');
+            formManual.classList.add('hidden');
+          } else if (containerCepat && formManual) {
+            containerCepat.classList.add('hidden');
+            formManual.classList.remove('hidden');
+          }
+        }
         let txtArea = document.getElementById('teksPesanWarga');
         if (txtArea) txtArea.blur();
         return false;
@@ -1815,7 +1831,7 @@
       }
     }
 
-    // Cek otomatis sesi login saat halaman dimuat
+    // Cek otomatis sesi login saat halaman dimuat (Tanpa mengganggu kotak pencarian)
     document.addEventListener('DOMContentLoaded', function() {
       let pinLogin = null;
       let savedNama = null;
