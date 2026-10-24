@@ -181,8 +181,8 @@
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-orange-500">
             <i class="ph ph-magnifying-glass text-lg font-bold"></i>
           </span>
-          <!-- Input pencarian diamankan dari autofill -->
-          <input type="search" id="input-pencarian" name="search_query_random_99" autocomplete="new-password" spellcheck="false" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
+          <!-- Anti Autofill mutlak dengan random name & autocomplete off -->
+          <input type="text" id="input-pencarian" name="random_search_field_x99" autocomplete="off" data-lpignore="true" spellcheck="false" oninput="jalankanPencarian()" placeholder="Cari produk / penjual..." class="w-full pl-10 pr-4 py-2.5 text-xs focus:outline-emerald-500 search-box-custom">
         </div>
         <button onclick="bukaModalInfoAdmin()" class="bg-emerald-600 text-white w-10 h-10 rounded-full text-sm shadow-sm hover:bg-emerald-700 flex items-center justify-center flex-shrink-0" title="Pusat Bantuan & Masukan Website">
           <i class="ph ph-chat-circle-dots text-lg"></i>
@@ -279,16 +279,16 @@
     </div>
   </div>
 
-  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN (Tombol Login Cepat Selalu Tampil di Awal) -->
+  <!-- MODAL LOGIN SEDERHANA DENGAN NAMA & PIN -->
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3">
       <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div>
       <h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2>
       <p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan Nama dan PIN Anda. 1 PIN hanya dapat aktif di 1 perangkat secara bersamaan.</p>
       
-      <!-- Tombol Login Cepat selalu tampil di awal halaman login -->
+      <!-- Tombol Login Cepat / PIN Sebelumnya -->
       <div id="container-login-cepat-warga" class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center space-y-2">
-        <p class="text-[11px] text-emerald-800 font-medium">Sesi Cepat: <span id="label-saved-nama-warga" class="font-bold">Warga</span></p>
+        <p class="text-[11px] text-emerald-800 font-medium">Sesi Cepat: <span id="label-saved-nama-warga" class="font-bold">Belum Ada</span></p>
         <button type="button" onclick="loginCepatWargaChat()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl font-bold hover:bg-[#128C7E] text-xs shadow-sm cursor-pointer">
           Masuk dengan PIN Sebelumnya ⚡
         </button>
@@ -1264,7 +1264,6 @@
         if (modal) {
           modal.classList.remove('hidden');
           
-          // Memperbarui label nama pada tombol login cepat jika sudah ada riwayat
           let savedNama = '';
           try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e) {}
           let labelNama = document.getElementById('label-saved-nama-warga');
@@ -1284,6 +1283,48 @@
     function tutupModalLoginPin() {
       let modal = document.getElementById('modalVerifWA');
       if(modal) modal.classList.add('hidden');
+    }
+
+    // --- VALIDASI TOMBOL "MASUK DENGAN PIN SEBELUMNYA" SESUAI PERMINTAAN ---
+    function loginCepatWargaChat() {
+      let savedPin = '';
+      let savedNama = '';
+      try {
+        savedPin = localStorage.getItem('chat_pin_rt36');
+        savedNama = localStorage.getItem('verified_nama_rt36');
+      } catch(e) {}
+
+      if (!savedPin || !savedNama) {
+        alert('⚠️ Belum pernah masuk atau daftar PIN. Silakan masukkan Nama dan PIN di bawah terlebih dahulu!');
+        return;
+      }
+
+      // Ambil PIN yang diketikkan pengguna di kotak input saat ini untuk validasi
+      let elPinInput = document.getElementById('inputPinSederhana');
+      let pinKetik = elPinInput ? elPinInput.value.trim() : '';
+
+      if (pinKetik === "") {
+        alert('⚠️ Silakan masukkan PIN Anda terlebih dahulu pada kolom PIN Rahasia di bawah!');
+        if (elPinInput) elPinInput.focus();
+        return;
+      }
+
+      if (pinKetik !== savedPin) {
+        alert('❌ PIN yang Anda masukkan salah!');
+        if (elPinInput) {
+          elPinInput.value = '';
+          elPinInput.focus();
+        }
+        return;
+      }
+
+      // Jika PIN benar, langsung masuk halaman chat
+      tutupModalLoginPin();
+      inisialisasiChatLive();
+      let panel = document.getElementById('panelChatWarga');
+      let btnBuka = document.getElementById('btnBukaChat');
+      if (panel) panel.classList.remove('hidden');
+      if (btnBuka) btnBuka.classList.add('hidden');
     }
 
     function prosesLoginPinWarga() {
@@ -1761,27 +1802,6 @@
       }
     }
 
-    // --- REVISI: TOMBOL LOGIN CEPAT SELALU MUNCUL & CEK RIWAYAT SESI ---
-    function loginCepatWargaChat() {
-      let savedPin = '';
-      let savedNama = '';
-      try {
-        savedPin = localStorage.getItem('chat_pin_rt36');
-        savedNama = localStorage.getItem('verified_nama_rt36');
-      } catch(e) {}
-
-      if (savedPin && savedNama) {
-        tutupModalLoginPin();
-        inisialisasiChatLive();
-        let panel = document.getElementById('panelChatWarga');
-        let btnBuka = document.getElementById('btnBukaChat');
-        if (panel) panel.classList.remove('hidden');
-        if (btnBuka) btnBuka.classList.add('hidden');
-      } else {
-        alert('⚠️ Belum pernah masuk atau daftar PIN. Silakan isi Nama dan PIN Rahasia di bawah terlebih dahulu!');
-      }
-    }
-
     function updateHeaderDropdownMenu() {
       let dropHeader = document.getElementById('dropdownHeaderChat');
       if(dropHeader) {
@@ -1806,7 +1826,6 @@
       inisialisasiChatLive();
       updateHeaderDropdownMenu();
       
-      // Tampilkan nama tersimpan di tombol cepat jika ada
       let savedNama = '';
       try { savedNama = localStorage.getItem('verified_nama_rt36') || ''; } catch(e){}
       let labelNama = document.getElementById('label-saved-nama-warga');
