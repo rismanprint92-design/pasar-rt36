@@ -191,6 +191,7 @@
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12; btn.innerHTML=`Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`; } else btn.style.display='none'; } }
     function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
     // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
+    // HYBRID PREMIUM RAPET BOSKU - FINAL TERBAIK
     function renderProduk(data){
       const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
       if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
@@ -200,19 +201,18 @@
         let foto=list[0];
         let status=item.status||'tersedia'; 
         let isTersedia=status==='tersedia';
-        let indikator = isTersedia ? '<span class="indikator-tersedia">● Tersedia</span>' : '<span class="indikator-habis">● Habis</span>';
+        let indikator = isTersedia ? '<span class="text-[#064e3b] font-bold text-[10px] tracking-wide">● Tersedia</span>' : '<span class="text-gray-400 font-semibold text-[10px]">● Habis</span>';
         let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
-        let badge=list.length>1?'<span class="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>':'';
+        let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
 
-        // HARGA HITAM PEKAT / HIJAU TUA ELEGAN BOSKU + FONT PROPOSIONAL
         let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
           <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
             <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
           </div>
-          <div class="p-3 flex flex-col gap-1 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
-            <div class="mb-0.5">${indikator}</div>
-            <h3 class="font-medium text-[13px] leading-[1.35] text-gray-800 line-clamp-2" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:34px;">${bersihkanTeks(item.nama)}</h3>
-            <p class="text-[#111827] font-bold text-[14px] mt-1 tracking-tight">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
+          <div class="p-2.5 pt-2 flex flex-col gap-0 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
+            <div class="leading-none mb-1">${indikator}</div>
+            <h3 class="font-bold text-[13px] leading-[1.3] text-gray-800 line-clamp-2 min-h-[20px]">${bersihkanTeks(item.nama)}</h3>
+            <p class="text-[#064e3b] font-extrabold text-[14.5px] mt-1 tracking-tight">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
           </div>
         </div>`;
         container.innerHTML+=card;
