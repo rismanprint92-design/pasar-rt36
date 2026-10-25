@@ -94,14 +94,35 @@
     <button id="btn-shopee" onclick="muatLebihBanyakProduk()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">Lihat Produk Lainnya ↓</button>
   </main>
   <div id="modal-pengumuman" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl text-xs shadow-xl max-h-[85vh] overflow-y-auto">
-      <div class="flex justify-between items-center p-4 pb-2 border-b sticky top-0 bg-white rounded-t-2xl"><h3 class="font-bold text-gray-800 text-[14px] flex items-center gap-2"><i class="ph ph-megaphone text-emerald-600 text-lg"></i> Pusat Informasi RT.36</h3><button onclick="tutupModalPengumuman()" class="text-gray-400 text-xl font-bold px-2">&times;</button></div>
-      <div class="p-4 space-y-4">
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h4 class="font-bold text-amber-800 text-[13px]">📢 Pengumuman Warga</h4><div class="mt-2 text-[11px] text-gray-700 leading-relaxed space-y-1"><p>• Pasar RT.36 buka setiap hari 06:00 - 21:00 WIB</p><p>• Gratis pasang jualan untuk warga RT.36 AR & Metroland</p><p>• Produk otomatis tampil setelah upload</p><p>• Jaga etika jualan, no spam, no hoax</p></div></div>
-        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h4 class="font-bold text-emerald-800 text-[13px]">💬 Bantuan & Masukan Website</h4><div class="mt-3 space-y-2"><input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg bg-white font-bold text-gray-700" value="6282299511782"><select id="pilih-topik-admin" class="w-full border p-2.5 rounded-lg font-medium focus:outline-emerald-500 bg-white"><option value="Perbaikan / Bug Website Pasar RT">🛠️ Laporan Bug / Kendala Website</option><option value="Saran Fitur Baru Website Pasar RT">💡 Saran Fitur Baru</option><option value="Tanya Informasi / Kegiatan RT">📢 Tanya Informasi RT</option><option value="Konfirmasi Iuran / Keuangan Warga">💰 Konfirmasi Iuran</option><option value="Lainnya">💬 Lainnya</option></select><textarea id="pesan-masukan-warga" rows="3" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 bg-white" placeholder="Ketik laporan atau saran..."></textarea><button onclick="kirimPesanKeAdminRT()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-md">Kirim Masukan ke WA Admin</button></div></div>
+  <div class="bg-white w-full max-w-md rounded-t-[24px] sm:rounded-[24px] text-xs shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b bg-white sticky top-0 rounded-t-[24px]">
+      <h3 class="font-bold text-gray-900 text-[15px] flex items-center gap-2"><i class="ph ph-info text-emerald-600 text-xl"></i> Pusat Informasi RT.36</h3>
+      <button onclick="tutupModalPengumuman()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">✕</button>
+    </div>
+    <div class="p-4 space-y-3 overflow-y-auto">
+      <div class="space-y-2.5">
+        <button onclick="toggleInfo('tentang')" class="w-full text-left bg-[#F8FAFC] border border-gray-100 rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">📄 Tentang Kami</span><span id="icon-tentang">▼</span></button>
+        <div id="isi-tentang" class="hidden bg-white border rounded-xl p-4 text-[12px] leading-[1.7] text-gray-700 -mt-1">
+          <h4 class="font-extrabold text-[13px] text-gray-900">Tentang Pasar-RT36</h4>
+          <p><b>http://Pasar-RT36.my.id</b> adalah wadah jual beli online khusus untuk warga RT 36 dan sekitarnya. Tujuan kami sederhana: mempermudah warga yang mau jualan dari rumah dan mempermudah tetangga yang mau belanja tanpa harus keluar jauh.</p>
+          <p class="mt-2"><b>Cara Kerja:</b> 1. Upload barang 2. Klik Chat Penjual 3. Terhubung ke WA 4. Transaksi langsung. Kami TIDAK pegang uang, TIDAK ambil komisi.</p>
+        </div>
+        <button onclick="toggleInfo('sk')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">📜 Syarat & Ketentuan</span><span id="icon-sk">▼</span></button>
+        <div id="isi-sk" class="hidden bg-white border rounded-xl p-4 text-[12px] leading-[1.7] text-gray-700 -mt-1">
+          <p><b>Terakhir diperbarui: 25 Oktober 2026</b><br>1. Hanya papan informasi. 2. Transaksi langsung via WA/COD. 3. Wajib warga RT36, dilarang barang ilegal. 4. Teliti sebelum membeli. 5. Pengelola berhak hapus produk tidak pantas. 6. GRATIS untuk warga RT36.</p>
+        </div>
+        <button onclick="toggleInfo('privasi')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">🔒 Kebijakan Privasi</span><span id="icon-privasi">▼</span></button>
+        <div id="isi-privasi" class="hidden bg-white border rounded-xl p-4 text-[12px] leading-[1.7] text-gray-700 -mt-1">
+          <p>1. Data yang disimpan: Nama, WA, Foto Produk. 2. WA tampil publik agar pembeli bisa hubungi. 3. TIDAK simpan KTP/rekening. 4. Tidak jual data ke pihak ketiga. 5. Bisa minta hapus kapan saja via WA pengelola.</p>
+        </div>
+        <button onclick="toggleInfo('izin')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">⚖️ Izin / Legalitas</span><span id="icon-izin">▼</span></button>
+        <div id="isi-izin" class="hidden bg-white border rounded-xl p-4 text-[12px] text-gray-400 -mt-1 italic">Akan segera di-update bosku...</div>
+        <button onclick="toggleInfo('kontak')" class="w-full text-left bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px] text-emerald-800">📞 Kontak Pengelola</span><span id="icon-kontak">▼</span></button>
+        <div id="isi-kontak" class="bg-white border border-emerald-100 rounded-xl p-3.5 -mt-1"><input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg font-bold text-center" value="6282299511782"><button onclick="kirimPesanKeAdminRT()" class="w-full mt-2 bg-[#075E54] text-white py-3 rounded-xl font-bold">Chat WA Pengelola</button></div>
       </div>
     </div>
   </div>
+</div>
   <div id="modal-daftar-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl"><div class="flex justify-between items-center p-4 border-b"><h3 class="font-bold text-gray-800 text-[14px] flex items-center gap-2"><i class="ph ph-storefront text-emerald-600"></i> Daftar Toko Terdaftar (Admin)</h3><button onclick="tutupModalDaftarToko()" class="text-gray-400 text-xl px-2">&times;</button></div><div class="p-3 bg-amber-50 border-b text-[11px] text-gray-600"><p>🔒 Hanya admin yang bisa lihat halaman ini bosku.</p></div><div id="daftar-toko-admin" class="flex-1 overflow-y-auto p-3 space-y-2"></div></div></div>
   <div id="modal-login-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs"><h3 class="font-bold text-gray-800 text-sm mb-2 text-center">Masuk Mode Admin RT</h3><p class="text-gray-500 mb-4 text-center">Masukkan PIN pengurus RT terpusat.</p><input type="password" id="pin-admin" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••"><div class="flex gap-2"><button onclick="tutupModalAdmin()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="verifikasiAdmin()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold">Masuk</button></div></div></div>
   <div id="modal-ganti-pin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3"><h3 class="font-bold text-gray-800 text-sm text-center">Ubah PIN Admin</h3><div><label class="block font-medium mb-1">PIN Lama</label><input type="password" id="pin-lama" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div><label class="block font-medium mb-1">PIN Baru</label><input type="password" id="pin-baru" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div class="flex gap-2 pt-2"><button onclick="tutupModalGantiPin()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button><button onclick="simpanPinBaru()" class="w-1/2 bg-amber-600 text-white py-2 rounded-lg font-bold hover:bg-amber-700">Simpan</button></div></div></div>
@@ -563,6 +584,7 @@
         lastScroll=curr;
       }, {passive:true});
     })();
+  
   </script>
 </body>
 </html>
