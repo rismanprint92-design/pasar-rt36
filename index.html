@@ -176,7 +176,7 @@
   <audio id="notifSound" preload="auto" playsinline></audio>
   <style>.bubble-wa { max-width: 80%; padding: 6px 8px 5px 8px; border-radius: 8px; box-shadow: 0 1px .5px rgba(0,0,0,.13); font-size: 14px; word-break: break-word; overflow-wrap: break-word; } .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; } .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }</style>
 
- <script>
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
       authDomain: "pasar-rt36.firebaseapp.com",
@@ -214,13 +214,15 @@
       if(hari < 30) return `${Math.floor(hari/7)} mgg lalu`;
       return `${Math.floor(hari/30)} bln lalu`;
     }
-    window.bukaTutupCatatan = function(id, btn) { const teks = document.getElementById(id); if(!teks) return; teks.classList.toggle('buka'); if(btn) btn.innerText = teks.classList.contains('buka') ? 'Sembunyikan ▲' : 'Lihat selengkapnya ▼'; }
+    function bukaTutupCatatan(id, btn) { const teks = document.getElementById(id); teks.classList.toggle('buka'); btn.innerText = teks.classList.contains('buka') ? 'Sembunyikan ▲' : 'Lihat selengkapnya ▼'; }
     pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
     adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
     let produkData = []; let kategoriAktif = 'semua'; let BATAS_TAMPIL = 12; let produkFilteredGlobal = [];
     dbRef.on('value', (snap) => { const data=snap.val(); produkData=[]; if(data){ Object.keys(data).forEach(k=>{ produkData.unshift({id:k, ...data[k]}); }); } BATAS_TAMPIL=12; terapkanFilterDanPencarian(); });
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12; btn.innerHTML=`Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`; } else btn.style.display='none'; } }
-    window.muatLebihBanyakProduk = function(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
+    function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
+    // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
+    // HYBRID PREMIUM RAPET BOSKU - FINAL TERBAIK
     function renderProduk(data){
       const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
       if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
@@ -233,6 +235,7 @@
         let indikator = isTersedia ? '<span class="text-[#064e3b] font-bold text-[10px] tracking-wide">● Tersedia</span>' : '<span class="text-gray-400 font-semibold text-[10px]">● Habis</span>';
         let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
         let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
+
         let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
           <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
             <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
@@ -246,40 +249,21 @@
         container.innerHTML+=card;
       });
     }
-    window.filterKategori = function(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
-    window.jalankanPencarian = function(){ terapkanFilterDanPencarian(); }
-
-    // ==== FIX UTAMA BOSKU - SEMUA MODAL DIBIKIN AMAN ANTI ERROR ====
-    window.bukaModalPengumuman = function(){ let m=document.getElementById('modal-pengumuman'); let wa=document.getElementById('admin-whatsapp-nomor'); if(wa) wa.value=adminWaAktif; if(m){ m.classList.remove('hidden'); m.classList.add('flex'); } }
-    window.tutupModalPengumuman = function(){ let m=document.getElementById('modal-pengumuman'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
-    window.kirimPesanKeAdminRT = function(){ const noEl=document.getElementById('admin-whatsapp-nomor'); if(!noEl) return; const no=noEl.value.trim(); if(!no) return; let nomor=no.replace(/\D/g,''); if(nomor.startsWith('0')) nomor='62'+nomor.slice(1); window.open(`https://wa.me/${nomor}?text=${encodeURIComponent('Halo Pengurus RT.36')}`, '_blank'); tutupModalPengumuman(); }
-    window.toggleInfo = function(id){
-      let isi = document.getElementById('isi-'+id); let icon = document.getElementById('icon-'+id);
-      if(!isi) return; let isHidden = isi.classList.contains('hidden');
-      ['tentang','sk','privasi','izin','kontak'].forEach(k=>{ if(k !== id){ let el=document.getElementById('isi-'+k); let ic=document.getElementById('icon-'+k); if(el) el.classList.add('hidden'); if(ic) ic.innerText='▼'; } });
-      if(isHidden){ isi.classList.remove('hidden'); if(icon) icon.innerText='▲'; } else { isi.classList.add('hidden'); if(icon) icon.innerText='▼'; }
-    };
-
+    function filterKategori(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
+    function jalankanPencarian(){ terapkanFilterDanPencarian(); }
+    function bukaModalPengumuman(){ document.getElementById('modal-pengumuman').classList.remove('hidden'); document.getElementById('admin-whatsapp-nomor').value=adminWaAktif; }
+    function tutupModalPengumuman(){ document.getElementById('modal-pengumuman').classList.add('hidden'); }
+    function kirimPesanKeAdminRT(){ const no=document.getElementById('admin-whatsapp-nomor').value.trim(); const topik=document.getElementById('pilih-topik-admin').value; const msg=document.getElementById('pesan-masukan-warga').value.trim(); if(!no||!msg){ alert('Lengkapi nomor dan pesan terlebih dahulu.'); return; } let nomor=no.replace(/\D/g,''); if(nomor.startsWith('0')) nomor='62'+nomor.slice(1); const teks=`Halo Pengurus RT.36,\n\n*Topik:* ${topik}\n*Pesan:* ${msg}`; window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(teks)}`, '_blank'); tutupModalPengumuman(); }
     function kompresGambar(file,cb){ if(file.size<200*1024){ const r=new FileReader(); r.onload=e=>cb(e.target.result); r.readAsDataURL(file); return; } const r=new FileReader(); r.onload=function(e){ const img=new Image(); img.onload=function(){ const c=document.createElement('canvas'); let w=img.width,h=img.height; const MW=600; if(w>MW){ h=Math.round((h*MW)/w); w=MW; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',0.5)); }; img.src=e.target.result; }; r.readAsDataURL(file); }
-    window.bukaModalOpsiBeli = function(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); if(!m) return; let info=document.getElementById('info-produk-beli'); if(info) info.innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; let btn1=document.getElementById('btn-wa-otomatis'); let btn2=document.getElementById('btn-salin-nomor'); if(btn1) btn1.onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; if(btn2) btn2.onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
-    window.tutupModalOpsiBeli = function(){ let m=document.getElementById('modal-opsi-beli'); if(m) m.classList.add('hidden'); }
-
-    // FIX JUAL BARU BOSKU - ANTI ERROR NULL
-    window.bukaModalJual = function(){ let m=document.getElementById('modal-pilihan-jual'); if(m){ m.classList.remove('hidden'); m.classList.add('flex'); } }
-    window.tutupModalPilihanJual = function(){ let m=document.getElementById('modal-pilihan-jual'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
-    window.pilihJualBaru = function(){ 
-      tutupModalPilihanJual(); 
-      // Cari modal yang ada bosku, jangan paksa satu ID
-      let ids = ['modal-jual','modal-tambah-produk','modal-form-jual','modalTambahProduk'];
-      for(let id of ids){ let el=document.getElementById(id); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); return; } }
-      alert('Form Jual tidak ditemukan! Pastikan ada id="modal-jual" di HTML bosku!');
-    }
-    window.tutupModalJual = function(){ let ids = ['modal-jual','modal-tambah-produk','modal-form-jual']; ids.forEach(id=>{ let el=document.getElementById(id); if(el) el.classList.add('hidden'); }); }
-
-    window.bukaModalDaftarToko = function(){
+    function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); document.getElementById('info-produk-beli').innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; document.getElementById('btn-wa-otomatis').onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
+    function tutupModalOpsiBeli(){ document.getElementById('modal-opsi-beli').classList.add('hidden'); }
+    function bukaModalJual(){ document.getElementById('modal-pilihan-jual').classList.remove('hidden'); document.getElementById('modal-pilihan-jual').classList.add('flex'); }
+    function tutupModalPilihanJual(){ document.getElementById('modal-pilihan-jual').classList.add('hidden'); document.getElementById('modal-pilihan-jual').classList.remove('flex'); }
+    function pilihJualBaru(){ tutupModalPilihanJual(); document.getElementById('modal-jual').classList.remove('hidden'); }
+    function bukaModalDaftarToko(){
       if(!isAdmin){ alert('Hanya Admin yang bisa akses!'); return; }
-      let m=document.getElementById('modal-daftar-toko'); if(m) m.classList.remove('hidden');
-      const container=document.getElementById('daftar-toko-admin'); if(!container) return;
+      document.getElementById('modal-daftar-toko').classList.remove('hidden');
+      const container=document.getElementById('daftar-toko-admin');
       container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat data toko...</p>';
       activeDeviceRef.once('value', (snap)=>{
         const data=snap.val();
@@ -296,22 +280,25 @@
         });
       });
     }
-    window.tutupModalDaftarToko = function(){ let m=document.getElementById('modal-daftar-toko'); if(m) m.classList.add('hidden'); }
-    window.lihatProdukTokoAdmin = function(pin){ tutupModalDaftarToko(); let a=document.getElementById('input-pin-toko'); let b=document.getElementById('input-wa-toko'); if(a) a.value=pin; if(b) b.value=''; bukaModalTokoSaya(); }
-    window.hapusTokoAdmin = function(pin){ if(confirm('Hapus toko PIN '+pin+' dari daftar? Produk toko ini tidak terhapus, cuma data toko saja.')){ activeDeviceRef.child(pin).remove().then(()=>{ alert('Toko dihapus dari daftar!'); bukaModalDaftarToko(); }); } }
-
-    window.bukaModalTokoSaya = function(){ tutupModalPilihanJual(); let m=document.getElementById('modal-toko-saya'); if(m){ m.classList.remove('hidden'); m.classList.add('flex'); } let d=document.getElementById('daftar-produk-toko'); if(d) d.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
-    window.tutupModalTokoSaya = function(){ let m=document.getElementById('modal-toko-saya'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
-    window.cariTokoSaya = function(){
-      const pinEl=document.getElementById('input-pin-toko'); const waEl=document.getElementById('input-wa-toko'); const container=document.getElementById('daftar-produk-toko');
-      if(!pinEl||!waEl||!container) return;
-      const pin=pinEl.value.trim(); const waInput=waEl.value.trim();
+    function tutupModalDaftarToko(){ document.getElementById('modal-daftar-toko').classList.add('hidden'); }
+    function lihatProdukTokoAdmin(pin){ tutupModalDaftarToko(); document.getElementById('input-pin-toko').value=pin; document.getElementById('input-wa-toko').value=''; bukaModalTokoSaya(); }
+    function hapusTokoAdmin(pin){ if(confirm('Hapus toko PIN '+pin+' dari daftar? Produk toko ini tidak terhapus, cuma data toko saja.')){ activeDeviceRef.child(pin).remove().then(()=>{ alert('Toko dihapus dari daftar!'); bukaModalDaftarToko(); }); } }
+    function bukaModalTokoSaya(){ tutupModalPilihanJual(); document.getElementById('modal-toko-saya').classList.remove('hidden'); document.getElementById('modal-toko-saya').classList.add('flex'); document.getElementById('daftar-produk-toko').innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
+    function tutupModalTokoSaya(){ document.getElementById('modal-toko-saya').classList.add('hidden'); document.getElementById('modal-toko-saya').classList.remove('flex'); }
+    function cariTokoSaya(){
+      const pin=document.getElementById('input-pin-toko').value.trim();
+      const waInput=document.getElementById('input-wa-toko').value.trim();
+      const container=document.getElementById('daftar-produk-toko');
       if(!pin || !waInput){ alert('Masukkan PIN dan No.WA Toko bosku!'); return; }
       activeDeviceRef.child(pin).once('value', (snap)=>{
         const dataToko=snap.val();
         if(!dataToko){ container.innerHTML=`<div class="text-center py-8"><p class="text-gray-400 text-xs">❌ Toko dengan PIN ini tidak ditemukan</p></div>`; return; }
-        let waTerdaftar = (dataToko.wa||'').replace(/\D/g,''); let waDiInput = waInput.replace(/\D/g,'');
-        if(waTerdaftar !== waDiInput){ container.innerHTML=`<div class="text-center py-8 bg-red-50 rounded-xl p-4 border border-red-200"><p class="text-red-600 text-xs font-bold">❌ No.WA tidak cocok dengan PIN ini bosku!</p></div>`; return; }
+        let waTerdaftar = (dataToko.wa||'').replace(/\D/g,'');
+        let waDiInput = waInput.replace(/\D/g,'');
+        if(waTerdaftar !== waDiInput){
+          container.innerHTML=`<div class="text-center py-8 bg-red-50 rounded-xl p-4 border border-red-200"><p class="text-red-600 text-xs font-bold">❌ No.WA tidak cocok dengan PIN ini bosku!</p></div>`;
+          return;
+        }
         let hasil=produkData.filter(p=> (p.pinPenjual||'')===pin );
         let info = `<div class="bg-white border border-emerald-100 rounded-2xl p-3.5 flex justify-between items-center shadow-sm"><div><p class="font-bold text-[14px] text-gray-900 flex items-center gap-1.5">🏪 ${bersihkanTeks(dataToko.nama||'')} <span class="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full border border-emerald-100 font-bold">Verified ✓</span></p><p class="text-[11px] text-gray-500 mt-1">PIN: ${pin} • ${hasil.length} produk • Online</p></div><div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700 font-bold">${bersihkanTeks(dataToko.nama||'T').charAt(0)}</div></div>`;
         container.innerHTML=info;
@@ -325,9 +312,10 @@
         });
       });
     }
-    window.hapusProdukDariToko = function(id){ if(confirm('Yakin hapus produk ini dari toko Anda?')){ dbRef.child(id).remove().then(()=>{ alert('Produk berhasil dihapus!'); cariTokoSaya(); terapkanFilterDanPencarian(); }); } }
+    function hapusProdukDariToko(id){ if(confirm('Yakin hapus produk ini dari toko Anda?')){ dbRef.child(id).remove().then(()=>{ alert('Produk berhasil dihapus!'); cariTokoSaya(); terapkanFilterDanPencarian(); }); } }
+    function tutupModalJual(){ document.getElementById('modal-jual').classList.add('hidden'); }
     function cekPinTokoUnik(pin){ return new Promise((resolve)=>{ activeDeviceRef.child(pin).once('value', (snap)=>{ if(!snap.val()){ resolve({boleh:true}); } else{ resolve({boleh:false}); } }); }); }
-    window.tambahProduk = async function(e){
+    async function tambahProduk(e){
       e.preventDefault();
       const pin=document.getElementById('pin-penjual').value.trim();
       const namaToko=document.getElementById('penjual').value.trim();
@@ -349,84 +337,103 @@
       } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
     }
     function simpanKeFirebase(arr){ const b={ nama:bersihkanTeks(document.getElementById('nama').value), harga:parseInt(document.getElementById('harga').value), kategori:document.getElementById('kategori').value, status:document.getElementById('status').value, penjual:bersihkanTeks(document.getElementById('penjual').value), lokasi:bersihkanTeks(document.getElementById('lokasi').value), wa:document.getElementById('whatsapp').value, pinPenjual:document.getElementById('pin-penjual').value, catatan:bersihkanTeks(document.getElementById('catatan').value), foto:arr, timestamp:Date.now() }; dbRef.push(b).then((res)=>{ tutupModalJual(); document.getElementById('form-tambah').reset(); tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key); }); }
-    window.bukaVerifikasiPenjual = function(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } let a=document.getElementById('edit-product-id'); let b=document.getElementById('modal-login-penjual'); if(a) a.value=id; if(b) b.classList.remove('hidden'); }
-    window.tutupModalLoginPenjual = function(){ let m=document.getElementById('modal-login-penjual'); if(m) m.classList.add('hidden'); }
-    window.prosesVerifikasiPenjual = function(){ const idEl=document.getElementById('edit-product-id'); const pinEl=document.getElementById('input-pin-konfirmasi'); if(!idEl||!pinEl) return; const id=idEl.value; const pin=pinEl.value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
-    window.muatDataKeFormEdit = function(id){ const p=produkData.find(x=>x.id===id); if(!p) return; let ids=['edit-id','edit-nama','edit-harga','edit-kategori','edit-status','edit-penjual','edit-lokasi','edit-whatsapp','edit-catatan']; let vals=[p.id,p.nama,p.harga,p.kategori,p.status||'tersedia',p.penjual,p.lokasi,p.wa,p.catatan||'']; ids.forEach((eid,i)=>{ let el=document.getElementById(eid); if(el) el.value=vals[i]; }); let m=document.getElementById('modal-edit'); if(m) m.classList.remove('hidden'); }
-    window.tutupModalEdit = function(){ let m=document.getElementById('modal-edit'); if(m) m.classList.add('hidden'); }
-    window.simpanPerubahanProduk = function(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); if(!lama) return; dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
-    window.hapusOlehPenjual = function(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
-    window.hapusProdukAdmin = function(id){ if(isAdmin&&confirm("Hapus paksa?")) dbRef.child(id).remove(); }
+    function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
+    function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
+    function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
+    function muatDataKeFormEdit(id){ const p=produkData.find(x=>x.id===id); if(!p) return; document.getElementById('edit-id').value=p.id; document.getElementById('edit-nama').value=p.nama; document.getElementById('edit-harga').value=p.harga; document.getElementById('edit-kategori').value=p.kategori; document.getElementById('edit-status').value=p.status||'tersedia'; document.getElementById('edit-penjual').value=p.penjual; document.getElementById('edit-lokasi').value=p.lokasi; document.getElementById('edit-whatsapp').value=p.wa; document.getElementById('edit-catatan').value=p.catatan||''; document.getElementById('modal-edit').classList.remove('hidden'); }
+    function tutupModalEdit(){ document.getElementById('modal-edit').classList.add('hidden'); }
+    function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
+    function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
+    function hapusProdukAdmin(id){ if(isAdmin&&confirm("Hapus paksa?")) dbRef.child(id).remove(); }
 
     let currentZoomPhotos=[], currentZoomIndex=0;
-    window.bukaDetailProduk = function(id){ 
+    function bukaDetailProduk(id){ 
       const item=produkData.find(p=>p.id===id); if(!item) return; 
       let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):['https://via.placeholder.com/300?text=Produk+RT36']; 
       currentZoomPhotos=list; currentZoomIndex=0; 
-      let imgT=document.getElementById('img-zoom-target'); if(imgT) imgT.src=list[0]; 
-      let counter=document.getElementById('zoom-foto-counter'); if(counter) counter.innerText = `1 / ${list.length}`;
-      let kat=document.getElementById('detail-kategori'); if(kat) kat.innerText = (item.kategori||'').toUpperCase();
-      let harga=document.getElementById('detail-harga'); if(harga) harga.innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
-      let nama=document.getElementById('detail-nama'); if(nama) nama.innerText=item.nama; 
-      let penjualT=document.getElementById('detail-penjual-text'); if(penjualT) penjualT.innerText = item.penjual + ' ('+item.lokasi+')';
-      let waktuT=document.getElementById('detail-waktu-text'); if(waktuT) waktuT.innerText = hitungUmurProduk(item.timestamp);
+      document.getElementById('img-zoom-target').src=list[0]; 
+      document.getElementById('zoom-foto-counter').innerText = `1 / ${list.length}`;
+      document.getElementById('detail-kategori').innerText = (item.kategori||'').toUpperCase();
+      document.getElementById('detail-harga').innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
+      document.getElementById('detail-nama').innerText=item.nama; 
+      document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
+      document.getElementById('detail-waktu-text').innerText = hitungUmurProduk(item.timestamp);
       let isT = item.status!=='tidak';
       let statusEl = document.getElementById('detail-status');
-      if(statusEl){ statusEl.innerText = isT ? 'Tersedia' : 'Habis'; statusEl.style.color = isT ? '#075E54' : '#ef4444'; statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2'; }
+      statusEl.innerText = isT ? 'Tersedia' : 'Habis';
+      statusEl.style.color = isT ? '#075E54' : '#ef4444';
+      statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2';
+
       let cat=item.catatan||''; 
       let catatanEl = document.getElementById('detail-catatan');
-      if(catatanEl){ catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5"><p class="text-[11px] text-gray-500 mb-1">Detail Layanan</p><div id="catatan-detail" class="text-[13px] text-gray-800 leading-relaxed">${bersihkanTeks(cat)}</div></div>` : `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400">Tidak ada deskripsi</div>`; }
-      let btnWa=document.getElementById('detail-btn-wa'); if(btnWa) btnWa.onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
-      let btnChat=document.getElementById('detail-btn-chat'); if(btnChat) btnChat.onclick=function(){ tutupModalZoom(); bukaChatDenganPenjual(item.penjual, item.nama); };
-      let modalZoom=document.getElementById('modal-zoom'); if(modalZoom) modalZoom.classList.remove('hidden');
-      try{ history.pushState({modalZoom:true},''); }catch(e){}
-    }
-    window.bukaChatDenganPenjual = function(namaPenjual, namaProduk){
-      if(!cekVerifikasiChat()){ return; }
-      let panel = document.getElementById('panelChatWarga');
-      let btnBuka = document.getElementById('btnBukaChat');
-      if(panel){ panel.classList.remove('hidden'); if(btnBuka) btnBuka.classList.add('hidden'); try{ history.pushState({chatOpen:true},''); }catch(e){} }
-      setTimeout(()=>{
-        let input = document.getElementById('teksPesanWarga');
-        if(input){ input.value = `Halo Kak ${namaPenjual}, saya mau tanya produk "${namaProduk}" masih ready? Bosku dari Pasar RT36 🙏`; input.focus(); input.style.height='auto'; input.style.height=(input.scrollHeight)+'px'; cekKetik(); }
-        let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight;
-      }, 300);
-    }
-    window.tutupModalZoom = function(){ let m=document.getElementById('modal-zoom'); if(m) m.classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
-    window.geserFotoZoom = function(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; let img=document.getElementById('img-zoom-target'); let counter=document.getElementById('zoom-foto-counter'); if(img) img.src=currentZoomPhotos[currentZoomIndex]; if(counter) counter.innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
-    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); let pc=document.getElementById('panelChatWarga'); let bb=document.getElementById('btnBukaChat'); if(pc&&!pc.classList.contains('hidden')){ pc.classList.add('hidden'); if(bb) bb.classList.remove('hidden'); } };
+      catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5"><p class="text-[11px] text-gray-500 mb-1">Detail Layanan</p><div id="catatan-detail" class="text-[13px] text-gray-800 leading-relaxed">${bersihkanTeks(cat)}</div><button class="text-[#075E54] text-[11px] mt-2 font-semibold" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button></div>` : `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400">Tidak ada deskripsi</div>`;
 
+      // Tombol WA
+      document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
+      // Tombol CHAT LIVE LANGSUNG KE PENJUAL BOSKU
+      document.getElementById('detail-btn-chat').onclick=function(){ 
+        tutupModalZoom(); 
+        bukaChatDenganPenjual(item.penjual, item.nama); 
+      };
+
+      document.getElementById('modal-zoom').classList.remove('hidden');
+      history.pushState({modalZoom:true},'');
+    }
+
+    function bukaChatDenganPenjual(namaPenjual, namaProduk){
+  if(!cekVerifikasiChat()){ return; }
+  let panel = document.getElementById('panelChatWarga');
+  let btnBuka = document.getElementById('btnBukaChat');
+  if(panel){ 
+    panel.classList.remove('hidden'); 
+    if(btnBuka) btnBuka.classList.add('hidden');
+    try{ history.pushState({chatOpen:true},''); }catch(e){}
+  }
+  setTimeout(()=>{
+    let input = document.getElementById('teksPesanWarga');
+    if(input){
+      input.value = `Halo Kak ${namaPenjual}, saya mau tanya produk "${namaProduk}" masih ready? Bosku dari Pasar RT36 🙏`;
+      input.focus();
+      input.style.height='auto';
+      input.style.height=(input.scrollHeight)+'px';
+      cekKetik();
+    }
+    let box=document.getElementById('boxChatWarga');
+    if(box) box.scrollTop=box.scrollHeight;
+  }, 300);
+}
+
+    function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
+    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
+    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
     let dataProdukBaru=null;
-    window.tanyakanShareProduk = function(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; let m=document.getElementById('modal-share-produk'); if(m) m.classList.remove('hidden'); }
-    window.tutupModalShare = function(){ let m=document.getElementById('modal-share-produk'); if(m) m.classList.add('hidden'); dataProdukBaru=null; }
-    window.shareProdukKe = function(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
-
-    window.toggleModeAdmin = function(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
-    window.tutupModalAdmin = function(){ let m=document.getElementById('modal-login-admin'); if(m) m.classList.add('hidden'); let inp=document.getElementById('pin-admin'); if(inp) inp.value=''; }
-    window.verifikasiAdmin = function(){ let vEl=document.getElementById('pin-admin'); if(!vEl) return; let v=vEl.value; if(v===pinAdminAktif){ isAdmin=true; let b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); tutupModalAdmin(); terapkanFilterDanPencarian(); } else alert('PIN Admin RT Salah!'); }
-    window.keluarAdmin = function(){ isAdmin=false; let b=document.getElementById('banner-admin'); if(b) b.classList.add('hidden'); terapkanFilterDanPencarian(); }
-    window.bukaModalGantiPin = function(){ let m=document.getElementById('modal-ganti-pin'); if(m) m.classList.remove('hidden'); }
-    window.tutupModalGantiPin = function(){ let m=document.getElementById('modal-ganti-pin'); if(m) m.classList.add('hidden'); }
-    window.simpanPinBaru = function(){ let lamaEl=document.getElementById('pin-lama'); let baruEl=document.getElementById('pin-baru'); if(!lamaEl||!baruEl) return; const lama=lamaEl.value; const baru=baruEl.value; if(lama!==pinAdminAktif){ alert('PIN Lama salah!'); return; } pinRef.set(baru).then(()=>{ alert('PIN Admin berhasil diubah!'); pinAdminAktif=baru; tutupModalGantiPin(); }); }
-
-    // ... (sisanya chat live tetap sama, tidak saya ubah logikanya bosku, cuma tambahin window.) ...
-    window.bukaModalGantiProfil = function(){ tutupMenuHeaderChat(); let n=localStorage.getItem('verified_nama_rt36')||''; let el=document.getElementById('editNamaWarga'); if(el) el.value=n; let m=document.getElementById('modal-ganti-profil'); if(m) m.classList.remove('hidden'); }
-    window.tutupModalGantiProfil = function(){ let m=document.getElementById('modal-ganti-profil'); if(m) m.classList.add('hidden'); }
-    window.simpanProfilBaru = function(){ let nbEl=document.getElementById('editNamaWarga'); if(!nbEl) return; let nb=nbEl.value.trim(); if(nb.length<2){ alert('Isi nama minimal 2 karakter!'); return; } let file=document.getElementById('editFotoWarga').files[0]; if(file){ kompresGambar(file,function(b64){ localStorage.setItem('verified_nama_rt36',nb); localStorage.setItem('verified_foto_rt36',b64); tutupModalGantiProfil(); alert('Profil berhasil diperbarui!'); }); } else { localStorage.setItem('verified_nama_rt36',nb); tutupModalGantiProfil(); alert('Nama profil berhasil diperbarui!'); } }
-    window.toggleMenuHeaderChat = function(e){ if(e) e.stopPropagation(); let m=document.getElementById('dropdownHeaderChat'); if(m) m.classList.toggle('hidden'); }
-    window.tutupMenuHeaderChat = function(){ let m=document.getElementById('dropdownHeaderChat'); if(m) m.classList.add('hidden'); }
+    function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
+    function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
+    function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
+    function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
+    function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
+    function verifikasiAdmin(){ let v=document.getElementById('pin-admin').value; if(v===pinAdminAktif){ isAdmin=true; document.getElementById('banner-admin').classList.remove('hidden'); tutupModalAdmin(); terapkanFilterDanPencarian(); } else alert('PIN Admin RT Salah!'); }
+    function keluarAdmin(){ isAdmin=false; document.getElementById('banner-admin').classList.add('hidden'); terapkanFilterDanPencarian(); }
+    function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
+    function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
+    function simpanPinBaru(){ const lama=document.getElementById('pin-lama').value; const baru=document.getElementById('pin-baru').value; if(lama!==pinAdminAktif){ alert('PIN Lama salah!'); return; } pinRef.set(baru).then(()=>{ alert('PIN Admin berhasil diubah!'); pinAdminAktif=baru; tutupModalGantiPin(); }); }
+    function bukaModalGantiProfil(){ tutupMenuHeaderChat(); let n=localStorage.getItem('verified_nama_rt36')||''; document.getElementById('editNamaWarga').value=n; document.getElementById('modal-ganti-profil').classList.remove('hidden'); }
+    function tutupModalGantiProfil(){ document.getElementById('modal-ganti-profil').classList.add('hidden'); }
+    function simpanProfilBaru(){ let nb=document.getElementById('editNamaWarga').value.trim(); if(nb.length<2){ alert('Isi nama minimal 2 karakter!'); return; } let file=document.getElementById('editFotoWarga').files[0]; if(file){ kompresGambar(file,function(b64){ localStorage.setItem('verified_nama_rt36',nb); localStorage.setItem('verified_foto_rt36',b64); tutupModalGantiProfil(); alert('Profil berhasil diperbarui!'); }); } else { localStorage.setItem('verified_nama_rt36',nb); tutupModalGantiProfil(); alert('Nama profil berhasil diperbarui!'); } }
+    function toggleMenuHeaderChat(e){ if(e) e.stopPropagation(); let m=document.getElementById('dropdownHeaderChat'); if(m) m.classList.toggle('hidden'); }
+    function tutupMenuHeaderChat(){ let m=document.getElementById('dropdownHeaderChat'); if(m) m.classList.add('hidden'); }
     document.addEventListener('click', function(e){ let btn=document.getElementById('btnMenuHeader'); let menu=document.getElementById('dropdownHeaderChat'); if(menu&&btn&&!btn.contains(e.target)&&!menu.contains(e.target)){ menu.classList.add('hidden'); } });
-    window.tutupSemuaMenuSub = function(){ let s=document.getElementById('menuPilihanSuara'); let l=document.getElementById('menuLampiran'); let e=document.getElementById('emoji-list'); let st=document.getElementById('menuStiker'); if(s) s.classList.add('hidden'); if(l) l.classList.add('hidden'); if(e) e.classList.add('hidden'); if(st) st.classList.add('hidden'); menuSubAktif=null; }
-    window.toggleNotifikasi = function(){ let m=document.getElementById('menuPilihanSuara'); if(!m) return; if(m.classList.contains('hidden')){ tutupSemuaMenuSub(); m.classList.remove('hidden'); menuSubAktif='suara'; } else { m.classList.add('hidden'); menuSubAktif=null; } tutupMenuHeaderChat(); }
-    window.toggleMenuLampiran = function(){ if(!cekVerifikasiChat()) return; let m=document.getElementById('menuLampiran'); let st=document.getElementById('menuStiker'); if(st) st.classList.add('hidden'); if(!m) return; if(m.classList.contains('hidden')){ tutupSemuaMenuSub(); m.classList.remove('hidden'); menuSubAktif='lampiran'; } else { m.classList.add('hidden'); menuSubAktif=null; } }
-    window.toggleMenuEmoji = function(){ if(!cekVerifikasiChat()) return; let e=document.getElementById('emoji-list'); if(!e) return; if(e.classList.contains('hidden')){ tutupSemuaMenuSub(); e.classList.remove('hidden'); menuSubAktif='emoji'; } else { e.classList.add('hidden'); menuSubAktif=null; } }
-    window.tambahEmoji = function(em){ let t=document.getElementById('teksPesanWarga'); if(t){ t.value+=em; t.focus(); cekKetik(); } }
-    window.bukaMenuStiker = function(){ let l=document.getElementById('menuLampiran'); let st=document.getElementById('menuStiker'); if(l) l.classList.add('hidden'); if(st){ st.classList.remove('hidden'); menuSubAktif='stiker'; } }
-    window.kirimStiker = function(te){ if(!cekVerifikasiChat()) return; let n='Warga'; let f=''; let id='tamu_'+Date.now(); try{ n=localStorage.getItem('verified_nama_rt36')||'Warga'; f=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:n,fotoProfil:f,pesan:`⭐ [STIKER] ${te}`,waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}); tutupSemuaMenuSub(); }
-    window.gantiSuara = function(idx){ suaraIndex=idx; try{ localStorage.setItem('suara_pilihan_rt36',idx); }catch(e){} let a=document.getElementById('notifSound'); if(idx!=='off'&&a&&suaraList[idx]){ a.src=suaraList[idx].url; a.load(); a.play().catch(()=>{}); } [0,1,2,3,4,5].forEach(i=>{ let c=document.querySelector(`#suara${i} .check`); if(c) c.classList.toggle('hidden',i!==idx); }); let co=document.querySelector(`#suaraOff .check`); if(co) co.classList.toggle('hidden',idx!=='off'); tutupSemuaMenuSub(); }
-    window.cekVerifikasiChat = function(){ let pin=null, nama=null; try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){} let m=document.getElementById('modalVerifWA'); if(!pin||!nama){ if(m) m.classList.remove('hidden'); let t=document.getElementById('teksPesanWarga'); if(t) t.blur(); return false; } if(m) m.classList.add('hidden'); return true; }
-    window.tutupModalLoginPin = function(){ let m=document.getElementById('modalVerifWA'); if(m) m.classList.add('hidden'); }
-    window.prosesLoginAtauDaftarWarga = function(){ 
+    function tutupSemuaMenuSub(){ let s=document.getElementById('menuPilihanSuara'); let l=document.getElementById('menuLampiran'); let e=document.getElementById('emoji-list'); let st=document.getElementById('menuStiker'); if(s) s.classList.add('hidden'); if(l) l.classList.add('hidden'); if(e) e.classList.add('hidden'); if(st) st.classList.add('hidden'); menuSubAktif=null; }
+    function toggleNotifikasi(){ let m=document.getElementById('menuPilihanSuara'); if(!m) return; if(m.classList.contains('hidden')){ tutupSemuaMenuSub(); m.classList.remove('hidden'); menuSubAktif='suara'; } else { m.classList.add('hidden'); menuSubAktif=null; } tutupMenuHeaderChat(); }
+    function toggleMenuLampiran(){ if(!cekVerifikasiChat()) return; let m=document.getElementById('menuLampiran'); let st=document.getElementById('menuStiker'); if(st) st.classList.add('hidden'); if(!m) return; if(m.classList.contains('hidden')){ tutupSemuaMenuSub(); m.classList.remove('hidden'); menuSubAktif='lampiran'; } else { m.classList.add('hidden'); menuSubAktif=null; } }
+    function toggleMenuEmoji(){ if(!cekVerifikasiChat()) return; let e=document.getElementById('emoji-list'); if(!e) return; if(e.classList.contains('hidden')){ tutupSemuaMenuSub(); e.classList.remove('hidden'); menuSubAktif='emoji'; } else { e.classList.add('hidden'); menuSubAktif=null; } }
+    function tambahEmoji(em){ let t=document.getElementById('teksPesanWarga'); if(t){ t.value+=em; t.focus(); cekKetik(); } }
+    function bukaMenuStiker(){ let l=document.getElementById('menuLampiran'); let st=document.getElementById('menuStiker'); if(l) l.classList.add('hidden'); if(st){ st.classList.remove('hidden'); menuSubAktif='stiker'; } }
+    function kirimStiker(te){ if(!cekVerifikasiChat()) return; let n='Warga'; let f=''; let id='tamu_'+Date.now(); try{ n=localStorage.getItem('verified_nama_rt36')||'Warga'; f=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:n,fotoProfil:f,pesan:`⭐ [STIKER] ${te}`,waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}); tutupSemuaMenuSub(); }
+    function gantiSuara(idx){ suaraIndex=idx; try{ localStorage.setItem('suara_pilihan_rt36',idx); }catch(e){} let a=document.getElementById('notifSound'); if(idx!=='off'&&a&&suaraList[idx]){ a.src=suaraList[idx].url; a.load(); a.play().catch(()=>{}); } [0,1,2,3,4,5].forEach(i=>{ let c=document.querySelector(`#suara${i} .check`); if(c) c.classList.toggle('hidden',i!==idx); }); let co=document.querySelector(`#suaraOff .check`); if(co) co.classList.toggle('hidden',idx!=='off'); tutupSemuaMenuSub(); }
+    function cekVerifikasiChat(){ let pin=null, nama=null; try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){} let m=document.getElementById('modalVerifWA'); if(!pin||!nama){ if(m) m.classList.remove('hidden'); let t=document.getElementById('teksPesanWarga'); if(t) t.blur(); return false; } if(m) m.classList.add('hidden'); return true; }
+    function tutupModalLoginPin(){ let m=document.getElementById('modalVerifWA'); if(m) m.classList.add('hidden'); }
+    function prosesLoginAtauDaftarWarga(){ 
       let pinPrev=document.getElementById('inputPinSebelumnya').value.trim(); 
       let namaBaru=document.getElementById('inputNamaPin').value.trim(); 
       let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim(); 
@@ -446,25 +453,26 @@
       if(namaBaru!==""||pinBaru!==""){ if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; } if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; } loginSukses(pinBaru, namaBaru); return; }
       alert('⚠️ Masukkan PIN toko / PIN chat Anda bosku!');
     }
-    window.bukaPanelChatLangsung = function(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
+    function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
     document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
-    window.toggleBoxChat = function(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
-    window.cekKetik = function(){ let t=document.getElementById('teksPesanWarga'); if(!t) return; let ada=t.value.trim()!==''; let mic=document.getElementById('iconMic'); let send=document.getElementById('iconSend'); let ic=document.getElementById('iconDalamKotak'); if(isRekam) return; if(mic) mic.classList.toggle('hidden',ada); if(send) send.classList.toggle('hidden',!ada); if(ic) ic.classList.toggle('hidden',ada); }
-    window.handleAksi = function(){ let txt=document.getElementById('teksPesanWarga'); if(!txt) return; let v=txt.value.trim(); if(v!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
-    window.mulaiBalasPesan = function(nama,isi){ if(!cekVerifikasiChat()) return; pesanBalasanData={nama:nama,pesan:isi}; let c=document.getElementById('containerPreviewBalas'); if(!c) return; c.innerHTML=`<div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm overflow-hidden"><div class="overflow-hidden pr-2"><p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p><p class="text-gray-600 truncate text-[11px] max-w-[280px] md:max-w-[350px]">${isi}</p></div><button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm flex-shrink-0">&times;</button></div>`; let t=document.getElementById('teksPesanWarga'); if(t) t.focus(); }
-    window.batalkanBalasChat = function(){ pesanBalasanData=null; let c=document.getElementById('containerPreviewBalas'); if(c) c.innerHTML=''; }
-    window.kirimPesanWarga = function(){ let ti=document.getElementById('teksPesanWarga'); if(!ti) return; let pesan=ti.value.trim(); if(!pesan) return; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); let data={nama:nama,fotoProfil:foto,pesan:pesan,waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}; if(pesanBalasanData){ data.replyTo=pesanBalasanData.nama; data.replyContent=pesanBalasanData.pesan; } ti.value=''; ti.style.height='auto'; batalkanBalasChat(); cekKetik(); database.ref('pesan_warga').push(data).catch(err=>{ alert('Gagal mengirim pesan: '+err.message); }); }
-    window.kirimFoto = function(inp){ if(!cekVerifikasiChat()) return; if(!inp.files||inp.files.length===0) return; let files=Array.from(inp.files); if(files.length>3){ alert('Maksimal mengirim 3 foto sekaligus!'); return; } let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} files.forEach(f=>{ kompresGambar(f,function(b64){ let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:b64,waktu:jam,userId:id,timestamp:Date.now(),tipe:'foto'}); }); }); inp.value=''; }
-    window.kirimLokasi = function(){ if(!cekVerifikasiChat()) return; if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; } navigator.geolocation.getCurrentPosition(pos=>{ let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:mapsLink,waktu:jam,userId:id,timestamp:Date.now(),tipe:'lokasi'}); }); }
-    window.mulaiRekam = async function(){ if(!cekVerifikasiChat()) return; isRekam=true; let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.add('hidden'); if(areaRekam) areaRekam.classList.remove('hidden'); if(iconKotak) iconKotak.classList.add('hidden'); try{ micStream = await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder = new MediaRecorder(micStream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { let blob = new Blob(audioChunks, {type:'audio/webm'}); let reader = new FileReader(); reader.onload = e => { let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(ex){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:e.target.result,waktu:jam,userId:id,timestamp:Date.now(),tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(e){ alert('Izinkan akses mic!'); isRekam=false; } }
-    window.stopRekam = function(){ if(!isRekam) return; isRekam=false; if(mediaRecorder) mediaRecorder.stop(); if(micStream){ micStream.getTracks().forEach(t=>t.stop()); } let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.remove('hidden'); if(areaRekam) areaRekam.classList.add('hidden'); if(iconKotak) iconKotak.classList.remove('hidden'); cekKetik(); }
+    function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
+    window.addEventListener('popstate',function(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p&&!p.classList.contains('hidden')){ p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } });
+    function cekKetik(){ let t=document.getElementById('teksPesanWarga'); if(!t) return; let ada=t.value.trim()!==''; let mic=document.getElementById('iconMic'); let send=document.getElementById('iconSend'); let ic=document.getElementById('iconDalamKotak'); if(isRekam) return; if(mic) mic.classList.toggle('hidden',ada); if(send) send.classList.toggle('hidden',!ada); if(ic) ic.classList.toggle('hidden',ada); }
+    function handleAksi(){ let txt=document.getElementById('teksPesanWarga'); if(!txt) return; let v=txt.value.trim(); if(v!==''){ kirimPesanWarga(); return; } if(!isRekam){ mulaiRekam(); } else { stopRekam(); } }
+    function mulaiBalasPesan(nama,isi){ if(!cekVerifikasiChat()) return; pesanBalasanData={nama:nama,pesan:isi}; let c=document.getElementById('containerPreviewBalas'); if(!c) return; c.innerHTML=`<div id="previewBalasChat" class="bg-white border-l-4 border-emerald-600 p-2 text-xs rounded-r-lg flex justify-between items-center shadow-sm overflow-hidden"><div class="overflow-hidden pr-2"><p class="font-bold text-emerald-700 text-[11px]">Membalas ke: ${nama}</p><p class="text-gray-600 truncate text-[11px] max-w-[280px] md:max-w-[350px]">${isi}</p></div><button onclick="batalkanBalasChat()" class="text-gray-400 hover:text-red-600 font-bold px-2 text-sm flex-shrink-0">&times;</button></div>`; let t=document.getElementById('teksPesanWarga'); if(t) t.focus(); }
+    function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementById('containerPreviewBalas'); if(c) c.innerHTML=''; }
+    function kirimPesanWarga(){ let ti=document.getElementById('teksPesanWarga'); if(!ti) return; let pesan=ti.value.trim(); if(!pesan) return; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); let data={nama:nama,fotoProfil:foto,pesan:pesan,waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}; if(pesanBalasanData){ data.replyTo=pesanBalasanData.nama; data.replyContent=pesanBalasanData.pesan; } ti.value=''; ti.style.height='auto'; batalkanBalasChat(); cekKetik(); database.ref('pesan_warga').push(data).catch(err=>{ alert('Gagal mengirim pesan: '+err.message); }); }
+    function kirimFoto(inp){ if(!cekVerifikasiChat()) return; if(!inp.files||inp.files.length===0) return; let files=Array.from(inp.files); if(files.length>3){ alert('Maksimal mengirim 3 foto sekaligus!'); return; } let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} files.forEach(f=>{ kompresGambar(f,function(b64){ let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:b64,waktu:jam,userId:id,timestamp:Date.now(),tipe:'foto'}); }); }); inp.value=''; }
+    function kirimLokasi(){ if(!cekVerifikasiChat()) return; if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; } navigator.geolocation.getCurrentPosition(pos=>{ let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:mapsLink,waktu:jam,userId:id,timestamp:Date.now(),tipe:'lokasi'}); }); }
+    async function mulaiRekam(){ if(!cekVerifikasiChat()) return; isRekam=true; let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.add('hidden'); if(areaRekam) areaRekam.classList.remove('hidden'); if(iconKotak) iconKotak.classList.add('hidden'); try{ micStream = await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder = new MediaRecorder(micStream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { let blob = new Blob(audioChunks, {type:'audio/webm'}); let reader = new FileReader(); reader.onload = e => { let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(ex){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:e.target.result,waktu:jam,userId:id,timestamp:Date.now(),tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(e){ alert('Izinkan akses mic!'); isRekam=false; } }
+    function stopRekam(){ if(!isRekam) return; isRekam=false; if(mediaRecorder) mediaRecorder.stop(); if(micStream){ micStream.getTracks().forEach(t=>t.stop()); } let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.remove('hidden'); if(areaRekam) areaRekam.classList.add('hidden'); if(iconKotak) iconKotak.classList.remove('hidden'); cekKetik(); }
     function triggerNotifChat(isBalasan, isPribadi=false){
       let panel=document.getElementById('panelChatWarga'); let btnBuka=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
       if(panel && panel.classList.contains('hidden') && btnBuka){ btnBuka.classList.remove('bg-[#25D366]'); btnBuka.classList.add('bg-red-500'); if(badge){ badge.classList.remove('hidden'); badge.innerText=isPribadi?'P':'!'; } if(navigator.vibrate) navigator.vibrate([200,100,200]); }
       bunyikanNotifikasi(isBalasan || isPribadi);
     }
-    window.hapusPesanWarga = function(keyPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat menghapus pesan yang Anda kirim sendiri!'); return; } if(confirm('Hapus pesan ini?')){ isProsesHapus=true; database.ref('pesan_warga').child(keyPesan).remove().then(()=>{ setTimeout(()=>{ isProsesHapus=false; },2000); }).catch(err=>{ isProsesHapus=false; alert('Gagal menghapus pesan: '+err.message); }); } }
-    window.mulaiEditPesan = function(keyPesan, encodedPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat mengedit pesan yang Anda kirim sendiri!'); return; } let pesanLama=decodeURIComponent(encodedPesan); let pesanBaru=prompt("Edit pesan:", pesanLama); if(pesanBaru===null) return; pesanBaru=pesanBaru.trim(); if(!pesanBaru){ alert("Pesan tidak boleh kosong!"); return; } database.ref('pesan_warga').child(keyPesan).update({pesan:pesanBaru,diedit:true}).catch(err=>{ alert("Gagal mengedit pesan: "+err.message); }); }
+    function hapusPesanWarga(keyPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat menghapus pesan yang Anda kirim sendiri!'); return; } if(confirm('Hapus pesan ini?')){ isProsesHapus=true; database.ref('pesan_warga').child(keyPesan).remove().then(()=>{ setTimeout(()=>{ isProsesHapus=false; },2000); }).catch(err=>{ isProsesHapus=false; alert('Gagal menghapus pesan: '+err.message); }); } }
+    function mulaiEditPesan(keyPesan, encodedPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat mengedit pesan yang Anda kirim sendiri!'); return; } let pesanLama=decodeURIComponent(encodedPesan); let pesanBaru=prompt("Edit pesan:", pesanLama); if(pesanBaru===null) return; pesanBaru=pesanBaru.trim(); if(!pesanBaru){ alert("Pesan tidak boleh kosong!"); return; } database.ref('pesan_warga').child(keyPesan).update({pesan:pesanBaru,diedit:true}).catch(err=>{ alert("Gagal mengedit pesan: "+err.message); }); }
     function inisialisasiChatLive(){
       if(isChatInitialized) return; isChatInitialized=true;
       let myId='tamu_'+Date.now(); let myNama=''; try{ myId=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); myNama=localStorage.getItem('verified_nama_rt36')||''; }catch(e){}
@@ -476,7 +484,7 @@
         let isMe=(data.userId===myId); let pengirimNama=data.nama; let pengirimId=data.userId;
         let div=document.createElement('div'); div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1'; div.id='msg_'+key;
         let avatarHtml=''; if(data.fotoProfil){ avatarHtml=`<img src="${data.fotoProfil}" class="w-5 h-5 rounded-full object-cover inline-block mr-1 flex-shrink-0">`; } else { let initial=pengirimNama?pengirimNama.charAt(0).toUpperCase():'W'; avatarHtml=`<span class="w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold inline-flex items-center justify-center mr-1 flex-shrink-0">${initial}</span>`; }
-        let isiPesan=data.pesan; if(data.tipe==='foto'){ isiPesan=`<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer">`; } else if(data.tipe==='voice'){ isiPesan=`<audio controls src="${data.pesan}" class="max-w-[220px] h-10"></audio>`; } else if(data.tipe==='lokasi'){ isiPesan=`📍 <a href="${data.pesan}" target="_blank" class="text-blue-600 underline font-bold">Kirim Lokasi GPS Warga</a>`; } else { isiPesan=`<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`; }
+        let isiPesan=data.pesan; if(data.tipe==='foto'){ isiPesan=`<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)">`; } else if(data.tipe==='voice'){ isiPesan=`<audio controls src="${data.pesan}" class="max-w-[220px] h-10"></audio>`; } else if(data.tipe==='lokasi'){ isiPesan=`📍 <a href="${data.pesan}" target="_blank" class="text-blue-600 underline font-bold">Kirim Lokasi GPS Warga</a>`; } else { isiPesan=`<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`; }
         let replyHtml=''; if(data.replyTo&&data.replyContent){ replyHtml=`<div class="bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]"><p class="font-bold text-emerald-800">${data.replyTo}</p><p class="text-gray-600 truncate">${data.replyContent}</p></div>`; }
         let tombolAksiChat=''; if((isMe||isAdmin)&&data.tipe==='teks'){ tombolAksiChat=`<div class="flex gap-1.5 items-center"><button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`, '${pengirimId}')" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit">✏️</button><button onclick="event.stopPropagation(); hapusPesanWarga('${key}', '${pengirimId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus">🗑️</button></div>`; }
         let statusEdit=data.diedit?' <span class="text-[9px] text-gray-400 italic">(diedit)</span>':'';
@@ -486,23 +494,23 @@
       });
       setTimeout(()=>{ chatPertamaLoad=false; },3000);
     }
-    window.bunyikanNotifikasi = function(){ if(suaraIndex==='off') return; let audio=document.getElementById('notifSound'); if(audio&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; audio.currentTime=0; audio.play().catch(()=>{}); } }
+    function bunyikanNotifikasi(){ if(suaraIndex==='off') return; let audio=document.getElementById('notifSound'); if(audio&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; audio.currentTime=0; audio.play().catch(()=>{}); } }
     function updateHeaderDropdownMenu(){ let dropHeader=document.getElementById('dropdownHeaderChat'); if(dropHeader){ dropHeader.innerHTML=`<button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil</button><button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi</button><button onclick="keluarDariPasarRT36()" class="w-full text-left px-3.5 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2 border-b"><i class="ph ph-sign-out text-base text-red-600"></i> Keluar Akun (Logout)</button><button onclick="toggleBoxChat()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-600 hover:bg-gray-100 flex items-center gap-2 font-medium"><i class="ph ph-x text-base"></i> Tutup Chat</button>`; } }
     window.addEventListener('load', function(){ inisialisasiChatLive(); updateHeaderDropdownMenu(); });
-    window.keluarDariPasarRT36 = function(){
+    function keluarDariPasarRT36(){
       if(confirm('Yakin mau keluar akun & hapus sesi perangkat ini?')){
         try { localStorage.removeItem('chat_pin_rt36'); localStorage.removeItem('verified_nama_rt36'); localStorage.removeItem('verified_foto_rt36'); localStorage.removeItem('my_chat_id'); localStorage.removeItem('my_device_uid'); } catch(e) {}
         location.reload();
       }
     }
 
-    // ===== FINAL CLEAN FIX BOSKU =====
+    // ===== FINAL CLEAN FIX BOSKU - 1x DRAG + CHAT PRIVAT + AUTO HAPUS =====
     let targetPrivId=null, targetPrivNama=null;
-    window.bukaChatPribadi = function(nama, userId){ if(!cekVerifikasiChat()) return; let myId=localStorage.getItem('my_chat_id')||''; if(userId===myId) return; targetPrivId=userId; targetPrivNama=nama; let nEl=document.getElementById('privNama'); let aEl=document.getElementById('privAvatar'); if(nEl) nEl.innerText=nama; if(aEl) aEl.innerText=nama.charAt(0).toUpperCase(); let m=document.getElementById('modalChatPribadi'); if(m) m.classList.remove('hidden'); loadChatPribadi(); }
-    window.tutupChatPribadi = function(){ let m=document.getElementById('modalChatPribadi'); if(m) m.classList.add('hidden'); }
+    function bukaChatPribadi(nama, userId){ if(!cekVerifikasiChat()) return; let myId=localStorage.getItem('my_chat_id')||''; if(userId===myId) return; targetPrivId=userId; targetPrivNama=nama; document.getElementById('privNama').innerText=nama; document.getElementById('privAvatar').innerText=nama.charAt(0).toUpperCase(); document.getElementById('modalChatPribadi').classList.remove('hidden'); loadChatPribadi(); }
+    function tutupChatPribadi(){ document.getElementById('modalChatPribadi').classList.add('hidden'); }
     function getRoomId(a,b){ return [a,b].sort().join('_PRIV_'); }
     function loadChatPribadi(){ let myId=localStorage.getItem('my_chat_id')||''; let room=getRoomId(myId, targetPrivId); let box=document.getElementById('boxChatPribadi'); if(!box) return; box.innerHTML=''; database.ref('pesan_pribadi/'+room).limitToLast(50).off(); database.ref('pesan_pribadi/'+room).limitToLast(50).on('child_added', snap=>{ let d=snap.val(); if(!d) return; let isMe=d.userId===myId; let div=document.createElement('div'); div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1'; div.innerHTML=`<div class="bubble-wa ${isMe?'bubble-me':'bubble-other'}"><div class="py-0.5 text-[13px]">${bersihkanTeks(d.pesan)}</div><div class="text-right text-[9px] text-gray-400">${d.waktu}</div></div>`; box.appendChild(div); box.scrollTop=box.scrollHeight; if(!isMe) triggerNotifChat(true, true); }); }
-    window.kirimPesanPribadi = function(){ let input=document.getElementById('teksPesanPribadi'); if(!input) return; let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
+    function kirimPesanPribadi(){ let input=document.getElementById('teksPesanPribadi'); let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
     function autoHapus24Jam(){
       let batas = Date.now() - (24*60*60*1000);
       database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{ snap.forEach(c=> c.ref.remove()); });
@@ -513,6 +521,7 @@
     setInterval(autoHapus24Jam, 3600000);
     autoHapus24Jam();
 
+    // SATU-SATUNYA DRAG HANDLER - ANTI BENTROK BOSKU
     (function(){
       const b=document.getElementById('btnBukaChat'); if(!b) return;
       let dragging=false, moved=false, sx=0, sy=0, lx=0, ty=0;
@@ -525,6 +534,7 @@
       window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
       b.addEventListener('click', function(e){ if(moved){ e.preventDefault(); e.stopImmediatePropagation(); return false; } }, true);
     })();
+  // INSTRUKSI BOSKU: HEADER SEMBUNYI SAAT SCROLL, SEARCH KE ATAS
     (function(){
       let lastScroll=0;
       const header=document.querySelector('header');
@@ -542,7 +552,35 @@
         lastScroll=curr;
       }, {passive:true});
     })();
-</script>
+
+  // === FIX FINAL BOSKU: HARUS GLOBAL WINDOW BIAR KLIK RESPON ===
+  window.toggleInfo = function(id){
+    let isi = document.getElementById('isi-'+id);
+    let icon = document.getElementById('icon-'+id);
+    if(!isi) return;
+    let isHidden = isi.classList.contains('hidden');
+    ['tentang','sk','privasi','izin','kontak'].forEach(k=>{
+      if(k !== id){
+        let el=document.getElementById('isi-'+k);
+        let ic=document.getElementById('icon-'+k);
+        if(el) el.classList.add('hidden');
+        if(ic) ic.innerText='▼';
+      }
+    });
+    if(isHidden){
+      isi.classList.remove('hidden');
+      if(icon) icon.innerText='▲';
+    } else {
+      isi.classList.add('hidden');
+      if(icon) icon.innerText='▼';
+    }
+  };
+
+  window.tutupModalPengumuman = function(){
+    let m=document.getElementById('modal-pengumuman');
+    if(m) m.classList.add('hidden');
+  };
+
+  </script>
 </body>
 </html>
-            
