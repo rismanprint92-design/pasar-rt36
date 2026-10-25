@@ -392,18 +392,27 @@
     }
 
     function bukaChatDenganPenjual(namaPenjual, namaProduk){
-      // Buka panel chat warga yang sudah ada
-      let panel = document.getElementById('panelChatWarga');
-      if(panel){ panel.classList.remove('hidden'); }
-      // Auto isi pesan ke penjual
-      let input = document.getElementById('inputChatWarga') || document.querySelector('#panelChatWarga input') || document.querySelector('#panelChatWarga textarea');
-      if(input){
-        input.value = `Halo Kak ${namaPenjual}, saya mau tanya produk "${namaProduk}" masih ready?`;
-        input.focus();
-      }
-      // Notif kecil
-      if(typeof tampilkanToast !== 'undefined'){ tampilkanToast('Menghubungkan ke '+namaPenjual+'...'); }
+  if(!cekVerifikasiChat()){ return; }
+  let panel = document.getElementById('panelChatWarga');
+  let btnBuka = document.getElementById('btnBukaChat');
+  if(panel){ 
+    panel.classList.remove('hidden'); 
+    if(btnBuka) btnBuka.classList.add('hidden');
+    try{ history.pushState({chatOpen:true},''); }catch(e){}
+  }
+  setTimeout(()=>{
+    let input = document.getElementById('teksPesanWarga');
+    if(input){
+      input.value = `Halo Kak ${namaPenjual}, saya mau tanya produk "${namaProduk}" masih ready? Bosku dari Pasar RT36 🙏`;
+      input.focus();
+      input.style.height='auto';
+      input.style.height=(input.scrollHeight)+'px';
+      cekKetik();
     }
+    let box=document.getElementById('boxChatWarga');
+    if(box) box.scrollTop=box.scrollHeight;
+  }, 300);
+}
 
     function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
     function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
