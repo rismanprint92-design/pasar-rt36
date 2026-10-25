@@ -584,7 +584,35 @@
         lastScroll=curr;
       }, {passive:true});
     })();
-  
+
+  // === FIX FINAL BOSKU: HARUS GLOBAL WINDOW BIAR KLIK RESPON ===
+  window.toggleInfo = function(id){
+    let isi = document.getElementById('isi-'+id);
+    let icon = document.getElementById('icon-'+id);
+    if(!isi) return;
+    let isHidden = isi.classList.contains('hidden');
+    ['tentang','sk','privasi','izin','kontak'].forEach(k=>{
+      if(k !== id){
+        let el=document.getElementById('isi-'+k);
+        let ic=document.getElementById('icon-'+k);
+        if(el) el.classList.add('hidden');
+        if(ic) ic.innerText='▼';
+      }
+    });
+    if(isHidden){
+      isi.classList.remove('hidden');
+      if(icon) icon.innerText='▲';
+    } else {
+      isi.classList.add('hidden');
+      if(icon) icon.innerText='▼';
+    }
+  };
+
+  window.tutupModalPengumuman = function(){
+    let m=document.getElementById('modal-pengumuman');
+    if(m) m.classList.add('hidden');
+  };
+
   </script>
 </body>
 </html>
