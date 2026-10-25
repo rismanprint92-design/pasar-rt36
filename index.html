@@ -130,6 +130,35 @@
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3 shadow-2xl"><h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Chat Anda</h3><div><label class="block font-medium mb-1 text-gray-700">Nama / Blok Rumah Baru</label><input type="text" id="editNamaWarga" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-medium" placeholder="Nama anda"></div><div><label class="block font-medium mb-1 text-gray-700">Foto Profil Baru (Maks 1 Foto, Kompres Otomatis)</label><input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px] bg-gray-50"></div><div class="flex gap-2 pt-2"><button onclick="tutupModalGantiProfil()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="simpanProfilBaru()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold hover:bg-emerald-700">Simpan</button></div></div></div>
 
   <!-- FIX BOSKU: Z-1150 PALING DEPAN -->
+  <!-- MODAL JUAL BARU - LENGKAP ID NYA BOSKU -->
+<div id="modal-jual" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4">
+  <div class="bg-[#F4F6F8] w-full max-w-md sm:rounded-[24px] rounded-t-[24px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+    <div class="bg-white p-5 flex justify-between items-center border-b">
+      <h3 class="font-bold text-[16px] text-gray-900">+ Jual Barang Baru</h3>
+      <button onclick="tutupModalJual()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">✕</button>
+    </div>
+    <div class="p-4 overflow-y-auto bg-white">
+      <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3">
+        <input type="text" id="nama" required placeholder="Nama Produk" class="w-full border rounded-xl p-3 text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" id="harga" required placeholder="Harga" class="w-full border rounded-xl p-3 text-sm">
+          <select id="kategori" class="w-full border rounded-xl p-3 text-sm"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">dll</option></select>
+        </div>
+        <select id="status" class="w-full border rounded-xl p-3 text-sm"><option value="tersedia">Tersedia</option><option value="tidak">Stok Habis</option></select>
+        <input type="text" id="penjual" required placeholder="Nama Toko / Penjual" class="w-full border rounded-xl p-3 text-sm">
+        <input type="text" id="lokasi" required placeholder="Blok Rumah (Blok A1)" class="w-full border rounded-xl p-3 text-sm">
+        <input type="number" id="whatsapp" required placeholder="No.WA 0852..." class="w-full border rounded-xl p-3 text-sm">
+        <input type="password" id="pin-penjual" required placeholder="Buat PIN Toko 4 Digit" class="w-full border rounded-xl p-3 text-sm text-center font-bold tracking-widest">
+        <textarea id="catatan" placeholder="Deskripsi produk..." class="w-full border rounded-xl p-3 text-sm h-20"></textarea>
+        <div class="bg-gray-50 border rounded-xl p-3">
+          <label class="text-[11px] font-bold">Foto Produk (Max 3)</label>
+          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full text-xs mt-1">
+        </div>
+        <button type="submit" class="w-full bg-[#075E54] text-white py-3.5 rounded-xl font-bold text-sm">Posting Jualan Sekarang</button>
+      </form>
+    </div>
+  </div>
+</div>
   <div id="modal-opsi-beli" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1150] p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs text-center space-y-3 shadow-2xl border"><h3 class="font-bold text-gray-800 text-sm">Hubungi Penjual</h3><p class="text-gray-500 text-[11px]" id="info-produk-beli"></p><div class="space-y-2 pt-2"><button id="btn-wa-otomatis" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-emerald-700"><i class="ph ph-whatsapp-logo text-base"></i> Chat WhatsApp Otomatis</button><button id="btn-salin-nomor" class="w-full bg-gray-100 text-gray-700 border border-gray-300 py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-200"><i class="ph ph-phone text-base"></i> Salin / Lihat Nomor HP</button></div><button onclick="tutupModalOpsiBeli()" class="w-full bg-gray-200 text-gray-600 py-2 rounded-lg font-medium mt-1">Batal</button></div></div>
 
   <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl"><h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3><p class="text-[11px] text-gray-400 text-center mb-4">Pilih salah satu bosku</p><button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru</button><button onclick="bukaModalTokoSaya()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-2"><i class="ph ph-storefront text-lg"></i> Toko Saya / Edit Jualan</button><button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button></div></div>
