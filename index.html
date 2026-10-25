@@ -190,15 +190,31 @@
     dbRef.on('value', (snap) => { const data=snap.val(); produkData=[]; if(data){ Object.keys(data).forEach(k=>{ produkData.unshift({id:k, ...data[k]}); }); } BATAS_TAMPIL=12; terapkanFilterDanPencarian(); });
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12; btn.innerHTML=`Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`; } else btn.style.display='none'; } }
     function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
+    // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
     function renderProduk(data){
       const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
       if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
       data.forEach(item=>{
-        let def='https://via.placeholder.com/200?text=Produk+RT'; let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; let foto=list[0];
-        let status=item.status||'tersedia'; let isTersedia=status==='tersedia'; let label=isTersedia?'● Tersedia':'● Tidak'; let cls=isTersedia?'label-tersedia':'label-tidak';
-        let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>':'';
-        let umur = hitungUmurProduk(item.timestamp);
-        let card=`<div id="produk-${item.id}" class="bg-white rounded-[20px] shadow-sm border overflow-hidden flex flex-col produk-card"><div class="relative cursor-pointer" onclick="bukaDetailProduk('${item.id}')"><img loading="lazy" src="${foto}" class="w-full h-36 object-cover bg-gray-100">${badge}<span class="absolute bottom-2 left-2 ${cls} text-white shadow">${label}</span><span class="absolute top-2 left-2 bg-black/55 text-white text-[8px] px-2 py-0.5 rounded-full backdrop-blur-sm">🕒 ${umur}</span></div><div class="p-2.5 flex flex-col cursor-pointer" onclick="bukaDetailProduk('${item.id}')"><h3 class="font-bold text-[13px] leading-tight truncate">${bersihkanTeks(item.nama)}</h3><p class="text-orange-500 font-extrabold text-[14px] mt-0.5">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p><p class="text-[9px] text-gray-400 mt-0.5 truncate">📍 ${bersihkanTeks(item.lokasi||'')} • ${umur}</p></div></div>`;
+        let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
+        let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
+        let foto=list[0];
+        let status=item.status||'tersedia'; 
+        let isTersedia=status==='tersedia';
+        let indikator = isTersedia ? '<span class="indikator-tersedia">● Tersedia</span>' : '<span class="indikator-habis">● Habis</span>';
+        let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
+        let badge=list.length>1?'<span class="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full">'+list.length+' Foto</span>':'';
+
+        // HARGA HITAM PEKAT / HIJAU TUA ELEGAN BOSKU + FONT PROPOSIONAL
+        let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
+          <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
+            <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
+          </div>
+          <div class="p-3 flex flex-col gap-1 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
+            <div class="mb-0.5">${indikator}</div>
+            <h3 class="font-medium text-[13px] leading-[1.35] text-gray-800 line-clamp-2" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:34px;">${bersihkanTeks(item.nama)}</h3>
+            <p class="text-[#111827] font-bold text-[14px] mt-1 tracking-tight">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
+          </div>
+        </div>`;
         container.innerHTML+=card;
       });
     }
@@ -429,6 +445,24 @@
       window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, {passive:false});
       window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
       b.addEventListener('click', function(e){ if(moved){ e.preventDefault(); e.stopImmediatePropagation(); return false; } }, true);
+    })();
+  // INSTRUKSI BOSKU: HEADER SEMBUNYI SAAT SCROLL, SEARCH KE ATAS
+    (function(){
+      let lastScroll=0;
+      const header=document.querySelector('header');
+      const search=document.getElementById('search-bar-container');
+      window.addEventListener('scroll', function(){
+        let curr=window.scrollY;
+        if(!header) return;
+        if(curr>80){
+          if(curr>lastScroll){ header.classList.add('header-hide'); if(search){ search.style.top='0px'; } }
+          else{ header.classList.remove('header-hide'); if(search){ search.style.top='0px'; } }
+        }else{
+          header.classList.remove('header-hide');
+          if(search){ search.style.top='56px'; }
+        }
+        lastScroll=curr;
+      }, {passive:true});
     })();
   </script>
 </body>
