@@ -131,50 +131,30 @@
 
   <!-- FIX BOSKU: Z-1150 PALING DEPAN -->
   <!-- MODAL JUAL BARU - LENGKAP ID NYA BOSKU -->
-  <div id="modal-jual" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4">
+<div id="modal-jual" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4">
   <div class="bg-[#F4F6F8] w-full max-w-md sm:rounded-[24px] rounded-t-[24px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-    <div class="bg-white p-5 flex justify-between items-center border-b border-gray-100">
-      <div>
-        <h3 class="font-bold text-[16px] text-gray-900 flex items-center gap-2"><span class="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700"><i class="ph ph-plus-circle text-[18px]"></i></span> Jual Barang Baru</h3>
-        <p class="text-[11px] text-gray-500 mt-1 ml-10">Isi detail produk & toko Anda bosku</p>
-      </div>
+    <div class="bg-white p-5 flex justify-between items-center border-b">
+      <h3 class="font-bold text-[16px] text-gray-900">+ Jual Barang Baru</h3>
       <button onclick="tutupModalJual()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">✕</button>
     </div>
-    <div class="p-4 overflow-y-auto space-y-3">
+    <div class="p-4 overflow-y-auto bg-white">
       <form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3">
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
-          <p class="text-[11px] font-bold text-gray-900">Info Produk</p>
-          <input type="text" id="nama" required placeholder="Nama Produk (Contoh: Gantungan Kunci)" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none">
-          <div class="grid grid-cols-2 gap-2.5">
-            <input type="number" id="harga" required placeholder="Harga Rp" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none">
-            <select id="kategori" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">dll</option></select>
-          </div>
-          <select id="status" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none"><option value="tersedia">● Tersedia</option><option value="tidak">● Stok Habis</option></select>
-          <textarea id="catatan" placeholder="Deskripsi produk / bahan / ukuran..." class="w-full border border-gray-200 bg-gray-50 rounded-2xl py-3 px-4 text-sm h-20 focus:bg-white focus:border-emerald-500 focus:outline-none"></textarea>
+        <input type="text" id="nama" required placeholder="Nama Produk" class="w-full border rounded-xl p-3 text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" id="harga" required placeholder="Harga" class="w-full border rounded-xl p-3 text-sm">
+          <select id="kategori" class="w-full border rounded-xl p-3 text-sm"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">dll</option></select>
         </div>
-
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
-          <p class="text-[11px] font-bold text-gray-900">Info Toko</p>
-          <input type="text" id="penjual" required placeholder="Nama Toko / Penjual" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none">
-          <input type="text" id="lokasi" required placeholder="Blok Rumah (Blok A1)" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 px-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none">
-          <div class="relative">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="ph ph-whatsapp-logo"></i></span>
-            <input type="number" id="whatsapp" required placeholder="No.WA 0852..." class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 pl-10 pr-4 text-sm focus:bg-white focus:border-emerald-500 focus:outline-none">
-          </div>
-          <div class="relative">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="ph ph-lock-key"></i></span>
-            <input type="password" id="pin-penjual" required placeholder="Buat PIN Toko 4 Digit" class="w-full border border-gray-200 bg-gray-50 rounded-full py-3 pl-10 pr-4 text-sm text-center font-bold tracking-widest focus:bg-white focus:border-emerald-500 focus:outline-none">
-          </div>
-          <p class="text-[10px] text-gray-400 text-center leading-snug">PIN ini untuk edit / hapus produk nanti di menu Toko Saya bosku</p>
+        <select id="status" class="w-full border rounded-xl p-3 text-sm"><option value="tersedia">Tersedia</option><option value="tidak">Stok Habis</option></select>
+        <input type="text" id="penjual" required placeholder="Nama Toko / Penjual" class="w-full border rounded-xl p-3 text-sm">
+        <input type="text" id="lokasi" required placeholder="Blok Rumah (Blok A1)" class="w-full border rounded-xl p-3 text-sm">
+        <input type="number" id="whatsapp" required placeholder="No.WA 0852..." class="w-full border rounded-xl p-3 text-sm">
+        <input type="password" id="pin-penjual" required placeholder="Buat PIN Toko 4 Digit" class="w-full border rounded-xl p-3 text-sm text-center font-bold tracking-widest">
+        <textarea id="catatan" placeholder="Deskripsi produk..." class="w-full border rounded-xl p-3 text-sm h-20"></textarea>
+        <div class="bg-gray-50 border rounded-xl p-3">
+          <label class="text-[11px] font-bold">Foto Produk (Max 3)</label>
+          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full text-xs mt-1">
         </div>
-
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-[11px] font-bold text-gray-900 mb-2">Foto Produk (Max 3)</p>
-          <input type="file" id="input-file-foto" accept="image/*" multiple class="w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-50 file:text-emerald-700 file:font-bold">
-        </div>
-
-        <button type="submit" class="w-full bg-[#075E54] text-white py-3.5 rounded-full font-bold text-[14px] shadow-md">Posting Jualan Sekarang 🚀</button>
-        <p class="text-[10px] text-gray-400 text-center pb-2">Gratis untuk warga RT.36 AR & Metroland bosku</p>
+        <button type="submit" class="w-full bg-[#075E54] text-white py-3.5 rounded-xl font-bold text-sm">Posting Jualan Sekarang</button>
       </form>
     </div>
   </div>
@@ -594,7 +574,4 @@
 </script>
 </body>
 </html>
-             
-  
-  
-      
+        
