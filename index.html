@@ -356,6 +356,7 @@
     function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
     function hapusProdukAdmin(id){ if(isAdmin&&confirm("Hapus paksa?")) dbRef.child(id).remove(); }
+
     let currentZoomPhotos=[], currentZoomIndex=0;
     function bukaDetailProduk(id){ 
       const item=produkData.find(p=>p.id===id); if(!item) return; 
@@ -363,74 +364,50 @@
       currentZoomPhotos=list; currentZoomIndex=0; 
       document.getElementById('img-zoom-target').src=list[0]; 
       document.getElementById('zoom-foto-counter').innerText = `1 / ${list.length}`;
-
-      // Badge minimalis abu muda rounded-full
-      let kat1 = (item.kategori||'').toUpperCase();
-      let kat2 = '';
-      if(item.catatan && item.catatan.length > 0 && item.catatan.length < 30){ kat2 = item.catatan.split(' ')[0]; }
-      document.getElementById('detail-kategori').innerText = kat1;
-      let kat2El = document.getElementById('detail-kategori2');
-      if(kat2 && kat2.length>1){ kat2El.innerText = kat2; kat2El.classList.remove('hidden'); } else { kat2El.classList.add('hidden'); }
-
-      // Harga hitam pekat fokus utama
+      document.getElementById('detail-kategori').innerText = (item.kategori||'').toUpperCase();
       document.getElementById('detail-harga').innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
       document.getElementById('detail-nama').innerText=item.nama; 
-
-      let umurDetail = hitungUmurProduk(item.timestamp);
       document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
-      document.getElementById('detail-waktu-text').innerText = umurDetail;
-
-      // Status bersih tanpa emoji HP
+      document.getElementById('detail-waktu-text').innerText = hitungUmurProduk(item.timestamp);
       let isT = item.status!=='tidak';
-      document.getElementById('detail-status').innerText = isT ? 'Tersedia' : 'Habis';
-      document.getElementById('detail-status').style.color = isT ? '#075E54' : '#9ca3af';
+      let statusEl = document.getElementById('detail-status');
+      statusEl.innerText = isT ? 'Tersedia' : 'Habis';
+      statusEl.style.color = isT ? '#075E54' : '#ef4444';
+      statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2';
 
-      // Deskripsi putih bersih / abu sangat tipis tanpa border hijau, tanpa emoji
       let cat=item.catatan||''; 
       let catatanEl = document.getElementById('detail-catatan');
-      if(cat){
-        catatanEl.innerHTML=`<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5">
-          <p class="text-[12px] text-gray-600 font-medium mb-1">Detail Layanan</p>
-          <div id="catatan-detail" class="catatan-teks !text-[13px] !text-gray-800 !not-italic !leading-relaxed !whitespace-normal !font-normal">${bersihkanTeks(cat)}</div>
-          <button class="btn-lihat !text-[#075E54] !text-[11px] mt-2" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button>
-        </div>`;
-      }else{
-        catatanEl.innerHTML=`<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center"><p class="text-[12px] text-gray-400">Tidak ada deskripsi tambahan</p></div>`;
-      }
+      catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5"><p class="text-[11px] text-gray-500 mb-1">Detail Layanan</p><div id="catatan-detail" class="text-[13px] text-gray-800 leading-relaxed">${bersihkanTeks(cat)}</div><button class="text-[#075E54] text-[11px] mt-2 font-semibold" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button></div>` : `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400">Tidak ada deskripsi</div>`;
 
+      // Tombol WA
       document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
-      
-      let adminArea=document.getElementById('detail-admin-area'); 
-      if(isAdmin){ 
-        adminArea.innerHTML='<div class="grid grid-cols-2 gap-2"><button onclick="tutupModalZoom(); muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-bold py-2.5 rounded-xl">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[11px] font-bold py-2.5 rounded-xl">🗑️ Hapus Admin</button></div>'; 
-        adminArea.classList.remove('hidden'); 
-      } else { adminArea.classList.add('hidden'); adminArea.innerHTML=''; } 
-      
+      // Tombol CHAT LIVE LANGSUNG KE PENJUAL BOSKU
+      document.getElementById('detail-btn-chat').onclick=function(){ 
+        tutupModalZoom(); 
+        bukaChatDenganPenjual(item.penjual, item.nama); 
+      };
+
       document.getElementById('modal-zoom').classList.remove('hidden');
-      // Biar bisa tutup pakai tombol kembali HP bosku
-      try{ history.pushState({modalZoom:true},''); }catch(e){}
+      history.pushState({modalZoom:true},'');
     }
 
-    function tutupModalZoom(){ 
-      document.getElementById('modal-zoom').classList.add('hidden'); 
-      document.getElementById('detail-btn-wa').style.display='block'; 
-      if(history.state && history.state.modalZoom){ history.back(); }
-    }
-
-    function geserFotoZoom(a){ 
-      if(!currentZoomPhotos.length) return; 
-      currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; 
-      document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; 
-      document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`;
-    }
-
-    // Tutup modal pakai tombol kembali HP bosku
-    window.addEventListener('popstate', function(e){
-      let mz = document.getElementById('modal-zoom');
-      if(mz && !mz.classList.contains('hidden')){
-        mz.classList.add('hidden');
+    function bukaChatDenganPenjual(namaPenjual, namaProduk){
+      // Buka panel chat warga yang sudah ada
+      let panel = document.getElementById('panelChatWarga');
+      if(panel){ panel.classList.remove('hidden'); }
+      // Auto isi pesan ke penjual
+      let input = document.getElementById('inputChatWarga') || document.querySelector('#panelChatWarga input') || document.querySelector('#panelChatWarga textarea');
+      if(input){
+        input.value = `Halo Kak ${namaPenjual}, saya mau tanya produk "${namaProduk}" masih ready?`;
+        input.focus();
       }
-    });
+      // Notif kecil
+      if(typeof tampilkanToast !== 'undefined'){ tampilkanToast('Menghubungkan ke '+namaPenjual+'...'); }
+    }
+
+    function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
+    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
+    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
     let dataProdukBaru=null;
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
