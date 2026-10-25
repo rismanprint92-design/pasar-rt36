@@ -368,9 +368,80 @@
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
     function hapusProdukAdmin(id){ if(isAdmin&&confirm("Hapus paksa?")) dbRef.child(id).remove(); }
     let currentZoomPhotos=[], currentZoomIndex=0;
-    function bukaDetailProduk(id){ const item=produkData.find(p=>p.id===id); if(!item) return; let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):['https://via.placeholder.com/300?text=Produk+RT36']; currentZoomPhotos=list; currentZoomIndex=0; document.getElementById('img-zoom-target').src=list[0]; document.getElementById('detail-kategori').innerText=(item.kategori||'').toUpperCase(); document.getElementById('detail-harga').innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); document.getElementById('detail-nama').innerText=item.nama; let umurDetail = hitungUmurProduk(item.timestamp); document.getElementById('detail-penjual').innerText='👤 '+item.penjual+' ('+item.lokasi+') • 🕒 '+umurDetail; let isT=item.status!=='tidak'; document.getElementById('detail-status').innerText=isT?'✅ Tersedia':'❌ Tidak Tersedia'; document.getElementById('detail-status').className=(isT?'bg-emerald-50 text-emerald-600':'bg-red-100 text-red-600')+' text-[10px] px-2.5 py-1 rounded-full font-bold'; let cat=item.catatan||''; document.getElementById('detail-catatan').innerHTML=cat?'<div style="background:#f0fdf4;padding:8px 10px;border-radius:10px;border-left:3px solid #059669;margin-top:8px;"><div id="catatan-detail" class="catatan-teks">📝 '+bersihkanTeks(cat)+'</div><button class="btn-lihat" onclick="bukaTutupCatatan(\'catatan-detail\',this)">Lihat selengkapnya ▼</button></div>':'<p class="text-[11px] text-gray-400 italic mt-2">Tidak ada catatan</p>'; document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; let adminArea=document.getElementById('detail-admin-area'); if(isAdmin){ adminArea.innerHTML='<div class="grid grid-cols-2 gap-2 mt-3"><button onclick="tutupModalZoom(); muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-bold py-2 rounded-lg">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[11px] font-bold py-2 rounded-lg">🗑️ Hapus Admin</button></div>'; adminArea.classList.remove('hidden'); } else { adminArea.classList.add('hidden'); adminArea.innerHTML=''; } document.getElementById('modal-zoom').classList.remove('hidden'); }
-    function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); document.getElementById('detail-btn-wa').style.display='block'; }
-    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; }
+    function bukaDetailProduk(id){ 
+      const item=produkData.find(p=>p.id===id); if(!item) return; 
+      let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):['https://via.placeholder.com/300?text=Produk+RT36']; 
+      currentZoomPhotos=list; currentZoomIndex=0; 
+      document.getElementById('img-zoom-target').src=list[0]; 
+      document.getElementById('zoom-foto-counter').innerText = `1 / ${list.length}`;
+
+      // Badge minimalis abu muda rounded-full
+      let kat1 = (item.kategori||'').toUpperCase();
+      let kat2 = '';
+      if(item.catatan && item.catatan.length > 0 && item.catatan.length < 30){ kat2 = item.catatan.split(' ')[0]; }
+      document.getElementById('detail-kategori').innerText = kat1;
+      let kat2El = document.getElementById('detail-kategori2');
+      if(kat2 && kat2.length>1){ kat2El.innerText = kat2; kat2El.classList.remove('hidden'); } else { kat2El.classList.add('hidden'); }
+
+      // Harga hitam pekat fokus utama
+      document.getElementById('detail-harga').innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
+      document.getElementById('detail-nama').innerText=item.nama; 
+
+      let umurDetail = hitungUmurProduk(item.timestamp);
+      document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
+      document.getElementById('detail-waktu-text').innerText = umurDetail;
+
+      // Status bersih tanpa emoji HP
+      let isT = item.status!=='tidak';
+      document.getElementById('detail-status').innerText = isT ? 'Tersedia' : 'Habis';
+      document.getElementById('detail-status').style.color = isT ? '#075E54' : '#9ca3af';
+
+      // Deskripsi putih bersih / abu sangat tipis tanpa border hijau, tanpa emoji
+      let cat=item.catatan||''; 
+      let catatanEl = document.getElementById('detail-catatan');
+      if(cat){
+        catatanEl.innerHTML=`<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5">
+          <p class="text-[12px] text-gray-600 font-medium mb-1">Detail Layanan</p>
+          <div id="catatan-detail" class="catatan-teks !text-[13px] !text-gray-800 !not-italic !leading-relaxed !whitespace-normal !font-normal">${bersihkanTeks(cat)}</div>
+          <button class="btn-lihat !text-[#075E54] !text-[11px] mt-2" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button>
+        </div>`;
+      }else{
+        catatanEl.innerHTML=`<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center"><p class="text-[12px] text-gray-400">Tidak ada deskripsi tambahan</p></div>`;
+      }
+
+      document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
+      
+      let adminArea=document.getElementById('detail-admin-area'); 
+      if(isAdmin){ 
+        adminArea.innerHTML='<div class="grid grid-cols-2 gap-2"><button onclick="tutupModalZoom(); muatDataKeFormEdit(\''+item.id+'\')" class="bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-bold py-2.5 rounded-xl">✏️ Edit Admin</button><button onclick="hapusProdukAdmin(\''+item.id+'\')" class="bg-red-50 text-red-600 border border-red-200 text-[11px] font-bold py-2.5 rounded-xl">🗑️ Hapus Admin</button></div>'; 
+        adminArea.classList.remove('hidden'); 
+      } else { adminArea.classList.add('hidden'); adminArea.innerHTML=''; } 
+      
+      document.getElementById('modal-zoom').classList.remove('hidden');
+      // Biar bisa tutup pakai tombol kembali HP bosku
+      try{ history.pushState({modalZoom:true},''); }catch(e){}
+    }
+
+    function tutupModalZoom(){ 
+      document.getElementById('modal-zoom').classList.add('hidden'); 
+      document.getElementById('detail-btn-wa').style.display='block'; 
+      if(history.state && history.state.modalZoom){ history.back(); }
+    }
+
+    function geserFotoZoom(a){ 
+      if(!currentZoomPhotos.length) return; 
+      currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; 
+      document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; 
+      document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`;
+    }
+
+    // Tutup modal pakai tombol kembali HP bosku
+    window.addEventListener('popstate', function(e){
+      let mz = document.getElementById('modal-zoom');
+      if(mz && !mz.classList.contains('hidden')){
+        mz.classList.add('hidden');
+      }
+    });
     let dataProdukBaru=null;
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
