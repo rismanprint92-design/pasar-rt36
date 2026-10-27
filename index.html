@@ -641,5 +641,56 @@
   };
 
   </script>
+  <script>
+// FIX ANTI KUNCI BOSKU - BIKIN ADMIN, JUAL, CHAT LIVE SELALU BISA DIKLIK - TIDAK RUBAH FUNGSI LAIN
+(function(){
+  // Paksa semua tombol jadi global & bisa diklik kapanpun bosku
+  window.bukaModalJual = function(){
+    var m=document.getElementById('modal-pilihan-jual');
+    if(m){ m.classList.remove('hidden'); m.classList.add('flex'); }
+  };
+  window.toggleModeAdmin = function(){
+    if(typeof isAdmin !== 'undefined' && isAdmin){
+      if(typeof keluarAdmin === 'function') keluarAdmin();
+    } else {
+      var m=document.getElementById('modal-login-admin');
+      if(m){ m.classList.remove('hidden'); setTimeout(function(){ var i=document.getElementById('pin-admin'); if(i) i.focus(); },100); }
+    }
+  };
+  // Fix chat live biar tidak keblokir verifikasi bosku
+  var _cekAsli = window.cekVerifikasiChat;
+  window.cekVerifikasiChat = function(){
+    var pin=null,nama=null; try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){}
+    if(!pin||!nama){
+      // JANGAN blur input lain bosku, cuma tampilkan modal verif
+      var m=document.getElementById('modalVerifWA');
+      if(m) m.classList.remove('hidden');
+      return false;
+    }
+    var mv=document.getElementById('modalVerifWA');
+    if(mv) mv.classList.add('hidden');
+    return true;
+  };
+  window.toggleBoxChat = function(){
+    // Boleh buka chat dulu, nanti kalau belum login baru muncul modal PIN bosku
+    var p=document.getElementById('panelChatWarga');
+    var b=document.getElementById('btnBukaChat');
+    if(!p) return;
+    if(p.classList.contains('hidden')){
+      if(!window.cekVerifikasiChat()) return;
+      p.classList.remove('hidden');
+      if(b) b.classList.add('hidden');
+      setTimeout(function(){ var box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100);
+      try{ history.pushState({chatOpen:true},''); }catch(e){}
+    } else {
+      p.classList.add('hidden');
+      if(b) b.classList.remove('hidden');
+    }
+  };
+  // Pastikan tombol tidak ketutup modal lain bosku
+  var btnChat = document.getElementById('btnBukaChat');
+  if(btnChat){ btnChat.style.pointerEvents='auto'; btnChat.style.zIndex='9999'; }
+})();
+</script>
 </body>
 </html>
