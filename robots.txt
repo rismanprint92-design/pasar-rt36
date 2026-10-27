@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pasar-rt36.my.id/sitemap.xml
