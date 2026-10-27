@@ -22,11 +22,9 @@
     .catatan-teks.buka { -webkit-line-clamp: unset; display: block; white-space: pre-wrap; text-overflow: clip; }
     .btn-lihat { font-size: 10px; color: #059669; font-weight: bold; background: none; border: none; padding: 2px 0 0 0; cursor: pointer; text-decoration: underline; display: block; }
     
-    /* INSTRUKSI BOSKU: BACKGROUND ABU SANGAT MUDA #F4F6F8 */
     body{ background:#F4F6F8 !important; font-family: 'Inter', system-ui, sans-serif !important; }
     main{ background:#F4F6F8 !important; }
     
-    /* HEADER AUTO HIDE SAAT SCROLL BOSKU */
     header{ backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.06) !important; transition: transform 0.3s ease, opacity 0.3s ease; }
     header.header-hide{ transform: translateY(-100%); opacity:0; }
     #search-bar-container{ background:#F4F6F8 !important; }
@@ -35,26 +33,35 @@
     #filter-kategori button{ background:white !important; border:1px solid #eef2f7 !important; box-shadow: 0 1px 6px rgba(0,0,0,0.04) !important; border-radius:9999px !important; font-weight:500 !important; }
     #filter-kategori button.bg-emerald-600{ background:#064e3b !important; color:white !important; border-color:#064e3b !important; }
 
-    /* INSTRUKSI BOSKU: KARTU PUTIH BERSIH #FFFFFF + SOFT SHADOW + BORDER TIPIS */
     .produk-card{ background:#FFFFFF !important; border-radius:16px !important; box-shadow: 0 4px 18px rgba(0,0,0,0.06) !important; border:1px solid #f1f5f9 !important; overflow:hidden !important; transition: all 0.2s ease !important; }
     .produk-card:hover{ box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; transform: translateY(-1px); }
-
-    /* FOTO BORDERLESS MEMENUHI ATAS BOSKU */
     .produk-card img{ width:100% !important; display:block !important; border-radius:0 !important; }
-
-    /* OVERLAY STOK HABIS BOSKU */
     .overlay-habis{ position:absolute; inset:0; background:rgba(80,80,80,0.40); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; }
-
-    .label-tersedia { display:none !important; } /* pindah ke bawah foto bosku */
+    .label-tersedia { display:none !important; }
     .label-tidak { display:none !important; }
-
     .indikator-tersedia{ color:#064e3b !important; font-weight:700 !important; font-size:10px !important; letter-spacing:0.3px; }
     .indikator-habis{ color:#9ca3af !important; font-weight:600 !important; font-size:10px !important; }
 
     .btn-jual-gambar { background: white !important; color: #ea580c !important; font-weight: 700 !important; border-radius: 12px !important; padding: 7px 14px !important; font-size: 13px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important; }
     .btn-admin-gambar { background: #064e3b !important; color: white !important; border-radius: 12px !important; padding: 7px 14px !important; font-size: 13px !important; font-weight: 600 !important; }
     .btn-pengumuman-putih { background: white !important; color: #059669 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.06) !important; border: 1px solid #eef2f7 !important; border-radius:9999px !important; }
-  </style>
+
+    /* === FIX BARU MODAL ZOOM BOSKU - KOTAK 1:1 + DOTS + HARGA TEBAL + DETAIL ABU + WA FLOATING === */
+    #modal-zoom .bg-white{ border-radius:0 !important; }
+    #modal-zoom > div{ border-radius:0 !important; }
+    #img-zoom-target{ aspect-ratio:1/1 !important; height:auto !important; object-fit:cover !important; border-radius:0 !important; display:block !important; background:#fff !important; }
+    #detail-harga{ font-weight:900 !important; font-size:32px !important; letter-spacing:-0.5px !important; color:#064e3b !important; }
+    #detail-kategori{ background:#F3F4F6 !important; color:#6B7280 !important; font-weight:700 !important; border:none !important; text-transform:uppercase !important; }
+    #detail-status{ font-weight:800 !important; }
+    #detail-catatan{ background:#F9F9F9 !important; border:none !important; border-radius:16px !important; box-shadow:0 4px 16px rgba(0,0,0,0.05) !important; padding:16px !important; }
+    #detail-btn-wa{ box-shadow:0 12px 24px rgba(6,78,59,0.25) !important; transform:translateY(0); transition:all 0.2s ease !important; }
+    #detail-btn-wa:hover{ box-shadow:0 16px 32px rgba(6,78,59,0.35) !important; transform:translateY(-2px); }
+    #zoom-dots{ display:flex; justify-content:center; gap:6px; }
+    #zoom-dots span{ width:6px; height:6px; border-radius:9999px; background:#D1D5DB; display:block; cursor:pointer; transition:all 0.2s; }
+    #zoom-dots span.active{ width:20px; background:#064e3b; }
+    /* HAPUS CHAT PENJUAL BOSKU */
+    #detail-btn-chat{ display:none !important; }
+</style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
   <header class="bg-[#047857] text-white py-2.5 px-4 shadow-md flex justify-between items-center sticky top-0 z-40">
@@ -176,44 +183,42 @@
   <div id="modal-login-penjual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs"><h3 class="font-bold text-gray-800 text-sm mb-1 text-center">Verifikasi Penjual</h3><p class="text-gray-500 mb-3 text-center">Masukkan PIN Penjual yang Anda buat saat mendaftarkan produk ini.</p><input type="password" id="input-pin-konfirmasi" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••"><input type="hidden" id="edit-product-id"><div class="flex gap-2"><button onclick="tutupModalLoginPenjual()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="prosesVerifikasiPenjual()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold">Lanjutkan</button></div></div></div>
   <div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50"><div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3><button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button></div><form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs"><input type="hidden" id="edit-id"><div><label class="block font-medium mb-1">Nama Produk / Jasa</label><input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Harga (Rp)</label><input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div><label class="block font-medium mb-1">Kategori</label><select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">Dll</option></select></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Status Produk</label><select id="edit-status" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-bold"><option value="tersedia">✅ Tersedia</option><option value="tidak">❌ Tidak Tersedia</option></select></div><div><label class="block font-medium mb-1">Blok / No. Rumah</label><input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Nama Penjual</label><input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div><label class="block font-medium mb-1">No. WhatsApp</label><input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div></div><div><label class="block font-medium mb-1">Catatan / Keterangan</label><textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea></div><button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">Simpan Perubahan</button><button type="button" onclick="hapusOlehPenjual()" class="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-lg font-bold">Hapus Produk Ini</button></form></div></div>
   <div id="modal-share-produk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl"><div class="text-4xl mb-2">🎉</div><h3 class="font-bold text-lg text-gray-800">Produk Berhasil Diunggah!</h3><p class="text-xs text-gray-500 mt-1 mb-4">Bagikan dagangan Anda sekarang agar cepat laku diserbu pembeli!</p><div class="space-y-2"><button onclick="shareProdukKe('wa_status')" class="w-full bg-emerald-500 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>🟢</span> Buat Status WhatsApp</button><button onclick="shareProdukKe('wa_group')" class="w-full bg-teal-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>👥</span> Bagikan ke Grup WhatsApp</button><button onclick="shareProdukKe('facebook')" class="w-full bg-blue-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>📘</span> Bagikan ke Facebook</button><button onclick="shareProdukKe('link')" class="w-full bg-gray-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>🔗</span> Salin Link Produk</button></div><button onclick="tutupModalShare()" class="w-full mt-3 bg-gray-100 text-gray-600 text-xs font-medium py-2 rounded-xl">Nanti Saja / Tidak</button></div></div>
-  <div id="modal-zoom" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex flex-col items-center justify-start z-[1050] p-0 overflow-y-auto">
-  <div class="bg-white w-full max-w-sm sm:rounded-[24px] rounded-t-[24px] mt-auto sm:mt-10 mb-0 sm:mb-10 shadow-2xl overflow-hidden min-h-[85vh] sm:min-h-0 flex flex-col">
-    <div class="relative w-full bg-gray-50">
-      <img id="img-zoom-target" src="" class="w-full h-[300px] object-cover bg-gray-100">
-      <button onclick="geserFotoZoom(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/25 backdrop-blur-md text-white w-9 h-9 rounded-full flex items-center justify-center">❮</button>
-      <button onclick="geserFotoZoom(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/25 backdrop-blur-md text-white w-9 h-9 rounded-full flex items-center justify-center">❯</button>
-      <span id="zoom-foto-counter" class="absolute bottom-3 right-3 bg-black/50 text-white text-[10px] px-2.5 py-1 rounded-full backdrop-blur-md">1 / 1</span>
+ <div id="modal-zoom" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex flex-col items-center justify-start z-[1050] p-0 overflow-y-auto">
+  <div class="bg-white w-full max-w-sm sm:rounded-none rounded-t-none mt-0 sm:mt-10 mb-0 sm:mb-10 shadow-2xl overflow-hidden min-h-[85vh] sm:min-h-0 flex flex-col">
+    
+    <!-- FOTO 1:1 KOTAK PENUH TANPA LENGKUNGAN BOSKU -->
+    <div class="relative w-full bg-white">
+      <img id="img-zoom-target" src="" class="w-full aspect-square object-cover bg-white block">
+      <!-- DOTS MODERN BOSKU - GANTI PANAH ‹ › -->
+      <div id="zoom-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full flex gap-1.5"></div>
+      <span id="zoom-foto-counter" class="hidden">1 / 1</span>
     </div>
 
     <div class="p-5 flex-1 flex flex-col">
+      <!-- BADGE JASA RAPI BOSKU -->
       <div class="flex justify-between items-center mb-3">
-        <div class="flex gap-1.5">
-          <span id="detail-kategori" class="bg-gray-100 text-gray-600 text-[10px] px-3 py-1 rounded-full font-medium uppercase"></span>
-          <span id="detail-kategori2" class="bg-gray-100 text-gray-600 text-[10px] px-3 py-1 rounded-full font-medium hidden"></span>
-        </div>
-        <span id="detail-status" class="text-[11px] px-3 py-1 rounded-full font-bold"></span>
+        <span id="detail-kategori" class="bg-[#F3F4F6] text-[#6B7280] text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wide border-0"></span>
+        <span id="detail-status" class="bg-[#ECFDF5] text-[#065F46] text-[11px] px-3 py-1 rounded-full font-extrabold"></span>
       </div>
 
       <h3 id="detail-nama" class="font-bold text-[18px] leading-[1.3] text-gray-900"></h3>
-      <p id="detail-harga" class="font-extrabold text-[28px] mt-2 tracking-tight" style="color:#075E54"></p>
+      <!-- HARGA TEBAL BOSKU Rp 10.000 -->
+      <p id="detail-harga" class="font-black text-[32px] mt-2 tracking-tight" style="color:#064e3b; font-weight:900;"></p>
 
-      <div class="flex items-center gap-3 mt-3 text-[12px] text-gray-500">
-        <span class="flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.7"><path d="M20 21a8 8 0 0 1-16 0"/><circle cx="12" cy="8" r="4"/></svg><span id="detail-penjual-text"></span></span>
+      <!-- ICON PIN LOKASI & JAM MINI BOSKU - GANTI LINGKARAN -->
+      <div class="flex items-center gap-3 mt-3 text-[13px] text-gray-500">
+        <span class="flex items-center gap-1.5"><i class="ph ph-map-pin text-[16px] text-gray-400"></i><span id="detail-penjual-text"></span></span>
         <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-        <span class="flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="detail-waktu-text"></span></span>
+        <span class="flex items-center gap-1.5"><i class="ph ph-clock text-[16px] text-gray-400"></i><span id="detail-waktu-text"></span></span>
       </div>
 
-      <div id="detail-catatan" class="mt-5"></div>
+      <!-- DETAIL ABU SANGAT MUDA #F9F9F9 + SOFT SHADOW - HILANGKAN BORDER KAKU BOSKU -->
+      <div id="detail-catatan" class="mt-5 bg-[#F9F9F9] rounded-[16px] p-4 shadow-[0_4px_16px_rgba(0,0,0,0.05)] border-0"></div>
 
-      <!-- 2 TOMBOL FINAL BOSKU -->
-      <div class="mt-auto pt-6 flex flex-col gap-2.5">
-        <button id="detail-btn-wa" class="w-full bg-[#075E54] text-white text-[14px] font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 hover:bg-[#064e3b] active:scale-[0.98] transition-all">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.05 4.94A9.91 9.91 0 0 0 12.03 2C6.51 2 2.03 6.48 2.03 12a9.85 9.85 0 0 0 1.34 4.93L2 22l5.21-1.36a9.89 9.89 0 0 0 4.82 1.23h.01c5.52 0 10-4.48 10-10 0-2.67-1.04-5.19-2.99-7.07zM12.04 20.15a8.08 8.08 0 0 1-4.12-1.13l-.3-.17-3.09.81.83-3.01-.19-.31a8.1 8.1 0 0 1-1.24-4.33c0-4.52 3.68-8.19 8.21-8.19 2.19 0 4.25.85 5.79 2.4a8.13 8.13 0 0 1 2.41 5.79c0 4.52-3.68 8.2-8.2 8.2zm4.5-6.14c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12s-.64.81-.79.97-.29.19-.54.06c-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.66.31s-.86.84-.86 2.05.88 2.38 1 2.54c.12.16 1.73 2.64 4.19 3.7.59.25 1.05.4 1.41.51.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
-          Beli Via WA
-        </button>
-        <button id="detail-btn-chat" class="w-full bg-white border border-gray-200 text-gray-800 text-[14px] font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-50 active:scale-[0.98] transition-all">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#075E54" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 0 1 21 11.5z"/><path d="M8 11h8M8 15h5"/></svg>
-          Chat Penjual
+      <!-- TOMBOL BELI VIA WA - FLOATING DROP SHADOW + HAPUS CHAT PENJUAL BOSKU -->
+      <div class="mt-auto pt-6">
+        <button id="detail-btn-wa" class="w-full bg-[#064e3b] text-white text-[15px] font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-[0_12px_24px_rgba(6,78,59,0.25)] hover:shadow-[0_16px_32px_rgba(6,78,59,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+          <i class="ph ph-whatsapp-logo text-[22px]"></i> Beli Via WA
         </button>
       </div>
     </div>
@@ -466,9 +471,31 @@ function kirimPesanKeAdminRT(){
 }
 
     function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
-    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
-    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
-    let dataProdukBaru=null;
+    function geserFotoZoom(a){ 
+  if(!currentZoomPhotos.length) return; 
+  currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; 
+  document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; 
+  var counter = document.getElementById('zoom-foto-counter');
+  if(counter) counter.innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`;
+  // UPDATE DOTS MODERN BOSKU
+  var dotsEl = document.getElementById('zoom-dots');
+  if(dotsEl){
+    dotsEl.innerHTML = '';
+    for(var i=0;i<currentZoomPhotos.length;i++){
+      var d = document.createElement('span');
+      if(i===currentZoomIndex) d.className='active';
+      d.setAttribute('data-idx', i);
+      d.onclick = (function(idx){ return function(){ 
+        currentZoomIndex=idx; 
+        document.getElementById('img-zoom-target').src=currentZoomPhotos[idx];
+        if(counter) counter.innerText = `${idx+1} / ${currentZoomPhotos.length}`;
+        var all = dotsEl.querySelectorAll('span');
+        all.forEach(function(s,j){ s.className = j===idx ? 'active' : ''; });
+      }; })(i);
+      dotsEl.appendChild(d);
+    }
+  }
+}
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
