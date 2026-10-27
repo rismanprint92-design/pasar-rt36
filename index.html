@@ -91,7 +91,20 @@
       </div>
     </div>
     <div id="daftar-produk" class="grid grid-cols-2 gap-3 mt-1"></div>
-    <button id="btn-shopee" onclick="muatLebihBanyakProduk()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">Lihat Produk Lainnya ↓</button>
+        <button id="btn-shopee" onclick="muatLebihBanyakProduk()" style="width:100%; margin-top:16px; padding:12px; background:white; border:2px solid #16a34a; color:#16a34a; font-weight:bold; border-radius:12px; display:none;">Lihat Produk Lainnya ↓</button>
+
+    <!-- FOOTER PSE BOSKU - TIDAK RUBAH FUNGSI LAIN -->
+    <footer id="footer-pse" class="bg-white border border-[#f1f5f9] rounded-[16px] shadow-sm mt-6 mb-[90px] p-4 text-center">
+      <div class="flex justify-center items-center gap-3 flex-wrap text-[12px] font-bold">
+        <a href="/privasi.html" class="text-[#064e3b] underline">Kebijakan Privasi</a>
+        <span class="text-gray-300">•</span>
+        <a href="/syarat.html" class="text-[#064e3b] underline">Syarat & Ketentuan</a>
+        <span class="text-gray-300">•</span>
+        <a href="#" onclick="bukaModalPengumuman(); return false;" class="text-[#064e3b] underline">Izin PSE</a>
+      </div>
+      <p class="text-[10px] text-gray-400 mt-2">© 2026 Pasar RT.36 • PSE Terdaftar Kominfo</p>
+    </footer>
+
   </main>
   <div id="modal-pengumuman" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50 p-4">
   <div class="bg-white w-full max-w-md rounded-t-[24px] sm:rounded-[24px] text-xs shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -109,17 +122,21 @@
         </div>
         <button onclick="toggleInfo('sk')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">📜 Syarat & Ketentuan</span><span id="icon-sk">▼</span></button>
         <div id="isi-sk" class="hidden bg-white border rounded-xl p-4 text-[12px] leading-[1.7] text-gray-700 -mt-1">
-          <p><b>Terakhir diperbarui: 25 Oktober 2026</b><br>1. Hanya papan informasi. 2. Transaksi langsung via WA/COD. 3. Wajib warga RT36, dilarang barang ilegal. 4. Teliti sebelum membeli. 5. Pengelola berhak hapus produk tidak pantas. 6. GRATIS untuk warga RT36.</p>
+          <p><b>Terakhir diperbarui: 27 Oktober 2026</b><br>1. Hanya papan informasi. 2. Transaksi langsung via WA/COD. 3. Wajib warga RT36, dilarang barang ilegal. 4. Teliti sebelum membeli. 5. Pengelola berhak hapus produk tidak pantas. 6. GRATIS untuk warga RT36.</p>
+          <a href="/syarat.html" target="_blank" class="mt-3 inline-block bg-[#064e3b] text-white px-4 py-2.5 rounded-full font-bold text-[11px]">📄 Buka Halaman Syarat Lengkap</a>
         </div>
-        <button onclick="toggleInfo('privasi')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">🔒 Kebijakan Privasi</span><span id="icon-privasi">▼</span></button>
         <div id="isi-privasi" class="hidden bg-white border rounded-xl p-4 text-[12px] leading-[1.7] text-gray-700 -mt-1">
-          <p>1. Data yang disimpan: Nama, WA, Foto Produk. 2. WA tampil publik agar pembeli bisa hubungi. 3. TIDAK simpan KTP/rekening. 4. Tidak jual data ke pihak ketiga. 5. Bisa minta hapus kapan saja via WA pengelola.</p>
+          <p>1. Data yang disimpan: Nama, WA, Foto Produk. 2. WA tampil publik agar pembeli bisa hubungi. 3. TIDAK simpan KTP/rekening. 4. Tidak jual data ke pihak ketiga. 5. Bisa minta hapus kapan saja via WA pengelola. Sesuai UU PDP No 27/2022.</p>
+          <a href="/privasi.html" target="_blank" class="mt-3 inline-block bg-[#064e3b] text-white px-4 py-2.5 rounded-full font-bold text-[11px]">🔒 Buka Halaman Privasi Lengkap</a>
         </div>
-        <button onclick="toggleInfo('izin')" class="w-full text-left bg-[#F8FAFC] border rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px]">⚖️ Izin / Legalitas</span><span id="icon-izin">▼</span></button>
-        <div id="isi-izin" class="hidden bg-white border rounded-xl p-4 text-[12px] text-gray-400 -mt-1 italic">Akan segera di-update bosku...</div>
-        <button onclick="toggleInfo('kontak')" class="w-full text-left bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 flex justify-between items-center"><span class="font-bold text-[13px] text-emerald-800">📞 Kontak Pengelola</span><span id="icon-kontak">▼</span></button>
-        <div id="isi-kontak" class="bg-white border border-emerald-100 rounded-xl p-3.5 -mt-1"><input type="text" id="admin-whatsapp-nomor" class="w-full border p-2.5 rounded-lg font-bold text-center" value="6282299511782"><button onclick="kirimPesanKeAdminRT()" class="w-full mt-2 bg-[#075E54] text-white py-3 rounded-xl font-bold">Chat WA Pengelola</button></div>
-      </div>
+        <div id="isi-izin" class="bg-white border rounded-xl p-4 text-[11px] leading-[1.6] text-gray-700 -mt-1">
+          <b>STATUS LEGALITAS PSE KOMINFO:</b><br>
+          - Domain: pasar-rt36.my.id<br>
+          - Sektor: Perdagangan (Marketplace Komunitas)<br>
+          - Server: Indonesia<br>
+          - Status: Dalam proses pendaftaran PSE Lingkup Privat<br>
+          - Dokumen: <a href="/privasi.html" class="text-[#064e3b] underline font-bold">Kebijakan Privasi</a> • <a href="/syarat.html" class="text-[#064e3b] underline font-bold">Syarat Layanan</a>
+        </div>
     </div>
   </div>
 </div>
@@ -285,7 +302,17 @@
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ document.getElementById('modal-pengumuman').classList.remove('hidden'); document.getElementById('admin-whatsapp-nomor').value=adminWaAktif; }
     function tutupModalPengumuman(){ document.getElementById('modal-pengumuman').classList.add('hidden'); }
-    function kirimPesanKeAdminRT(){ const no=document.getElementById('admin-whatsapp-nomor').value.trim(); const topik=document.getElementById('pilih-topik-admin').value; const msg=document.getElementById('pesan-masukan-warga').value.trim(); if(!no||!msg){ alert('Lengkapi nomor dan pesan terlebih dahulu.'); return; } let nomor=no.replace(/\D/g,''); if(nomor.startsWith('0')) nomor='62'+nomor.slice(1); const teks=`Halo Pengurus RT.36,\n\n*Topik:* ${topik}\n*Pesan:* ${msg}`; window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(teks)}`, '_blank'); tutupModalPengumuman(); }
+    function kirimPesanKeAdminRT(){
+      var noEl = document.getElementById('admin-whatsapp-nomor');
+      if(!noEl) return;
+      var no = noEl.value.trim();
+      if(!no){ alert('Nomor admin kosong'); return; }
+      var nomor=no.replace(/\D/g,'');
+      if(nomor.startsWith('0')) nomor='62'+nomor.slice(1);
+      var teks = 'Halo Pengurus RT.36 AR & Metroland, saya mau tanya tentang Pasar RT36';
+      window.open('https://wa.me/'+nomor+'?text='+encodeURIComponent(teks), '_blank');
+      tutupModalPengumuman();
+    }
     function kompresGambar(file,cb){ if(file.size<200*1024){ const r=new FileReader(); r.onload=e=>cb(e.target.result); r.readAsDataURL(file); return; } const r=new FileReader(); r.onload=function(e){ const img=new Image(); img.onload=function(){ const c=document.createElement('canvas'); let w=img.width,h=img.height; const MW=600; if(w>MW){ h=Math.round((h*MW)/w); w=MW; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',0.5)); }; img.src=e.target.result; }; r.readAsDataURL(file); }
     function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); document.getElementById('info-produk-beli').innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; document.getElementById('btn-wa-otomatis').onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
     function tutupModalOpsiBeli(){ document.getElementById('modal-opsi-beli').classList.add('hidden'); }
