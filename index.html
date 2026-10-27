@@ -306,7 +306,18 @@
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ document.getElementById('modal-pengumuman').classList.remove('hidden'); document.getElementById('admin-whatsapp-nomor').value=adminWaAktif; }
     function tutupModalPengumuman(){ document.getElementById('modal-pengumuman').classList.add('hidden'); }
-    function kirimPesanKeAdminRT(){ const no=document.getElementById('admin-whatsapp-nomor').value.trim(); const topik=document.getElementById('pilih-topik-admin').value; const msg=document.getElementById('pesan-masukan-warga').value.trim(); if(!no||!msg){ alert('Lengkapi nomor dan pesan terlebih dahulu.'); return; } let nomor=no.replace(/\D/g,''); if(nomor.startsWith('0')) nomor='62'+nomor.slice(1); const teks=`Halo Pengurus RT.36,\n\n*Topik:* ${topik}\n*Pesan:* ${msg}`; window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(teks)}`, '_blank'); tutupModalPengumuman(); }
+    <script>
+function kirimPesanKeAdminRT(){
+  var el = document.getElementById('admin-whatsapp-nomor');
+  if(!el){ alert('Nomor tidak ketemu bosku'); return; }
+  var no = el.value.trim().replace(/\D/g,'');
+  if(!no){ alert('Nomor kosong bosku'); return; }
+  if(no.startsWith('0')) no = '62' + no.slice(1);
+  var teks = 'Halo Pengelola Pasar RT.36, saya dari website pasar-rt36.my.id 🙏';
+  var url = 'https://wa.me/' + no + '?text=' + encodeURIComponent(teks);
+  window.open(url, '_blank');
+}
+</script>
     function kompresGambar(file,cb){ if(file.size<200*1024){ const r=new FileReader(); r.onload=e=>cb(e.target.result); r.readAsDataURL(file); return; } const r=new FileReader(); r.onload=function(e){ const img=new Image(); img.onload=function(){ const c=document.createElement('canvas'); let w=img.width,h=img.height; const MW=600; if(w>MW){ h=Math.round((h*MW)/w); w=MW; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',0.5)); }; img.src=e.target.result; }; r.readAsDataURL(file); }
     function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); document.getElementById('info-produk-beli').innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; document.getElementById('btn-wa-otomatis').onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
     function tutupModalOpsiBeli(){ document.getElementById('modal-opsi-beli').classList.add('hidden'); }
