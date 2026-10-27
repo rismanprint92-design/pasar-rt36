@@ -471,31 +471,61 @@ function kirimPesanKeAdminRT(){
 }
 
     function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
-    function geserFotoZoom(a){ 
-  if(!currentZoomPhotos.length) return; 
-  currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; 
-  document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; 
+    function geserFotoZoom(a){
+  // AUTO DETEKSI NAMA VARIABEL FOTO BOSKU BIAR TIDAK ERROR LAGI
+  var fotos = window.currentZoomPhotos || window.fotoZoom || window.zoomPhotos || [];
+  if(!fotos.length) return;
+  
+  // UPDATE INDEX
+  if(typeof window.currentZoomIndex === 'undefined') window.currentZoomIndex = 0;
+  window.currentZoomIndex = (window.currentZoomIndex + a + fotos.length) % fotos.length;
+  
+  // GANTI FOTO
+  var img = document.getElementById('img-zoom-target');
+  if(img) img.src = fotos[window.currentZoomIndex];
+  
+  // UPDATE COUNTER (JIKA ADA)
   var counter = document.getElementById('zoom-foto-counter');
-  if(counter) counter.innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`;
+  if(counter) counter.innerText = (window.currentZoomIndex+1) + ' / ' + fotos.length;
+  
   // UPDATE DOTS MODERN BOSKU
   var dotsEl = document.getElementById('zoom-dots');
   if(dotsEl){
     dotsEl.innerHTML = '';
-    for(var i=0;i<currentZoomPhotos.length;i++){
+    for(var i=0;i<fotos.length;i++){
       var d = document.createElement('span');
-      if(i===currentZoomIndex) d.className='active';
-      d.setAttribute('data-idx', i);
-      d.onclick = (function(idx){ return function(){ 
-        currentZoomIndex=idx; 
-        document.getElementById('img-zoom-target').src=currentZoomPhotos[idx];
-        if(counter) counter.innerText = `${idx+1} / ${currentZoomPhotos.length}`;
-        var all = dotsEl.querySelectorAll('span');
-        all.forEach(function(s,j){ s.className = j===idx ? 'active' : ''; });
-      }; })(i);
+      if(i===window.currentZoomIndex) d.className='active';
       dotsEl.appendChild(d);
     }
   }
 }
+
+// FIX JUGA FUNGSI BUKA ZOOM BOSKU - INI YANG BIKIN DETAIL TIDAK KEBuka TADI
+// CARI FUNGSI bukaDetail / openZoom / tampilZoom DI FILE BOSKU, DI DALAMNYA ADA BARIS img-zoom-target.src = ...
+// SETELAH BARIS ITU TAMBAH INI BOSKU:
+(function(){
+  var oldOpen = window.bukaZoom || window.openZoom || window.tampilDetail || window.showDetail;
+  // kalau tidak ada, kita buat inisialisasi dots manual bosku
+  var initDots = function(){
+    var fotos = window.currentZoomPhotos || window.fotoZoom || window.zoomPhotos || [];
+    var dotsEl = document.getElementById('zoom-dots');
+    if(!dotsEl || !fotos.length) return;
+    dotsEl.innerHTML = '';
+    for(var i=0;i<fotos.length;i++){
+      var d = document.createElement('span');
+      if(i===0) d.className='active';
+      dotsEl.appendChild(d);
+    }
+  };
+  // panggil setiap modal dibuka bosku
+  var modal = document.getElementById('modal-zoom');
+  if(modal){
+    var observer = new MutationObserver(function(){ 
+      if(!modal.classList.contains('hidden')) initDots(); 
+    });
+    observer.observe(modal, {attributes:true});
+  }
+})();
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
