@@ -179,8 +179,10 @@
   <div id="modal-zoom" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex flex-col items-center justify-start z-[1050] p-0 overflow-y-auto">
   <div class="bg-white w-full max-w-sm sm:rounded-[24px] rounded-t-[24px] mt-auto sm:mt-10 mb-0 sm:mb-10 shadow-2xl overflow-hidden min-h-[85vh] sm:min-h-0 flex flex-col">
     <div class="relative w-full bg-gray-50">
-      <div id="zoom-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full flex gap-1.5"></div>
-      <span id="zoom-foto-counter" class="hidden">1 / 1</span>
+      <img id="img-zoom-target" src="" class="w-full h-[300px] object-cover bg-gray-100">
+      <button onclick="geserFotoZoom(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/25 backdrop-blur-md text-white w-9 h-9 rounded-full flex items-center justify-center">❮</button>
+      <button onclick="geserFotoZoom(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/25 backdrop-blur-md text-white w-9 h-9 rounded-full flex items-center justify-center">❯</button>
+      <span id="zoom-foto-counter" class="absolute bottom-3 right-3 bg-black/50 text-white text-[10px] px-2.5 py-1 rounded-full backdrop-blur-md">1 / 1</span>
     </div>
 
     <div class="p-5 flex-1 flex flex-col">
@@ -426,7 +428,7 @@ function kirimPesanKeAdminRT(){
 
       // Tombol WA
       document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
-      geserFotoZoom(0); // <-- INI KUNCINYA BOSKU BIAR DOTS MODERN MUNCUL
+    
       document.getElementById('modal-zoom').classList.remove('hidden');
       history.pushState({modalZoom:true},'');
     }
@@ -455,26 +457,9 @@ function kirimPesanKeAdminRT(){
 }
 
     function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
-    function geserFotoZoom(a){
-  var fotos = window.currentZoomPhotos || window.fotoZoom || window.zoomPhotos || [];
-  if(!fotos.length) return;
-  if(typeof window.currentZoomIndex === 'undefined') window.currentZoomIndex = 0;
-  window.currentZoomIndex = (window.currentZoomIndex + a + fotos.length) % fotos.length;
-  
-  document.getElementById('img-zoom-target').src = fotos[window.currentZoomIndex];
-  
-  // UPDATE DOTS MODERN BOSKU
-  var dotsEl = document.getElementById('zoom-dots');
-  if(dotsEl){
-    dotsEl.innerHTML = '';
-    for(var i=0;i<fotos.length;i++){
-      var span = document.createElement('span');
-      span.style.cssText = 'width:6px;height:6px;border-radius:9999px;background:'+(i===window.currentZoomIndex?'#064e3b':'#D1D5DB')+';display:block;';
-      if(i===window.currentZoomIndex) span.style.width='20px';
-      dotsEl.appendChild(span);
-    }
-  }
-}
+    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
+    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
+    let dataProdukBaru=null;
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
