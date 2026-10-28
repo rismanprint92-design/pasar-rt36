@@ -456,22 +456,12 @@ function kirimPesanKeAdminRT(){
         Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
       } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
     }
-        function simpanKeFirebase(arr, pinInput){
-      let pin = pinInput || document.getElementById('pin-penjual').value;
-      let b={
-        nama:bersihkanTeks(document.getElementById('nama').value),
-        harga:parseInt(document.getElementById('harga').value)||0,
-        kategori:document.getElementById('kategori').value,
-        status:document.getElementById('status').value,
-        penjual:bersihkanTeks(document.getElementById('penjual').value),
-        lokasi:bersihkanTeks(document.getElementById('lokasi').value),
-        wa:document.getElementById('whatsapp').value.trim(),
-        pinHash: hashPin(pin),
-        ownerId: currentUser ? currentUser.uid : (localStorage.getItem('my_device_uid')||'anon'),
-        catatan:bersihkanTeks(document.getElementById('catatan').value),
-        foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
-        timestamp:Date.now()
-      };
+        async function simpanKeFirebase(arr, pinInput){
+  await waitForAuth(); let pinHash=await hashPinSecure(pinInput);
+  let b={ nama:document.getElementById('nama').value.trim(), harga:parseInt(document.getElementById('harga').value)||0, kategori:document.getElementById('kategori').value, status:document.getElementById('status').value, penjual:document.getElementById('penjual').value.trim(), lokasi:document.getElementById('lokasi').value.trim(), wa:document.getElementById('whatsapp').value.trim(), pinPenjual:pinInput, pinHash:pinHash, ownerId:currentUser.uid, catatan:document.getElementById('catatan').value.trim(), foto:(arr||[]).filter(isSafeUrl), timestamp:Date.now() };
+  if(!/^[0-9]{9,15}$/.test(b.wa.replace(/\D/g,''))){ alert('WA tidak valid'); return; }
+  dbRef.push(b).then(res=>{ tutupModalJual(); document.getElementById('form-tambah').reset(); tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key); });
+}
       console.log("Menyimpan produk...", b);
       // Simpan dulu produknya, baru simpan pin tokonya (biar kalau pin gagal, produk tetap kesimpan & share keluar)
       dbRef.push(b).then((res)=>{
