@@ -61,8 +61,45 @@
     .btn-admin-gambar { background: #064e3b !important; color: white !important; border-radius: 12px !important; padding: 7px 14px !important; font-size: 13px !important; font-weight: 600 !important; }
     .btn-pengumuman-putih { background: white !important; color: #059669 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.06) !important; border: 1px solid #eef2f7 !important; border-radius:9999px !important; }
     .harga-produk, .price, [class*="Rp"] {
-    color: #ea580c !important; /* Orange sama kayak +Jual */
-    }
+   /* === STYLE SHOPEE STAR BOSKU === */
+.badge-star {
+  background: #ee4d2d;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  display: inline-block;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+}
+.badge-komisi {
+  border: 1.5px solid #ee4d2d;
+  color: #ee4d2d;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 2px;
+  display: inline-block;
+  background: #fff5f3;
+}
+.harga-shopee {
+  color: #ee4d2d !important;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+.nama-shopee {
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: #222;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 35px;
+}
   </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
@@ -282,31 +319,56 @@
     // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
     // HYBRID PREMIUM RAPET BOSKU - FINAL TERBAIK
     function renderProduk(data){
-      const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
-      if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
-      data.forEach(item=>{
-        let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
-        let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
-        let foto=list[0];
-        let status=item.status||'tersedia'; 
-        let isTersedia=status==='tersedia';
-        let indikator = isTersedia ? '<span class="text-[#064e3b] font-bold text-[10px] tracking-wide">● Tersedia</span>' : '<span class="text-gray-400 font-semibold text-[10px]">● Habis</span>';
-        let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
-        let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
+  const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
+  if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
+  data.forEach(item=>{
+    let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
+    let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
+    let foto=list[0];
+    let status=item.status||'tersedia'; 
+    let isTersedia=status==='tersedia';
 
-        let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
-          <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
-            <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
+    // === KOTAK KAYAK STAR SHOPEE BOSKU ===
+    let badgeStar = isTersedia 
+      ? '<span class="badge-star">TERSEDIA</span>' 
+      : '<span class="badge-star" style="background:#9ca3af">HABIS</span>';
+    
+    let badgeKategori = '<span class="badge-komisi">'+bersihkanTeks((item.kategori||'PRODUK').toUpperCase())+'</span>';
+
+    let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
+    let badgeFoto=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
+
+    let card=`<div id="produk-${item.id}" class="bg-white rounded-[12px] shadow-sm border border-gray-100 overflow-hidden flex flex-col produk-card">
+      <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
+        <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badgeFoto}${overlay}
+      </div>
+      <div class="p-2.5 pt-2.5 flex flex-col gap-1 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
+        
+        <!-- BARIS 1: KOTAK STAR + NAMA PRODUK -->
+        <div class="flex items-start gap-1.5">
+          ${badgeStar}
+          <h3 class="nama-shopee flex-1">${bersihkanTeks(item.nama)}</h3>
+        </div>
+
+        <!-- BARIS 2: KOTAK KOMISI XTRA (KATEGORI) -->
+        <div class="mt-1">
+          ${badgeKategori}
+        </div>
+
+        <!-- BARIS 3: HARGA KOTAK ORANGE + ICON -->
+        <div class="flex items-center justify-between mt-1.5">
+          <p class="harga-shopee">Rp${parseInt(item.harga).toLocaleString('id-ID')}</p>
+          <div class="flex items-center gap-1 text-gray-400">
+            <i class="ph ph-ticket text-[18px] text-orange-500"></i>
+            <span class="text-[16px]">•••</span>
           </div>
-          <div class="p-2.5 pt-2 flex flex-col gap-0 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
-            <div class="leading-none mb-1">${indikator}</div>
-            <h3 class="font-bold text-[13px] leading-[1.3] text-gray-800 line-clamp-2 min-h-[20px]">${bersihkanTeks(item.nama)}</h3>
-            <p class="text-[#064e3b] font-extrabold text-[14.5px] mt-1 tracking-tight">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
-          </div>
-        </div>`;
-        container.innerHTML+=card;
-      });
-    }
+        </div>
+
+      </div>
+    </div>`;
+    container.innerHTML+=card;
+  });
+}
     function filterKategori(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ document.getElementById('modal-pengumuman').classList.remove('hidden'); document.getElementById('admin-whatsapp-nomor').value=adminWaAktif; }
