@@ -678,8 +678,15 @@ function kirimPesanKeAdminRT(){
       let myId='tamu_'+Date.now(); let myNama=''; try{ myId=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); myNama=localStorage.getItem('verified_nama_rt36')||''; }catch(e){}
       let audio=document.getElementById('notifSound'); if(suaraIndex!=='off'&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; }
       let ref=database.ref('pesan_warga'); let box=document.getElementById('boxChatWarga'); if(!box) return; box.innerHTML='';
-      ref.limitToLast(80).on('value', snap=>{ let dataMap=snap.val(); let teksNotif=document.getElementById('teksNotif24Jam'); if(teksNotif){ if(dataMap&&Object.keys(dataMap).length>0){ teksNotif.classList.remove('hidden'); } else { teksNotif.classList.add('hidden'); } } });
-      ref.limitToLast(80).on('child_added', snap=>{
+      ref.limitToLast(80).on('child_removed', snap=>{
+  const el = document.getElementById(`msg_${snap.key}`);
+  if(el) el.remove(); // FIX: pesan hilang tanpa reload
+  isProsesHapus=false;
+});
+ref.limitToLast(80).on('child_changed', snap=>{
+  const el = document.getElementById(`msg_${snap.key}`);
+  if(el){ const t=el.querySelector(`#teks_val_${snap.key}`); if(t) t.textContent=snap.val().pesan; }
+});
         let data=snap.val(), key=snap.key; if(!data) return;
         let isMe=(data.userId===myId); let pengirimNama=data.nama; let pengirimId=data.userId;
         let div=document.createElement('div'); div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1'; div.id='msg_'+key;
