@@ -248,8 +248,6 @@
     };
        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
-    auth.onAuthStateChanged(user=>{ if(user) currentUser=user; else auth.signInAnonymously().catch(()=>{}); });
-    if(!auth.currentUser) try{ auth.signInAnonymously(); }catch(e){}
     const database = firebase.database();
     let currentUser = null;
     auth.signInAnonymously().catch(function(err){ console.log("Auth gagal", err); });
