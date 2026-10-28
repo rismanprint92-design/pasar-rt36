@@ -289,31 +289,24 @@ auth.onAuthStateChanged(function(user){
     // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
     // HYBRID PREMIUM RAPET BOSKU - FINAL TERBAIK
     function renderProduk(data){
-      const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
-      if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
-      data.forEach(item=>{
-        let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
-        let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
-        let foto=list[0];
-        let status=item.status||'tersedia'; 
-        let isTersedia=status==='tersedia';
-        let indikator = isTersedia ? '<span class="text-[#064e3b] font-bold text-[10px] tracking-wide">● Tersedia</span>' : '<span class="text-gray-400 font-semibold text-[10px]">● Habis</span>';
-        let overlay = !isTersedia ? '<div class="overlay-habis">Stok Habis</div>' : '';
-        let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
-
-        let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
-          <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
-            <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
-          </div>
-          <div class="p-2.5 pt-2 flex flex-col gap-0 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
-            <div class="leading-none mb-1">${indikator}</div>
-            <h3 class="font-bold text-[13px] leading-[1.3] text-gray-800 line-clamp-2 min-h-[20px]">${bersihkanTeks(item.nama)}</h3>
-            <p class="text-[#064e3b] font-extrabold text-[14.5px] mt-1 tracking-tight">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p>
-          </div>
-        </div>`;
-        container.innerHTML+=card;
-      });
-    }
+  const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
+  if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
+  const frag = document.createDocumentFragment();
+  data.forEach(item=>{
+    const list = item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[];
+    const foto = list[0] && /^https:\/\/|^data:image\//.test(list[0]) ? list[0] : 'https://via.placeholder.com/300?text=Produk+RT36';
+    const card = document.createElement('div');
+    card.id = `produk-${item.id}`;
+    card.className = 'bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card cursor-pointer';
+    card.addEventListener('click', ()=>bukaDetailProduk(item.id));
+    const isTersedia = (item.status||'tersedia')==='tersedia';
+    card.innerHTML = `<div class="relative w-full"><img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${!isTersedia?'<div class="overlay-habis">Stok Habis</div>':''}</div><div class="p-2.5 pt-2 flex flex-col"><div class="leading-none mb-1">${isTersedia?'<span class="text-[#064e3b] font-bold text-[10px]">● Tersedia</span>':'<span class="text-gray-400 font-semibold text-[10px]">● Habis</span>'}</div><h3 class="font-bold text-[13px] leading-[1.3] text-gray-800 line-clamp-2"></h3><p class="text-[#064e3b] font-extrabold text-[14.5px] mt-1"></p></div>`;
+    card.querySelector('h3').textContent = item.nama || '';
+    card.querySelector('p').textContent = `Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}`;
+    frag.appendChild(card);
+  });
+  container.appendChild(frag);
+}
     function filterKategori(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ document.getElementById('modal-pengumuman').classList.remove('hidden'); document.getElementById('admin-whatsapp-nomor').value=adminWaAktif; }
