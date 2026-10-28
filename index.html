@@ -252,6 +252,7 @@
     let currentUser = null;
     auth.signInAnonymously().catch(function(err){ console.log("Auth gagal", err); });
     auth.onAuthStateChanged(function(user){ if(user) currentUser = user; });
+    auth.onAuthStateChanged(function(user){ if(user){ currentUser = user; console.log("Auth OK", user.uid); } });
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
