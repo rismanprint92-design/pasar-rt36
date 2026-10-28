@@ -479,7 +479,32 @@ function kirimPesanKeAdminRT(){
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
-    function verifikasiAdmin(){ let v=document.getElementById('pin-admin').value; if(v===pinAdminAktif){ isAdmin=true; document.getElementById('banner-admin').classList.remove('hidden'); tutupModalAdmin(); terapkanFilterDanPencarian(); } else alert('PIN Admin RT Salah!'); }
+        function verifikasiAdmin(){
+      let v=document.getElementById('pin-admin').value.trim();
+      if(!v){ alert('Isi PIN dulu bosku!'); return; }
+      // Baca langsung dari Firebase, jangan pakai pinAdminAktif yang masih null
+      pinRef.once('value').then(s=>{
+        let dbPin = s.val() || "1234";
+        if(v===String(dbPin)){
+          isAdmin=true;
+          document.getElementById('banner-admin').classList.remove('hidden');
+          tutupModalAdmin();
+          terapkanFilterDanPencarian();
+        } else {
+          alert('PIN Admin RT Salah! PIN di database: '+dbPin);
+        }
+      }).catch(err=>{
+        // Fallback kalau rules belum publish
+        if(v===String(pinAdminAktif) || v==="1234"){
+          isAdmin=true;
+          document.getElementById('banner-admin').classList.remove('hidden');
+          tutupModalAdmin();
+          terapkanFilterDanPencarian();
+        } else {
+          alert('Gagal baca PIN, cek Rules! Error: '+err.message);
+        }
+      });
+    }
     function keluarAdmin(){ isAdmin=false; document.getElementById('banner-admin').classList.add('hidden'); terapkanFilterDanPencarian(); }
     function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
@@ -504,20 +529,44 @@ function kirimPesanKeAdminRT(){
       let pinPrev=document.getElementById('inputPinSebelumnya').value.trim(); 
       let namaBaru=document.getElementById('inputNamaPin').value.trim(); 
       let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim(); 
-      function loginSukses(pin, nama){ try{ localStorage.setItem('chat_pin_rt36',pin); localStorage.setItem('verified_nama_rt36',nama); localStorage.setItem('my_chat_id','user_pin_'+pin); }catch(e){} tutupModalLoginPin(); inisialisasiChatLive(); bukaPanelChatLangsung(); }
+      function loginSukses(pin, nama){
+        try{
+          localStorage.setItem('chat_pin_rt36',pin);
+          localStorage.setItem('verified_nama_rt36',nama);
+          localStorage.setItem('my_chat_id','user_pin_'+pin);
+        }catch(e){}
+        tutupModalLoginPin();
+        inisialisasiChatLive();
+        bukaPanelChatLangsung();
+      }
       if(pinPrev!==""){
-        activeDeviceRef.child(pinPrev).once('value', (snap)=>{
+        activeDeviceRef.child(pinPrev).once('value').then(snap=>{
           let dataToko=snap.val();
-          if(dataToko && dataToko.nama){ loginSukses(pinPrev, dataToko.nama); }
-          else {
-            let savedPin=''; let savedNama=''; try{ savedPin=localStorage.getItem('chat_pin_rt36'); savedNama=localStorage.getItem('verified_nama_rt36'); }catch(e){}
-            if(pinPrev===savedPin && savedNama){ loginSukses(pinPrev, savedNama); }
-            else alert('❌ PIN tidak ditemukan!');
+          if(dataToko && dataToko.nama){
+            loginSukses(pinPrev, dataToko.nama);
+          } else {
+            let savedPin=''; let savedNama='';
+            try{
+              savedPin=localStorage.getItem('chat_pin_rt36');
+              savedNama=localStorage.getItem('verified_nama_rt36');
+            }catch(e){}
+            if(pinPrev===savedPin && savedNama){
+              loginSukses(pinPrev, savedNama);
+            } else {
+              alert('❌ PIN tidak ditemukan!');
+            }
           }
+        }).catch(e=>{
+          alert('Gagal baca toko, cek Rules Auth Anonymous sudah aktif belum bosku! '+e.message);
         });
         return;
       }
-      if(namaBaru!==""||pinBaru!==""){ if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; } if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; } loginSukses(pinBaru, namaBaru); return; }
+      if(namaBaru!==""||pinBaru!==""){
+        if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; }
+        if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; }
+        loginSukses(pinBaru, namaBaru);
+        return;
+      }
       alert('⚠️ Masukkan PIN toko / PIN chat Anda bosku!');
     }
     function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
