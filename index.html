@@ -479,30 +479,22 @@ function kirimPesanKeAdminRT(){
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
-        function verifikasiAdmin(){
+    function verifikasiAdmin(){
       let v=document.getElementById('pin-admin').value.trim();
       if(!v){ alert('Isi PIN dulu bosku!'); return; }
-      // Baca langsung dari Firebase, jangan pakai pinAdminAktif yang masih null
       pinRef.once('value').then(s=>{
-        let dbPin = s.val() || "1234";
-        if(v===String(dbPin)){
+        let dbPin = s.val();
+        if(!dbPin) dbPin = "1234";
+        if(String(v)===String(dbPin)){
           isAdmin=true;
           document.getElementById('banner-admin').classList.remove('hidden');
           tutupModalAdmin();
           terapkanFilterDanPencarian();
         } else {
-          alert('PIN Admin RT Salah! PIN di database: '+dbPin);
+          alert('PIN Admin RT Salah! Coba lagi bosku');
         }
-      }).catch(err=>{
-        // Fallback kalau rules belum publish
-        if(v===String(pinAdminAktif) || v==="1234"){
-          isAdmin=true;
-          document.getElementById('banner-admin').classList.remove('hidden');
-          tutupModalAdmin();
-          terapkanFilterDanPencarian();
-        } else {
-          alert('Gagal baca PIN, cek Rules! Error: '+err.message);
-        }
+      }).catch(e=>{
+        alert('Gagal baca PIN Admin, cek Rules! '+e.message);
       });
     }
     function keluarAdmin(){ isAdmin=false; document.getElementById('banner-admin').classList.add('hidden'); terapkanFilterDanPencarian(); }
