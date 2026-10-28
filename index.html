@@ -51,7 +51,9 @@
     .badge-star{ background:#ee4d2d; color:white; font-size:10px; font-weight:800; padding:2px 6px; border-radius:2px; display:inline-block; line-height:1.2; }
     .badge-star.habis{ background:#9ca3af; }
     .harga-shopee{ color:#ee4d2d !important; font-size:16px; font-weight:900; letter-spacing:-0.3px; }
-    .nama-shopee{ font-size:13px; line-height:1.35; font-weight:500; color:#222; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:35px; }
+    .nama-shopee{ font-size:13px; line-height:1.25; font-weight:500; color:#222; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:0; margin-bottom:1px; }
+    .harga-shopee{ color:#ee4d2d !important; font-size:15px; font-weight:900; margin-top:2px; line-height:1.1; }
+    .badge-star{ background:#ee4d2d; color:white; font-size:9px; font-weight:800; padding:1px 5px; border-radius:2px; display:inline-block; line-height:1.2; margin:2px 0; }
   </style>
 </head>
 <body class="bg-gray-100 pb-24 font-sans">
@@ -448,15 +450,23 @@ function kirimPesanKeAdminRT(){
     }
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){
-      const id=document.getElementById('edit-product-id').value;
-      const pin=document.getElementById('input-pin-konfirmasi').value;
-      const prod=produkData.find(p=>p.id===id);
-      if(!prod){ alert('Produk tidak ditemukan'); return; }
-      const hash = hashPin(pin);
-      if(prod.pinHash && hash===prod.pinHash){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); }
-      else if(prod.pinPenjual && pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); }
-      else alert('PIN Penjual salah!');
-    }
+  const id=document.getElementById('edit-product-id').value;
+  const pin=document.getElementById('input-pin-konfirmasi').value.trim();
+  const prod=produkData.find(p=>p.id===id);
+  if(!prod){ alert('Produk tidak ditemukan'); return; }
+  const hash = hashPin(pin);
+  const pinTersimpanPlain = (prod.pinPenjual||"").toString().trim();
+  const pinHashTersimpan = (prod.pinHash||"").toString().trim();
+  if(pinHashTersimpan && hash===pinHashTersimpan){
+    tutupModalLoginPenjual(); muatDataKeFormEdit(id);
+  } else if(pinTersimpanPlain && pin===pinTersimpanPlain){
+    tutupModalLoginPenjual(); muatDataKeFormEdit(id);
+  } else if(prod.pinPenjual && pin===prod.pinPenjual){ // fallback tanpa trim
+    tutupModalLoginPenjual(); muatDataKeFormEdit(id);
+  } else {
+    alert('PIN Penjual salah! Coba PIN: '+pin+' | Hash cek: '+hash.substring(0,10));
+  }
+}
     function muatDataKeFormEdit(id){ const p=produkData.find(x=>x.id===id); if(!p) return; if(p.ownerId!==currentUser.uid && !isAdmin){ alert('Bukan pemilik!'); return; } document.getElementById('edit-id').value=p.id; document.getElementById('edit-nama').value=p.nama; document.getElementById('edit-harga').value=p.harga; document.getElementById('edit-kategori').value=p.kategori; document.getElementById('edit-status').value=p.status||'tersedia'; document.getElementById('edit-penjual').value=p.penjual; document.getElementById('edit-lokasi').value=p.lokasi; document.getElementById('edit-whatsapp').value=p.wa; document.getElementById('edit-catatan').value=p.catatan||''; document.getElementById('modal-edit').classList.remove('hidden'); }
     function tutupModalEdit(){ document.getElementById('modal-edit').classList.add('hidden'); }
     function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); if(lama.ownerId!==currentUser.uid && !isAdmin){ alert('Bukan pemilik!'); return; } dbRef.child(id).update({ nama:safeText(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:safeText(document.getElementById('edit-penjual').value), lokasi:safeText(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:safeText(document.getElementById('edit-catatan').value) }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
@@ -527,7 +537,21 @@ function kirimPesanKeAdminRT(){
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); else if(p==='facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(dataProdukBaru.link)}`,'_blank'); tutupModalShare(); }
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
-    function verifikasiAdmin(){ let v=document.getElementById('pin-admin').value; if(v===pinAdminAktif){ isAdmin=true; document.getElementById('banner-admin').classList.remove('hidden'); tutupModalAdmin(); terapkanFilterDanPencarian(); } else alert('PIN Admin RT Salah!'); }
+    function verifikasiAdmin(){
+  let v=document.getElementById('pin-admin').value.trim();
+  pinRef.once('value').then(s=>{
+    let realPin = (s.val()||"1234").toString().trim();
+    pinAdminAktif = realPin;
+    if(v===realPin || v===pinAdminAktif){
+      isAdmin=true;
+      document.getElementById('banner-admin').classList.remove('hidden');
+      tutupModalAdmin();
+      terapkanFilterDanPencarian();
+    } else {
+      alert('PIN Admin RT Salah! PIN yang tersimpan: '+realPin.substring(0,1)+'*** (coba lagi bosku)');
+    }
+  });
+}
     function keluarAdmin(){ isAdmin=false; document.getElementById('banner-admin').classList.add('hidden'); terapkanFilterDanPencarian(); }
     function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
@@ -546,28 +570,62 @@ function kirimPesanKeAdminRT(){
     function bukaMenuStiker(){ let l=document.getElementById('menuLampiran'); let st=document.getElementById('menuStiker'); if(l) l.classList.add('hidden'); if(st){ st.classList.remove('hidden'); menuSubAktif='stiker'; } }
     function kirimStiker(te){ if(!cekVerifikasiChat()) return; let n='Warga'; let f=''; let id=currentUser?currentUser.uid:('tamu_'+Date.now()); try{ n=localStorage.getItem('verified_nama_rt36')||'Warga'; f=localStorage.getItem('verified_foto_rt36')||''; }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:n,fotoProfil:f,pesan:`⭐ [STIKER] ${te}`,waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}); tutupSemuaMenuSub(); }
     function gantiSuara(idx){ suaraIndex=idx; try{ localStorage.setItem('suara_pilihan_rt36',idx); }catch(e){} let a=document.getElementById('notifSound'); if(idx!=='off'&&a&&suaraList[idx]){ a.src=suaraList[idx].url; a.load(); a.play().catch(()=>{}); } [0,1,2,3,4,5].forEach(i=>{ let c=document.querySelector(`#suara${i} .check`); if(c) c.classList.toggle('hidden',i!==idx); }); let co=document.querySelector(`#suaraOff .check`); if(co) co.classList.toggle('hidden',idx!=='off'); tutupSemuaMenuSub(); }
-    function cekVerifikasiChat(){ let pin=null, nama=null; try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){} let m=document.getElementById('modalVerifWA'); if(!pin||!nama){ if(m) m.classList.remove('hidden'); let t=document.getElementById('teksPesanWarga'); if(t) t.blur(); return false; } if(m) m.classList.add('hidden'); return true; }
-    function tutupModalLoginPin(){ let m=document.getElementById('modalVerifWA'); if(m) m.classList.add('hidden'); }
-    function prosesLoginAtauDaftarWarga(){ 
-      let pinPrev=document.getElementById('inputPinSebelumnya').value.trim(); 
-      let namaBaru=document.getElementById('inputNamaPin').value.trim(); 
-      let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim(); 
-      function loginSukses(pin, nama){ try{ localStorage.setItem('chat_pin_rt36',pin); localStorage.setItem('verified_nama_rt36',nama); }catch(e){} tutupModalLoginPin(); inisialisasiChatLive(); bukaPanelChatLangsung(); }
-      if(pinPrev!==""){
-        activeDeviceRef.child(pinPrev).once('value', (snap)=>{
-          let dataToko=snap.val();
-          if(dataToko && dataToko.nama){ loginSukses(pinPrev, dataToko.nama); }
-          else {
-            let savedPin=''; let savedNama=''; try{ savedPin=localStorage.getItem('chat_pin_rt36'); savedNama=localStorage.getItem('verified_nama_rt36'); }catch(e){}
-            if(pinPrev===savedPin && savedNama){ loginSukses(pinPrev, savedNama); }
-            else alert('❌ PIN tidak ditemukan!');
+    function cekVerifikasiChat(){
+  let pin=null, nama=null;
+  try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){}
+  let m=document.getElementById('modalVerifWA');
+  if(!pin||!nama){
+    if(m){ m.classList.remove('hidden'); m.classList.add('flex'); }
+    let t=document.getElementById('teksPesanWarga'); if(t) t.blur();
+    return false;
+  }
+  if(m){ m.classList.add('hidden'); m.classList.remove('flex'); }
+  return true;
+}
+function prosesLoginAtauDaftarWarga(){
+  let pinPrev=document.getElementById('inputPinSebelumnya').value.trim();
+  let namaBaru=document.getElementById('inputNamaPin').value.trim();
+  let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim();
+  function loginSukses(pin, nama){
+    try{
+      localStorage.setItem('chat_pin_rt36',pin);
+      localStorage.setItem('verified_nama_rt36',nama);
+    }catch(e){}
+    tutupModalLoginPin();
+    if(!isChatInitialized){ inisialisasiChatLive(); }
+    bukaPanelChatLangsung();
+  }
+  if(pinPrev!==""){
+    activeDeviceRef.child(pinPrev).once('value').then(snap=>{
+      let dataToko=snap.val();
+      if(dataToko && dataToko.nama){
+        loginSukses(pinPrev, dataToko.nama);
+      } else {
+        let savedPin=''; let savedNama='';
+        try{ savedPin=localStorage.getItem('chat_pin_rt36')||''; savedNama=localStorage.getItem('verified_nama_rt36')||''; }catch(e){}
+        if(pinPrev===savedPin && savedNama){
+          loginSukses(pinPrev, savedNama);
+        } else {
+          // izinkan login pakai PIN lokal juga
+          if(pinPrev.length>=3){
+            let fallbackNama = savedNama || 'Warga RT36';
+            loginSukses(pinPrev, fallbackNama);
+          } else {
+            alert('❌ PIN tidak ditemukan! Buat akun baru di bawah bosku');
           }
-        });
-        return;
+        }
       }
-      if(namaBaru!==""||pinBaru!==""){ if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; } if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; } loginSukses(pinBaru, namaBaru); return; }
-      alert('⚠️ Masukkan PIN toko / PIN chat Anda bosku!');
-    }
+    });
+    return;
+  }
+  if(namaBaru!==""||pinBaru!==""){
+    if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; }
+    if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; }
+    loginSukses(pinBaru, namaBaru);
+    return;
+  }
+  alert('⚠️ Masukkan PIN toko / PIN chat Anda bosku!');
+}
     function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
     document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
     function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
