@@ -327,7 +327,22 @@ function kirimPesanKeAdminRT(){
   var url = 'https://wa.me/' + no + '?text=' + encodeURIComponent(teks);
   window.open(url, '_blank');
 }
-    function kompresGambar(file,cb){ if(file.size<200*1024){ const r=new FileReader(); r.onload=e=>cb(e.target.result); r.readAsDataURL(file); return; } const r=new FileReader(); r.onload=function(e){ const img=new Image(); img.onload=function(){ const c=document.createElement('canvas'); let w=img.width,h=img.height; const MW=600; if(w>MW){ h=Math.round((h*MW)/w); w=MW; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',0.5)); }; img.src=e.target.result; }; r.readAsDataURL(file); }
+      function kompresGambar(file, cb){
+      let r=new FileReader();
+      r.onload=e=>{
+        let img=new Image();
+        img.onload=()=>{
+          let max=800;
+          let w=img.width, h=img.height;
+          if(w>max || h>max){ if(w>h){ h=Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
+          let c=document.createElement('canvas'); c.width=w; c.height=h;
+          c.getContext('2d').drawImage(img,0,0,w,h);
+          cb(c.toDataURL('image/jpeg', 0.5));
+        };
+        img.src=e.target.result;
+      };
+      r.readAsDataURL(file);
+    }
     function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); document.getElementById('info-produk-beli').innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; document.getElementById('btn-wa-otomatis').onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
     function tutupModalOpsiBeli(){ document.getElementById('modal-opsi-beli').classList.add('hidden'); }
     function bukaModalJual(){ document.getElementById('modal-pilihan-jual').classList.remove('hidden'); document.getElementById('modal-pilihan-jual').classList.add('flex'); }
