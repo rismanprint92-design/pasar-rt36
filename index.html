@@ -519,9 +519,15 @@ function kirimPesanKeAdminRT(){
         console.log("Sukses ID:", res.key);
         tutupModalJual();
         document.getElementById('form-tambah').reset();
-        tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
-        activeDeviceRef.child(hashed).set({ nama:b.penjual, wa:b.wa, blok:b.lokasi, deviceId: deviceId, ownerId: b.ownerId, pinHash: hashed, timestamp:Date.now() });
-      }).catch(err=>{
+        tanyakanShareProduk(b.nama, b.harga);
+  if(deviceId && hashed){
+    activeDeviceRef.child(deviceId).child(res.key).set({
+      pinHash: hashed,
+      ownerId: uidOwner,
+      deviceId: deviceId
+    });
+  }
+}).catch(err=>{
         console.error("Gagal push produk:", err);
         alert("Gagal simpan: " + err.message);
       });
