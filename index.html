@@ -413,7 +413,29 @@ function kirimPesanKeAdminRT(){
     }
     function hapusProdukDariToko(id){ if(confirm('Yakin hapus produk ini dari toko Anda?')){ dbRef.child(id).remove().then(()=>{ alert('Produk berhasil dihapus!'); cariTokoSaya(); terapkanFilterDanPencarian(); }); } }
     function tutupModalJual(){ document.getElementById('modal-jual').classList.add('hidden'); }
-    function hashPin(pin){ try{ return btoa("rt36_"+pin).replace(/=/g,''); }catch(e){ return "h_"+pin; } }
+    async function hashPin(pin){
+  const buf = new TextEncoder().encode(pin);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+    async function cekPinTokoUnik(pin){ 
+      let h = await hashPin(pin);
+      return new Promise((resolve)=>{
+        activeDeviceRef.child(h).once('value').then(snap=>{
+          let data=snap.val();
+          if(!data){ resolve({boleh:true}); } 
+          else {
+            let waInput = document.getElementById('whatsapp').value.trim().replace(/\D/g,'');
+            let waTerdaftar = (data.wa||'').replace(/\D/g,'');
+            if(waTerdaftar===waInput || (currentUser && data.ownerId===currentUser.uid)){
+              resolve({boleh:true, tokoLama:true});
+            } else {
+              resolve({boleh:false, data:data});
+            }
+          }
+        }).catch(()=>resolve({boleh:true}));
+      }); 
+    }
     function cekPinTokoUnik(pin){ return new Promise((resolve)=>{
       activeDeviceRef.child(pin).once('value').then(snap=>{
         let data=snap.val();
