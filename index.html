@@ -489,8 +489,12 @@ function kirimPesanKeAdminRT(){
         Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
       } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
     }
-        function simpanKeFirebase(arr, pinInput){
+    async function simpanKeFirebase(arr, pinInput){
       let pin = pinInput || document.getElementById('pin-penjual').value;
+      let hashed = await hashPin(pin);
+      let deviceId = localStorage.getItem('my_device_uid') || ('dev_'+Math.random().toString(36).substring(2,10));
+      localStorage.setItem('my_device_uid', deviceId);
+      let uidOwner = currentUser ? currentUser.uid : deviceId;
       let b={
         nama:bersihkanTeks(document.getElementById('nama').value),
         harga:parseInt(document.getElementById('harga').value)||0,
@@ -499,29 +503,22 @@ function kirimPesanKeAdminRT(){
         penjual:bersihkanTeks(document.getElementById('penjual').value),
         lokasi:bersihkanTeks(document.getElementById('lokasi').value),
         wa:document.getElementById('whatsapp').value.trim(),
-        pinHash: hashPin(pin),
-        ownerId: currentUser ? currentUser.uid : (localStorage.getItem('my_device_uid')||'anon'),
+        ownerId: uidOwner,
         catatan:bersihkanTeks(document.getElementById('catatan').value),
         foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
         timestamp:Date.now()
       };
-      console.log("Menyimpan produk...", b);
-      // Simpan dulu produknya, baru simpan pin tokonya (biar kalau pin gagal, produk tetap kesimpan & share keluar)
+      console.log("Menyimpan produk AMAN tanpa pinHash...", b);
       dbRef.push(b).then((res)=>{
         console.log("Sukses ID:", res.key);
         tutupModalJual();
         document.getElementById('form-tambah').reset();
         tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
+        activeDeviceRef.child(hashed).set({ nama:b.penjual, wa:b.wa, blok:b.lokasi, deviceId: deviceId, ownerId: b.ownerId, pinHash: hashed, timestamp:Date.now() });
       }).catch(err=>{
         console.error("Gagal push produk:", err);
-        alert("Gagal simpan: " + err.message + "\nCoba refresh & login lagi bosku!");
+        alert("Gagal simpan: " + err.message);
       });
-      // Simpan data toko terpisah, tidak diblokir kalau gagal
-      try{
-        let deviceId = localStorage.getItem('my_device_uid') || ('dev_'+Math.random().toString(36).substring(2,10));
-        localStorage.setItem('my_device_uid', deviceId);
-        activeDeviceRef.child(pin).set({ nama:b.penjual, wa:b.wa, blok:b.lokasi, deviceId: deviceId, ownerId: b.ownerId, timestamp:Date.now() }).catch(e=>console.log("Info toko gagal simpan, tapi produk tetap jalan:", e.message));
-      }catch(e){}
     }
     function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
