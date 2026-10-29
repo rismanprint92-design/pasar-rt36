@@ -283,7 +283,46 @@ auth.onAuthStateChanged(function(user){
     pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
     adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
     let produkData = []; let kategoriAktif = 'semua'; let BATAS_TAMPIL = 12; let produkFilteredGlobal = [];
-    dbRef.on('value', (snap) => { const data=snap.val(); produkData=[]; if(data){ Object.keys(data).forEach(k=>{ produkData.unshift({id:k, ...data[k]}); }); } BATAS_TAMPIL=12; terapkanFilterDanPencarian(); });
+    // Fungsi pembersih XSS untuk menyaring data dari Firebase
+const sanitizeIncoming = (str) => {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+};
+
+dbRef.on('value', (snap) => { 
+    const data = snap.val(); 
+    produkData = []; 
+    
+    if (data) { 
+        Object.keys(data).forEach(k => { 
+            const item = data[k];
+            
+            // Lakukan pembersihan XSS pada properti teks sebelum dimasukkan ke aplikasi
+            const itemAman = {
+                id: k,
+                ...item,
+                nama: sanitizeIncoming(item.nama),
+                catatan: sanitizeIncoming(item.catatan),
+                // Jika ada field teks lain yang diinput user (misal: kategori), tambahkan di sini
+            };
+            
+            // Hapus sisa-sisa pin dari memori lokal untuk keamanan tambahan
+            if (itemAman.pinHash) delete itemAman.pinHash;
+            if (itemAman.pinPenjual) delete itemAman.pinPenjual;
+
+            produkData.unshift(itemAman); 
+        }); 
+    } 
+    
+    BATAS_TAMPIL = 12; 
+    terapkanFilterDanPencarian(); 
+});
+
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12; btn.innerHTML=`Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`; } else btn.style.display='none'; } }
     function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
     // SESUAI INSTRUKSI BOSKU: MINIMALIS MEWAH - HANYA GAMBAR, JUDUL, HARGA
@@ -403,7 +442,22 @@ function kirimPesanKeAdminRT(){
     }
     function hapusProdukDariToko(id){ if(confirm('Yakin hapus produk ini dari toko Anda?')){ dbRef.child(id).remove().then(()=>{ alert('Produk berhasil dihapus!'); cariTokoSaya(); terapkanFilterDanPencarian(); }); } }
     function tutupModalJual(){ document.getElementById('modal-jual').classList.add('hidden'); }
-    function hashPin(pin){ try{ return btoa("rt36_"+pin).replace(/=/g,''); }catch(e){ return "h_"+pin; } }
+    async function hashPin(pin) {
+    try {
+        // Mengubah text PIN menjadi array buffer
+        const msgBuffer = new TextEncoder().encode("rt36_" + pin);
+        // Melakukan hashing dengan SHA-256
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        // Mengubah hash buffer menjadi string Hexadecimal
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    } catch(e) {
+        // Cadangan fallback jika browser sangat jadul tidak mendukung Crypto API
+        return "secure_err_" + btoa(pin); 
+    }
+}
+
     function cekPinTokoUnik(pin){ return new Promise((resolve)=>{
       activeDeviceRef.child(pin).once('value').then(snap=>{
         let data=snap.val();
@@ -449,15 +503,27 @@ function kirimPesanKeAdminRT(){
         localStorage.setItem('my_device_uid', deviceId);
         let uidOwner = currentUser ? currentUser.uid : deviceId;
         activeDeviceRef.child(pin).set({ nama:namaToko, wa:waToko, blok:document.getElementById('lokasi').value, deviceId: deviceId, ownerId: uidOwner, timestamp:Date.now() });
-        simpanKeFirebase(arrFoto, pin);
+              // Tambahkan kata 'async' di depan fungsi prosesSimpan agar bisa menggunakan 'await'
+      const prosesSimpan = async (arrFoto) => {
+      await simpanKeFirebase(arrFoto, pin);
       };
-      if(fileInput.files&&fileInput.files.length>0){
-        if(fileInput.files.length>3){ alert('Maksimal 3 foto saja bos!'); return; }
-        let comp=[], proc=0, tot=fileInput.files.length;
-        Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
-      } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
+      
+      if(fileInput.files && fileInput.files.length > 0){
+        if(fileInput.files.length > 3){ alert('Maksimal 3 foto saja bos!'); return; }
+        let comp = [], proc = 0, tot = fileInput.files.length;
+        Array.from(fileInput.files).forEach((file, idx) => { 
+          kompresGambar(file, function(d){ 
+            comp[idx] = d; 
+            proc++; 
+            if(proc === tot) prosesSimpan(comp); 
+          }); 
+        });
+      } else {
+        prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
+      }
     }
-        function simpanKeFirebase(arr, pinInput){
+
+       async function simpanKeFirebase(arr, pinInput){
       let pin = pinInput || document.getElementById('pin-penjual').value;
       let b={
         nama:bersihkanTeks(document.getElementById('nama').value),
@@ -467,19 +533,44 @@ function kirimPesanKeAdminRT(){
         penjual:bersihkanTeks(document.getElementById('penjual').value),
         lokasi:bersihkanTeks(document.getElementById('lokasi').value),
         wa:document.getElementById('whatsapp').value.trim(),
-        pinHash: hashPin(pin),
+        // Ditambahkan 'await' karena fungsi hashPin(pin) sekarang berjalan asinkronus (SHA-256)
+        pinHash: await hashPin(pin),
         ownerId: currentUser ? currentUser.uid : (localStorage.getItem('my_device_uid')||'anon'),
         catatan:bersihkanTeks(document.getElementById('catatan').value),
         foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
         timestamp:Date.now()
       };
+
       console.log("Menyimpan produk...", b);
       // Simpan dulu produknya, baru simpan pin tokonya (biar kalau pin gagal, produk tetap kesimpan & share keluar)
-      dbRef.push(b).then((res)=>{
-        console.log("Sukses ID:", res.key);
-        tutupModalJual();
-        document.getElementById('form-tambah').reset();
-        tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
+     // 1. KEAMANAN PIN: Pastikan pin mentah tidak ikut tersimpan ke database publik
+if (b.pinPenjual) delete b.pinPenjual; 
+
+// 2. KEAMANAN XSS: Fungsi untuk membersihkan teks input dari tag HTML berbahaya
+const sanitizeHTML = (str) => {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+};
+
+// Kirim data b yang sudah bersih ke Firebase
+dbRef.push(b).then((res)=>{
+    console.log("Sukses ID:", res.key);
+    tutupModalJual();
+    document.getElementById('form-tambah').reset();
+    
+    // 3. TANGANI XSS: Bersihkan data sebelum dimasukkan ke fungsi tampilan/share
+    const namaAman = sanitizeHTML(b.nama);
+    const hargaAman = sanitizeHTML(b.harga);
+    const catatanAman = sanitizeHTML(b.catatan);
+    
+    tanyakanShareProduk(namaAman, hargaAman, catatanAman, res.key);
+});
+
       }).catch(err=>{
         console.error("Gagal push produk:", err);
         alert("Gagal simpan: " + err.message + "\nCoba refresh & login lagi bosku!");
