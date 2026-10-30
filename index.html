@@ -387,27 +387,75 @@
     });
   });
 }
-
 function lihatProdukTokoAdmin(deviceId){
+  // Tutup dulu biar tidak nutupin
+  document.getElementById('modal-daftar-toko').classList.add('hidden');
+  
   activeDeviceRef.child(deviceId).once('value').then(snap=>{
-    const map=snap.val(); if(!map) return;
+    const map=snap.val(); 
+    if(!map){ alert('Toko ini tidak punya produk'); bukaModalDaftarToko(); return; }
+    
     const productIds=Object.keys(map);
     const filtered=produkData.filter(p=>productIds.includes(p.id));
-    const box=document.getElementById('list-'+deviceId);
-    if(!box) return;
-    box.classList.remove('hidden');
-    if(filtered.length==0){ box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah tidak ada, klik Hapus PIN Saja untuk bersihkan.</p>'; return; }
-    box.innerHTML='';
-    filtered.forEach(item=>{
-      box.innerHTML+=`
-        <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2">
-          <img src="${item.foto[0]}" class="w-12 h-12 rounded object-cover">
-          <div class="flex-1"><p class="font-bold text-[11px]">${bersihkanTeks(item.nama)}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div>
-          <button onclick="hapusProdukAdminFull('${item.id}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg h-fit self-center">Hapus Produk</button>
-        </div>`;
-    });
+    
+    if(filtered.length==0){ 
+      alert('Produk sudah dihapus semua, tinggal PIN saja. Hapus PIN nya ya bosku.'); 
+      bukaModalDaftarToko(); 
+      return; 
+    }
+    
+    // Tampilkan semua produk toko itu di halaman utama
+    produkFilteredGlobal = filtered;
+    BATAS_TAMPIL = 20;
+    renderProduk(filtered);
+    
+    // Scroll ke atas biar kelihatan
+    window.scrollTo({top:0, behavior:'smooth'});
+    
+    // Kasih tau admin
+    setTimeout(()=>{
+      if(confirm(filtered.length + ' produk toko ' + deviceId.substring(0,6) + ' ditampilkan di atas. Mau buka detail produk pertama?')){
+        bukaDetailProduk(filtered[0].id);
+      }
+    },300);
   });
 }
+
+// FIX BIAR KLIK PRODUK DI MODE ADMIN TETAP BISA BUKA DETAIL
+window.bukaDetailProduk = function(id){ 
+  const item=produkData.find(p=>p.id===id); if(!item) return; 
+  let list=item.foto? (Array.isArray(item.foto)?item.foto:[item.foto]) : ['https://via.placeholder.com/300?text=Produk'];
+  currentZoomPhotos=list; currentZoomIndex=0; 
+  const imgTarget=document.getElementById('img-zoom-target');
+  if(imgTarget) imgTarget.src=list[0]; 
+  const counter=document.getElementById('zoom-foto-counter');
+  if(counter) counter.innerText = `1 / ${list.length}`;
+  const kat=document.getElementById('detail-kategori');
+  if(kat) kat.innerText = (item.kategori||'').toUpperCase();
+  const harga=document.getElementById('detail-harga');
+  if(harga) harga.innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
+  const nama=document.getElementById('detail-nama');
+  if(nama) nama.innerText=item.nama; 
+  const penjual=document.getElementById('detail-penjual-text');
+  if(penjual) penjual.innerText = item.penjual + ' ('+item.lokasi+')';
+  const waktu=document.getElementById('detail-waktu-text');
+  if(waktu) waktu.innerText = hitungUmurProduk(item.timestamp);
+  
+  let cat=item.catatan||''; 
+  let catatanEl = document.getElementById('detail-catatan');
+  if(catatanEl){
+    catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border rounded-xl p-3.5"><div id="catatan-detail" class="text-[13px] text-gray-800">${bersihkanTeks(cat)}</div></div>` : `Tidak ada deskripsi`;
+  }
+  const btnWa=document.getElementById('detail-btn-wa');
+  if(btnWa) btnWa.onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
+
+  const modalZoom=document.getElementById('modal-zoom');
+  if(modalZoom){ 
+    modalZoom.classList.remove('hidden'); 
+    modalZoom.style.zIndex = '9999'; // Biar di atas semua
+  }
+}
+
 
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
