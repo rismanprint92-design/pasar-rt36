@@ -361,24 +361,34 @@
     function pilihJualBaru(){ tutupModalPilihanJual(); const el=document.getElementById('modal-jual'); if(el) el.classList.remove('hidden'); }
     function bukaModalDaftarToko(){
   if(!isAdmin){ alert('Hanya Admin!'); return; }
-  document.getElementById('modal-daftar-toko').classList.remove('hidden');
+  const modalEl = document.getElementById('modal-daftar-toko');
+  if(modalEl) modalEl.classList.remove('hidden');
   const container=document.getElementById('daftar-toko-admin');
   container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat...</p>';
   activeDeviceRef.once('value', snap=>{
     const data=snap.val();
-    if(!data){ container.innerHTML='Belum ada toko'; return; }
+    if(!data){ container.innerHTML='<p class="text-center py-6 text-xs">Belum ada toko</p>'; return; }
     container.innerHTML='';
     Object.keys(data).forEach(deviceId=>{
-      const produkMap=data[deviceId]; if(!produkMap) return;
-      const ids=Object.keys(produkMap); if(ids.length==0) return;
-      const first=produkMap[ids[0]];
+      const produkMap=data[deviceId]; 
+      if(!produkMap) return;
+      const ids=Object.keys(produkMap); 
+      if(ids.length==0) return;
+      const first = produkMap[ids[0]] || {};
       const nama=first.ownerName||'Tanpa Nama';
+      const waToko = first.wa || '-';
       container.innerHTML+=`
-        <div class="bg-white border rounded-xl p-3 shadow-sm">
-          <div class="flex justify-between">
-            <div><p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p><p class="text-[11px] text-gray-500">ID: ${deviceId.substring(0,8)} • ${ids.length} produk</p></div>
-            <div class="flex flex-col gap-1">
-              <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
+        <div class="bg-white border rounded-xl p-3 shadow-sm mb-3">
+          <div class="flex justify-between items-start">
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p>
+              <p class="text-[11px] text-gray-500">ID: ${deviceId}</p>
+              <p class="text-[11px] text-red-600 font-bold mt-1">🔑 PIN/Sandi: ${deviceId}</p>
+              <p class="text-[11px] text-emerald-700 font-bold">📱 WA: ${waToko}</p>
+              <p class="text-[11px] text-gray-500">${ids.length} produk</p>
+            </div>
+            <div class="flex flex-col gap-1 ml-2">
+              <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
               <button onclick="hapusTokoAdmin('${deviceId}')" class="bg-gray-50 text-gray-600 border text-[10px] px-3 py-1.5 rounded-lg">Hapus PIN Saja</button>
             </div>
           </div>
@@ -389,36 +399,71 @@
 }
 
 function lihatProdukTokoAdmin(deviceId){
-  activeDeviceRef.child(deviceId).once('value').then(snap=>{
-    const map=snap.val(); if(!map) return;
-    const productIds=Object.keys(map);
-    const filtered=produkData.filter(p=>productIds.includes(p.id));
-    const box=document.getElementById('list-'+deviceId);
-    if(!box) return;
-    box.classList.remove('hidden');
-    if(filtered.length==0){ box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah tidak ada, klik Hapus PIN Saja untuk bersihkan.</p>'; return; }
+  const box = document.getElementById('list-'+deviceId);
+  if(!box) return;
+  if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Memuat...</p>';
+  activeDeviceRef.child(deviceId).once('value').then(async snap=>{
+    const map=snap.val(); if(!map){ box.innerHTML='<p class="text-[11px]">Kosong</p>'; return; }
+    const ids=Object.keys(map);
     box.innerHTML='';
-    filtered.forEach(item=>{
+    for(const pid of ids){
+      const pSnap = await dbRef.child(pid).once('value');
+      const item = pSnap.val(); if(!item) continue;
+      const foto = (item.foto && item.foto[0]) ? item.foto[0] : 'https://via.placeholder.com/100';
       box.innerHTML+=`
-        <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2">
-          <img src="${item.foto[0]}" class="w-12 h-12 rounded object-cover">
-          <div class="flex-1"><p class="font-bold text-[11px]">${bersihkanTeks(item.nama)}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div>
-          <button onclick="hapusProdukAdminFull('${item.id}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg h-fit self-center">Hapus Produk</button>
+        <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center">
+          <img src="${foto}" class="w-12 h-12 rounded object-cover bg-white">
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-[11px] truncate">${bersihkanTeks(item.nama||'')}</p>
+            <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
+            <p class="text-[10px] text-gray-600">WA: ${item.wa||'-'} | ${item.penjual||''}</p>
+          </div>
+          <div class="flex flex-col gap-1">
+            <button onclick="editProdukAdmin('${pid}')" class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
+            <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button>
+          </div>
         </div>`;
-    });
+    }
   });
 }
 
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
-  if(confirm('Hapus PRODUK ini permanen? Produk + PIN akan hilang semua!')){
+  if(confirm('Hapus PRODUK ini permanen? Produk + PIN di device ini akan hilang!')){
     dbRef.child(id).remove().then(()=>{
-      activeDeviceRef.child(deviceId).child(id).remove();
-      alert('Produk terhapus!');
-      lihatProdukTokoAdmin(deviceId);
-      terapkanFilterDanPencarian();
-    }).catch(e=>alert('Gagal hapus, cek Rules Firebase: '+e.message));
+      activeDeviceRef.child(deviceId).child(id).remove().then(()=>{
+        alert('Produk terhapus!');
+        const box=document.getElementById('list-'+deviceId);
+        if(box) box.classList.add('hidden');
+        bukaModalDaftarToko();
+        terapkanFilterDanPencarian();
+      });
+    }).catch(e=>alert('Gagal hapus: '+e.message));
   }
+}
+
+window.editProdukAdmin = async function(pid){
+  const mToko=document.getElementById('modal-daftar-toko');
+  if(mToko) mToko.classList.add('hidden');
+  let item = produkData.find(x=>x.id===pid);
+  if(!item){
+    const s=await dbRef.child(pid).once('value');
+    item=s.val(); if(item) item.id=pid;
+  }
+  if(!item){ alert('Produk tidak ketemu'); return; }
+  document.getElementById('edit-id').value=pid;
+  document.getElementById('edit-nama').value=item.nama||'';
+  document.getElementById('edit-harga').value=item.harga||0;
+  document.getElementById('edit-kategori').value=item.kategori||'kuliner';
+  document.getElementById('edit-status').value=item.status||'tersedia';
+  document.getElementById('edit-penjual').value=item.penjual||'';
+  document.getElementById('edit-lokasi').value=item.lokasi||'';
+  document.getElementById('edit-whatsapp').value=item.wa||'';
+  document.getElementById('edit-catatan').value=item.catatan||'';
+  const mEdit=document.getElementById('modal-edit');
+  if(mEdit){ mEdit.classList.remove('hidden'); mEdit.style.display='flex'; mEdit.style.zIndex='99999'; }
 }
 
     function tutupModalDaftarToko(){ const el=document.getElementById('modal-daftar-toko'); if(el) el.classList.add('hidden'); }
@@ -552,7 +597,39 @@ function hapusProdukAdminFull(id, deviceId){
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
     function muatDataKeFormEdit(id){ const p=produkData.find(x=>x.id===id); if(!p) return; document.getElementById('edit-id').value=p.id; document.getElementById('edit-nama').value=p.nama; document.getElementById('edit-harga').value=p.harga; document.getElementById('edit-kategori').value=p.kategori; document.getElementById('edit-status').value=p.status||'tersedia'; document.getElementById('edit-penjual').value=p.penjual; document.getElementById('edit-lokasi').value=p.lokasi; document.getElementById('edit-whatsapp').value=p.wa; document.getElementById('edit-catatan').value=p.catatan||''; document.getElementById('modal-edit').classList.remove('hidden'); }
     function tutupModalEdit(){ document.getElementById('modal-edit').classList.add('hidden'); }
-    function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
+  function simpanPerubahanProduk(e){ 
+  e.preventDefault(); 
+  const id=document.getElementById('edit-id').value; 
+  const lama=produkData.find(p=>p.id===id) || {};
+  const dataBaru = {
+    nama:bersihkanTeks(document.getElementById('edit-nama').value),
+    harga:parseInt(document.getElementById('edit-harga').value)||0,
+    kategori:document.getElementById('edit-kategori').value,
+    status:document.getElementById('edit-status').value,
+    penjual:bersihkanTeks(document.getElementById('edit-penjual').value),
+    lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value),
+    wa:document.getElementById('edit-whatsapp').value.trim(),
+    catatan:bersihkanTeks(document.getElementById('edit-catatan').value),
+    foto:lama.foto||['https://via.placeholder.com/300?text=Produk+RT36'],
+    timestamp:lama.timestamp||Date.now(),
+    ownerId: lama.ownerId || null
+  };
+  dbRef.child(id).update(dataBaru).then(()=>{
+    // update juga WA di active_device_pins biar sinkron
+    activeDeviceRef.once('value').then(snap=>{
+      const all=snap.val();
+      if(all){
+        for(let dev in all){
+          if(all[dev] && all[dev][id]){
+            activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual});
+          }
+        }
+      }
+    });
+    tutupModalEdit(); 
+    alert('Berhasil diperbarui! WA & data penjual sudah update bosku.');
+  }).catch(err=>alert('Gagal: '+err.message));
+}
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
     function hapusProdukAdmin(id){ 
   if(!isAdmin){ alert('Harus mode admin!'); return; }
