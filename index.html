@@ -551,11 +551,13 @@ function hapusTokoAdmin(deviceId){
     function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
     function hapusProdukAdmin(id){ 
-  if(isAdmin && confirm("Hapus paksa?")){
+  if(!isAdmin){ alert('Harus mode admin!'); return; }
+  if(confirm("Hapus paksa produk ini?")){
+    // 1. Hapus di produk_pasar
     dbRef.child(id).remove().then(()=>{
-      // admin hapus paksa: bersihkan juga semua pin di active_device_pins biar tidak jadi Tanpa Nama
+      // 2. Bersihkan juga di semua device biar tidak jadi "Tanpa Nama"
       activeDeviceRef.once('value').then(snap=>{
-        let all=snap.val();
+        const all = snap.val();
         if(all){
           for(let dev in all){
             if(all[dev] && all[dev][id]){
@@ -564,13 +566,11 @@ function hapusTokoAdmin(deviceId){
           }
         }
       });
-      alert('Produk admin dihapus!');
+      alert('Produk dihapus admin!');
       terapkanFilterDanPencarian();
-      if(typeof muatDaftarTokoTerdaftar === 'function') muatDaftarTokoTerdaftar();
-    });
+    }).catch(e=>alert('Gagal hapus, cek Rules Firebase: '+e.message));
   }
 }
-
     let currentZoomPhotos=[], currentZoomIndex=0;
     function bukaDetailProduk(id){ 
       const item=produkData.find(p=>p.id===id); if(!item) return; 
