@@ -796,9 +796,15 @@ function hapusTokoAdmin(deviceId){
         inisialisasiChatLive();
         bukaPanelChatLangsung();
       }
-   if(pinPrev!==""){
+  if(pinPrev!==""){
   try{
-        activeDeviceRef.child(deviceId).once('value').then((snap)=>{
+    let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
+    if(!deviceId){
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+      localStorage.setItem('my_device_id_pasar', deviceId);
+      localStorage.setItem('my_device_uid', deviceId);
+    }
+    activeDeviceRef.child(deviceId).once('value').then((snap)=>{
       let allData=snap.val();
       let found=false; let namaToko='';
       if(allData){
@@ -813,15 +819,12 @@ function hapusTokoAdmin(deviceId){
             if(!namaToko && d.ownerName) namaToko = d.ownerName;
             if(!namaToko && d.toko) namaToko = d.toko;
             break;
+          }
+        }
       }
-    }
-  });
-}
-}
-if(found){
-  loginSukses(pinPrev, namaToko);
+      if(found){
+        loginSukses(pinPrev, namaToko);
       } else {
-        // fallback data lama di HP ini
         let savedPin=''; let savedNama='';
         try{
           savedPin=localStorage.getItem('chat_pin_rt36')||'';
@@ -830,7 +833,6 @@ if(found){
         if(pinPrev===savedPin && savedNama){
           loginSukses(pinPrev, savedNama);
         } else {
-          // cek juga apakah produk dengan pin lama masih ada di memori
           alert('❌ PIN tidak ditemukan! Coba daftar baru atau cek di HP yang dulu buat daftar bosku.');
         }
       }
