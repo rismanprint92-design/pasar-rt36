@@ -236,16 +236,21 @@
   <style>.bubble-wa { max-width: 80%; padding: 6px 8px 5px 8px; border-radius: 8px; box-shadow: 0 1px .5px rgba(0,0,0,.13); font-size: 14px; word-break: break-word; overflow-wrap: break-word; } .bubble-me { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 0; } .bubble-other { background: white; align-self: flex-start; border-top-left-radius: 0; } .nama-atas { font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #075E54; }</style>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384VvY",
-      authDomain: "pasar-rt36.firebaseapp.com",
-      databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "pasar-rt36",
-      storageBucket: "pasar-rt36.firebasestorage.app",
-      messagingSenderId: "217440554731",
-      appId: "1:217440554731:web:876717f8204cf40deeb8ae",
-      measurementId: "G-G5HXM56NWX"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
+    authDomain: "pasar-rt36.firebaseapp.com",
+    databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pasar-rt36",
+    storageBucket: "pasar-rt36.firebasestorage.app",
+    messagingSenderId: "217440554731",
+    appId: "1:217440554731:web:5c40a642385f5586eeb8ae",
+    measurementId: "G-KX2C8L1NC8"
+  };
+  if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+  }
+  const auth = firebase.auth();
+  const database = firebase.database();
        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
 const database = firebase.database();
