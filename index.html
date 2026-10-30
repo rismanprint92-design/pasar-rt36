@@ -430,8 +430,19 @@ function hapusTokoAdmin(deviceId){
   }
 }
     function tutupModalDaftarToko(){ document.getElementById('modal-daftar-toko').classList.add('hidden'); }
-    function lihatProdukTokoAdmin(pin){ tutupModalDaftarToko(); document.getElementById('input-pin-toko').value=pin; document.getElementById('input-wa-toko').value=''; bukaModalTokoSaya(); }
-    function hapusTokoAdmin(pin){ if(confirm('Hapus toko PIN '+pin+' dari daftar? Produk toko ini tidak terhapus, cuma data toko saja.')){ activeDeviceRef.child(pin).remove().then(()=>{ alert('Toko dihapus dari daftar!'); bukaModalDaftarToko(); }); } }
+    function tutupModalDaftarToko(){ document.getElementById('modal-daftar-toko').classList.add('hidden'); }
+function lihatProdukTokoAdmin(deviceId){
+  activeDeviceRef.child(deviceId).once('value', snap=>{
+    let map=snap.val(); if(!map) return alert('Toko kosong');
+    document.getElementById('modal-daftar-toko').classList.add('hidden');
+  });
+}
+function hapusTokoAdmin(deviceId){
+  if(!isAdmin) return;
+  if(confirm('Hapus data toko '+deviceId.substring(0,8)+'?')){
+    activeDeviceRef.child(deviceId).remove().then(()=>{ alert('Dihapus!'); bukaModalDaftarToko(); });
+  }
+}
     function bukaModalTokoSaya(){ tutupModalPilihanJual(); document.getElementById('modal-toko-saya').classList.remove('hidden'); document.getElementById('modal-toko-saya').classList.add('flex'); document.getElementById('daftar-produk-toko').innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
     function tutupModalTokoSaya(){ document.getElementById('modal-toko-saya').classList.add('hidden'); document.getElementById('modal-toko-saya').classList.remove('flex'); }
     async function cariTokoSaya(){
