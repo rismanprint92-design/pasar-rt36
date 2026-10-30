@@ -748,83 +748,44 @@ async function simpanKeFirebase(arr, pinInput){
     function gantiSuara(idx){ suaraIndex=idx; try{ localStorage.setItem('suara_pilihan_rt36',idx); }catch(e){} let a=document.getElementById('notifSound'); if(idx!=='off'&&a&&suaraList[idx]){ a.src=suaraList[idx].url; a.load(); a.play().catch(()=>{}); } [0,1,2,3,4,5].forEach(i=>{ let c=document.querySelector(`#suara${i} .check`); if(c) c.classList.toggle('hidden',i!==idx); }); let co=document.querySelector(`#suaraOff .check`); if(co) co.classList.toggle('hidden',idx!=='off'); tutupSemuaMenuSub(); }
     function cekVerifikasiChat(){ let pin=null, nama=null; try{ pin=localStorage.getItem('chat_pin_rt36'); nama=localStorage.getItem('verified_nama_rt36'); }catch(e){} let m=document.getElementById('modalVerifWA'); if(!pin||!nama){ if(m) m.classList.remove('hidden'); let t=document.getElementById('teksPesanWarga'); if(t) t.blur(); return false; } if(m) m.classList.add('hidden'); return true; }
     function tutupModalLoginPin(){ let m=document.getElementById('modalVerifWA'); if(m) m.classList.add('hidden'); }
-       function prosesLoginAtauDaftarWarga(){ 
-      let pinPrev=document.getElementById('inputPinSebelumnya').value.trim(); 
-      let namaBaru=document.getElementById('inputNamaPin').value.trim(); 
-      let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim(); 
-      function loginSukses(pin, nama){
-        try{
-          localStorage.setItem('chat_pin_rt36',pin);
-          localStorage.setItem('verified_nama_rt36',nama);
-          localStorage.setItem('my_chat_id','user_pin_'+pin);
-        }catch(e){}
-        tutupModalLoginPin();
-        inisialisasiChatLive();
-        bukaPanelChatLangsung();
-      }
-      if(pinPrev!==""){
-        try{
-          let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
-          if(!deviceId){
-            deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
-            localStorage.setItem('my_device_id_pasar', deviceId);
-            localStorage.setItem('my_device_uid', deviceId);
-          }
-          activeDeviceRef.child(deviceId).once('value').then((snap)=>{
-            let allData=snap.val();
-            let found=false; let namaToko='';
-            if(allData){
-              for(let prodId in allData){
-                let d = allData[prodId];
-                if(d){
-                  found=true;
-                  try{
-                    let p = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id==prodId) : null);
-                    if(p) namaToko = p.namaToko || p.nama || '';
-                  }catch(e){}
-                  if(!namaToko && d.ownerName) namaToko = d.ownerName;
-                  if(!namaToko && d.toko) namaToko = d.toko;
-                  break;
-                }
-              }
-            }
-            if(found){
-              loginSukses(pinPrev, namaToko);
-            } else {
-              let savedPin=''; let savedNama='';
-              try{
-                savedPin=localStorage.getItem('chat_pin_rt36')||'';
-                savedNama=localStorage.getItem('verified_nama_rt36')||'';
-              }catch(e){}
-              if(pinPrev===savedPin && savedNama){
-                loginSukses(pinPrev, savedNama);
-              } else {
-                alert('❌ PIN tidak ditemukan! Coba daftar baru atau cek di HP yang dulu buat daftar bosku.');
-              }
-            }
-          }).catch(e=>{
-            alert('Gagal baca toko, cek Rules Firebase bosku! '+e.message);
-          });
-        }catch(e){
-          alert('Gagal hash PIN: '+e.message);
-        }
-        return;
-      }
-      // DAFTAR BARU
-      if(namaBaru && pinBaru){
-        if(pinBaru.length<4){ alert('PIN minimal 4 digit bosku!'); return; }
-        try{
-          localStorage.setItem('chat_pin_rt36',pinBaru);
-          localStorage.setItem('verified_nama_rt36',namaBaru);
-          localStorage.setItem('my_chat_id','user_pin_'+pinBaru);
-        }catch(e){}
-        tutupModalLoginPin();
-        inisialisasiChatLive();
-        bukaPanelChatLangsung();
-      } else {
-        alert('Isi PIN lama ATAU isi Nama + PIN Baru bosku!');
-      }
+  function prosesLoginAtauDaftarWarga(){ 
+  let pinPrev=document.getElementById('inputPinSebelumnya').value.trim(); 
+  let namaBaru=document.getElementById('inputNamaPin').value.trim(); 
+  let pinBaru=document.getElementById('inputPinDaftarBaru').value.trim(); 
+  function loginSukses(pin, nama){
+    try{
+      localStorage.setItem('chat_pin_rt36',pin);
+      localStorage.setItem('verified_nama_rt36',nama);
+      localStorage.setItem('my_chat_id','user_pin_'+pin);
+    }catch(e){}
+    tutupModalLoginPin(); inisialisasiChatLive(); bukaPanelChatLangsung();
+  }
+  if(pinPrev!==""){
+    let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
+    if(!deviceId){
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+      localStorage.setItem('my_device_id_pasar', deviceId);
+      localStorage.setItem('my_device_uid', deviceId);
     }
+    activeDeviceRef.child(deviceId).once('value').then((snap)=>{
+      let allData=snap.val(); let found=false; let namaToko='';
+      if(allData){
+        for(let prodId in allData){ let d=allData[prodId]; if(d){ found=true; namaToko=d.ownerName||''; break; } }
+      }
+      if(found){ loginSukses(pinPrev, namaToko); }
+      else {
+        let savedPin=localStorage.getItem('chat_pin_rt36')||''; let savedNama=localStorage.getItem('verified_nama_rt36')||'';
+        if(pinPrev===savedPin && savedNama) loginSukses(pinPrev, savedNama);
+        else alert('❌ PIN tidak ditemukan! Daftar baru bosku.');
+      }
+    }).catch(e=>{ alert('Gagal baca: '+e.message); });
+    return;
+  }
+  if(namaBaru && pinBaru){
+    if(pinBaru.length<4){ alert('PIN minimal 4!'); return; }
+    loginSukses(pinBaru, namaBaru);
+  } else { alert('Isi PIN lama ATAU Nama + PIN Baru!'); }
+}        
     function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
     document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
     function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
