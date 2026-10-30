@@ -360,25 +360,70 @@ function kirimPesanKeAdminRT(){
     function tutupModalPilihanJual(){ document.getElementById('modal-pilihan-jual').classList.add('hidden'); document.getElementById('modal-pilihan-jual').classList.remove('flex'); }
     function pilihJualBaru(){ tutupModalPilihanJual(); document.getElementById('modal-jual').classList.remove('hidden'); }
     function bukaModalDaftarToko(){
-      if(!isAdmin){ alert('Hanya Admin yang bisa akses!'); return; }
-      document.getElementById('modal-daftar-toko').classList.remove('hidden');
-      const container=document.getElementById('daftar-toko-admin');
-      container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat data toko...</p>';
-      activeDeviceRef.once('value', (snap)=>{
-        const data=snap.val();
-        if(!data){ container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Belum ada toko terdaftar</p>'; return; }
-        container.innerHTML='';
-        Object.keys(data).forEach(pin=>{
-          const toko=data[pin];
-          const jumlahProduk=produkData.filter(p=>p.pinPenjual===pin).length;
-          const html=`<div class="bg-white border rounded-xl p-3 flex justify-between items-center shadow-sm">
-            <div class="flex-1 min-w-0"><p class="font-bold text-[13px] truncate">🏪 ${bersihkanTeks(toko.nama||'Tanpa Nama')}</p><p class="text-[11px] text-gray-500">PIN: ${pin} • ${toko.blok||''} • ${toko.wa||''}</p><p class="text-[10px] text-emerald-600 font-bold mt-0.5">${jumlahProduk} produk terdaftar</p></div>
-            <div class="flex flex-col gap-1 ml-2"><button onclick="lihatProdukTokoAdmin('${pin}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat</button><button onclick="hapusTokoAdmin('${pin}')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button></div>
-          </div>`;
-          container.innerHTML+=html;
-        });
-      });
+  if(!isAdmin){ alert('Hanya Admin yang bisa akses!'); return; }
+  document.getElementById('modal-daftar-toko').classList.remove('hidden');
+  const container=document.getElementById('daftar-toko-admin');
+  container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat data toko...</p>';
+  activeDeviceRef.once('value', (snap)=>{
+    const data=snap.val();
+    if(!data){ container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Belum ada toko terdaftar</p>'; return; }
+    container.innerHTML='';
+    
+    // Struktur BARU: deviceId -> productId -> {pinHash, wa, ownerName, blok}
+    Object.keys(data).forEach(deviceId=>{
+      const produkMap = data[deviceId];
+      if(!produkMap) return;
+      const ids = Object.keys(produkMap);
+      if(ids.length===0) return;
+      
+      // Ambil data toko dari produk pertama
+      const first = produkMap[ids[0]];
+      const namaToko = first.ownerName || first.nama || 'Tanpa Nama';
+      const blok = first.blok || first.lokasi || '';
+      const wa = first.wa || '';
+      const pinHashPendek = first.pinHash ? first.pinHash.substring(0,6) + '...' : '-';
+      const jumlahProduk = ids.length;
+
+      const html=`<div class="bg-white border rounded-xl p-3 flex justify-between items-center shadow-sm">
+        <div class="flex-1 min-w-0"><p class="font-bold text-[13px] truncate">🏪 ${bersihkanTeks(namaToko)}</p><p class="text-[11px] text-gray-500">ID: ${deviceId.substring(0,8)} • ${blok} • ${wa}</p><p class="text-[10px] text-emerald-600 font-bold mt-0.5">${jumlahProduk} produk terdaftar • Hash: ${pinHashPendek}</p></div>
+        <div class="flex flex-col gap-1 ml-2"><button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat</button><button onclick="hapusTokoAdmin('${deviceId}')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button></div>
+      </div>`;
+      container.innerHTML+=html;
+    });
+    
+    if(container.innerHTML===''){
+      container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Belum ada toko terdaftar (data lama sudah bersih)</p>';
     }
+  });
+}
+
+// UPDATE juga 2 fungsi admin biar nyambung pakai deviceId
+function lihatProdukTokoAdmin(deviceId){
+  activeDeviceRef.child(deviceId).once('value', snap=>{
+    let map=snap.val();
+    if(!map) return alert('Toko tidak ada produk');
+    let productIds = Object.keys(map);
+    // filter produkData
+    let filtered = produkData.filter(p=>productIds.includes(p.id));
+    if(filtered.length===0) alert('Produk sudah dihapus, tapi data toko masih ada. Klik hapus untuk bersihkan.');
+    else {
+      // tampilkan pakai fungsi filter yang sudah ada
+      window._filterTokoAdmin = productIds;
+      terapkanFilterDanPencarian();
+      document.getElementById('modal-daftar-toko').classList.add('hidden');
+    }
+  });
+}
+
+function hapusTokoAdmin(deviceId){
+  if(!isAdmin) return;
+  if(confirm('Hapus semua data toko ini (deviceId: '+deviceId.substring(0,8)+')? Produk tidak ikut terhapus, cuma data pin toko.')){
+    activeDeviceRef.child(deviceId).remove().then(()=>{
+      alert('Data toko dihapus!');
+      bukaModalDaftarToko();
+    });
+  }
+}
     function tutupModalDaftarToko(){ document.getElementById('modal-daftar-toko').classList.add('hidden'); }
     function lihatProdukTokoAdmin(pin){ tutupModalDaftarToko(); document.getElementById('input-pin-toko').value=pin; document.getElementById('input-wa-toko').value=''; bukaModalTokoSaya(); }
     function hapusTokoAdmin(pin){ if(confirm('Hapus toko PIN '+pin+' dari daftar? Produk toko ini tidak terhapus, cuma data toko saja.')){ activeDeviceRef.child(pin).remove().then(()=>{ alert('Toko dihapus dari daftar!'); bukaModalDaftarToko(); }); } }
@@ -411,25 +456,97 @@ function kirimPesanKeAdminRT(){
         });
       });
     }
-    function hapusProdukDariToko(id){ if(confirm('Yakin hapus produk ini dari toko Anda?')){ dbRef.child(id).remove().then(()=>{ alert('Produk berhasil dihapus!'); cariTokoSaya(); terapkanFilterDanPencarian(); }); } }
+   function hapusProdukDariToko(id){ 
+  if(confirm('Yakin hapus produk ini dari toko Anda?')){
+    let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
+    dbRef.child(id).remove().then(()=>{
+      // hapus juga di active_device_pins biar tidak jadi sampah Tanpa Nama
+      if(deviceId){
+        activeDeviceRef.child(deviceId).child(id).remove().catch(e=>console.log("Info pin hapus:", e.message));
+      } else {
+        // kalau deviceId tidak ketemu, coba cari dan hapus di semua device (untuk data lama)
+        activeDeviceRef.once('value').then(snap=>{
+          let all=snap.val();
+          if(all){
+            for(let dev in all){
+              if(all[dev] && all[dev][id]){
+                activeDeviceRef.child(dev).child(id).remove();
+              }
+            }
+          }
+        });
+      }
+      alert('Produk berhasil dihapus!');
+      cariTokoSaya(); 
+      terapkanFilterDanPencarian();
+    }).catch(e=>{
+      alert('Gagal hapus: '+e.message);
+    });
+  } 
+}
     function tutupModalJual(){ document.getElementById('modal-jual').classList.add('hidden'); }
-    function hashPin(pin){ try{ return btoa("rt36_"+pin).replace(/=/g,''); }catch(e){ return "h_"+pin; } }
-    function cekPinTokoUnik(pin){ return new Promise((resolve)=>{
-      activeDeviceRef.child(pin).once('value').then(snap=>{
-        let data=snap.val();
-        if(!data){
+    async function hashPin(pin){
+  try{
+    const msgUint8 = new TextEncoder().encode("rt36_"+pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+    return hashHex;
+  }catch(e){
+    return btoa("rt36_"+pin).replace(/=/g,'');
+  }
+}
+   async function cekPinTokoUnik(pin){ 
+  return new Promise(async (resolve)=>{
+    try{
+      let hashed = await hashPin(pin);
+      // cek ke seluruh active_device_pins apakah hash ini sudah dipakai
+      activeDeviceRef.once('value').then(snap=>{
+        let allData=snap.val();
+        let sudahAda = null;
+        if(allData){
+          for(let devId in allData){
+            let produk2 = allData[devId];
+            if(!produk2) continue;
+            for(let prodId in produk2){
+              let d = produk2[prodId];
+              if(d && d.pinHash && d.pinHash===hashed){
+                sudahAda = d;
+                break;
+              }
+            }
+            if(sudahAda) break;
+          }
+        }
+        
+        if(!sudahAda){
           resolve({boleh:true});
         } else {
           let waInput = document.getElementById('whatsapp').value.trim().replace(/\D/g,'');
-          let waTerdaftar = (data.wa||'').replace(/\D/g,'');
-          if(waTerdaftar===waInput){
+          let waTerdaftar = (sudahAda.wa||'').replace(/\D/g,'');
+          // kalau WA sama, boleh pakai lagi (toko lama)
+          // kalau data lama tidak simpan WA, cek di produkData
+          if(!waTerdaftar){
+            try{
+              let p = produkData.find(x=>x.id===Object.keys(allData).length);
+              if(p && p.wa) waTerdaftar = (p.wa+'').replace(/\D/g,'');
+            }catch(e){}
+          }
+          if(waTerdaftar && waTerdaftar===waInput){
+            resolve({boleh:true, tokoLama:true});
+          } else if(!waTerdaftar){
+            // kalau data lama tidak ada WA, izinkan (untuk migrasi)
             resolve({boleh:true, tokoLama:true});
           } else {
-            resolve({boleh:false, data:data});
+            resolve({boleh:false, data:sudahAda});
           }
         }
       }).catch(()=>resolve({boleh:true}));
-    }); }
+    }catch(e){
+      resolve({boleh:true});
+    }
+  }); 
+}
       async function tambahProduk(e){
       e.preventDefault();
       // Tunggu auth siap maksimal 3 detik bosku
@@ -467,40 +584,56 @@ function kirimPesanKeAdminRT(){
         Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
       } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
     }
-        function simpanKeFirebase(arr, pinInput){
-      let pin = pinInput || document.getElementById('pin-penjual').value;
-      let b={
-        nama:bersihkanTeks(document.getElementById('nama').value),
-        harga:parseInt(document.getElementById('harga').value)||0,
-        kategori:document.getElementById('kategori').value,
-        status:document.getElementById('status').value,
-        penjual:bersihkanTeks(document.getElementById('penjual').value),
-        lokasi:bersihkanTeks(document.getElementById('lokasi').value),
-        wa:document.getElementById('whatsapp').value.trim(),
-        pinHash: hashPin(pin),
-        ownerId: currentUser ? currentUser.uid : (localStorage.getItem('my_device_uid')||'anon'),
-        catatan:bersihkanTeks(document.getElementById('catatan').value),
-        foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
-        timestamp:Date.now()
-      };
-      console.log("Menyimpan produk...", b);
-      // Simpan dulu produknya, baru simpan pin tokonya (biar kalau pin gagal, produk tetap kesimpan & share keluar)
-      dbRef.push(b).then((res)=>{
-        console.log("Sukses ID:", res.key);
-        tutupModalJual();
-        document.getElementById('form-tambah').reset();
-        tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
-      }).catch(err=>{
-        console.error("Gagal push produk:", err);
-        alert("Gagal simpan: " + err.message + "\nCoba refresh & login lagi bosku!");
-      });
-      // Simpan data toko terpisah, tidak diblokir kalau gagal
-      try{
-        let deviceId = localStorage.getItem('my_device_uid') || ('dev_'+Math.random().toString(36).substring(2,10));
-        localStorage.setItem('my_device_uid', deviceId);
-        activeDeviceRef.child(pin).set({ nama:b.penjual, wa:b.wa, blok:b.lokasi, deviceId: deviceId, ownerId: b.ownerId, timestamp:Date.now() }).catch(e=>console.log("Info toko gagal simpan, tapi produk tetap jalan:", e.message));
-      }catch(e){}
+       async function simpanKeFirebase(arr, pinInput){
+  let pin = pinInput || document.getElementById('pin-penjual').value;
+  try{
+    let hashed = await hashPin(pin);
+    let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
+    if(!deviceId){
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2,9);
+      localStorage.setItem('my_device_id_pasar', deviceId);
+      localStorage.setItem('my_device_uid', deviceId);
     }
+    let b={
+      nama:bersihkanTeks(document.getElementById('nama').value),
+      harga:parseInt(document.getElementById('harga').value)||0,
+      kategori:document.getElementById('kategori').value,
+      status:document.getElementById('status').value,
+      penjual:bersihkanTeks(document.getElementById('penjual').value),
+      lokasi:bersihkanTeks(document.getElementById('lokasi').value),
+      wa:document.getElementById('whatsapp').value.trim(),
+      // TIDAK simpan pinHash di produk_pasar lagi (biar aman)
+      ownerId: currentUser ? currentUser.uid : deviceId,
+      catatan:bersihkanTeks(document.getElementById('catatan').value),
+      foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
+      timestamp:Date.now()
+    };
+    console.log("Menyimpan produk...", b);
+    
+    dbRef.push(b).then((res)=>{
+      console.log("Sukses ID:", res.key);
+      // Simpan pinHash di active_device_pins dengan struktur BARU yang aman
+      activeDeviceRef.child(deviceId).child(res.key).set({ 
+        pinHash: hashed, 
+        wa: b.wa, 
+        ownerName: b.penjual,
+        blok: b.lokasi, 
+        deviceId: deviceId, 
+        ownerId: b.ownerId, 
+        timestamp: Date.now() 
+      }).catch(e=>console.log("Info toko gagal simpan, tapi produk tetap jalan:", e.message));
+      
+      tutupModalJual();
+      document.getElementById('form-tambah').reset();
+      tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
+    }).catch(err=>{
+      console.error("Gagal push produk:", err);
+      alert("Gagal simpan: " + err.message + "\nCoba refresh & login lagi bosku!");
+    });
+  }catch(e){
+    alert("Gagal hash PIN: "+e.message);
+  }
+}
     function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
@@ -508,7 +641,26 @@ function kirimPesanKeAdminRT(){
     function tutupModalEdit(){ document.getElementById('modal-edit').classList.add('hidden'); }
     function simpanPerubahanProduk(e){ e.preventDefault(); const id=document.getElementById('edit-id').value; const lama=produkData.find(p=>p.id===id); dbRef.child(id).set({ nama:bersihkanTeks(document.getElementById('edit-nama').value), harga:parseInt(document.getElementById('edit-harga').value), kategori:document.getElementById('edit-kategori').value, status:document.getElementById('edit-status').value, penjual:bersihkanTeks(document.getElementById('edit-penjual').value), lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value), wa:document.getElementById('edit-whatsapp').value, catatan:bersihkanTeks(document.getElementById('edit-catatan').value), foto:lama.foto, pinPenjual:lama.pinPenjual||"1234", timestamp:lama.timestamp||Date.now() }).then(()=>{ tutupModalEdit(); alert('Berhasil diperbarui!'); }); }
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
-    function hapusProdukAdmin(id){ if(isAdmin&&confirm("Hapus paksa?")) dbRef.child(id).remove(); }
+    function hapusProdukAdmin(id){ 
+  if(isAdmin && confirm("Hapus paksa?")){
+    dbRef.child(id).remove().then(()=>{
+      // admin hapus paksa: bersihkan juga semua pin di active_device_pins biar tidak jadi Tanpa Nama
+      activeDeviceRef.once('value').then(snap=>{
+        let all=snap.val();
+        if(all){
+          for(let dev in all){
+            if(all[dev] && all[dev][id]){
+              activeDeviceRef.child(dev).child(id).remove();
+            }
+          }
+        }
+      });
+      alert('Produk admin dihapus!');
+      terapkanFilterDanPencarian();
+      if(typeof muatDaftarTokoTerdaftar === 'function') muatDaftarTokoTerdaftar();
+    });
+  }
+}
 
     let currentZoomPhotos=[], currentZoomIndex=0;
     function bukaDetailProduk(id){ 
@@ -644,36 +796,56 @@ function kirimPesanKeAdminRT(){
         inisialisasiChatLive();
         bukaPanelChatLangsung();
       }
-      if(pinPrev!==""){
-        activeDeviceRef.child(pinPrev).once('value').then(snap=>{
-          let dataToko=snap.val();
-          if(dataToko && dataToko.nama){
-            loginSukses(pinPrev, dataToko.nama);
-          } else {
-            let savedPin=''; let savedNama='';
-            try{
-              savedPin=localStorage.getItem('chat_pin_rt36');
-              savedNama=localStorage.getItem('verified_nama_rt36');
-            }catch(e){}
-            if(pinPrev===savedPin && savedNama){
-              loginSukses(pinPrev, savedNama);
-            } else {
-              alert('❌ PIN tidak ditemukan!');
-            }
-          }
-        }).catch(e=>{
-          alert('Gagal baca toko, cek Rules Auth Anonymous sudah aktif belum bosku! '+e.message);
-        });
-        return;
-      }
-      if(namaBaru!==""||pinBaru!==""){
-        if(namaBaru.length<2){ alert('⚠️ Nama minimal 2 karakter!'); return; }
-        if(pinBaru.length<3){ alert('⚠️ PIN minimal 3 digit!'); return; }
-        loginSukses(pinBaru, namaBaru);
-        return;
-      }
-      alert('⚠️ Masukkan PIN toko / PIN chat Anda bosku!');
+    if(pinPrev!==""){
+  try{
+    let hashedPrev = await hashPin(pinPrev);
+    let deviceId = localStorage.getItem('my_device_id_pasar');
+    if(!deviceId){
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+      localStorage.setItem('my_device_id_pasar', deviceId);
     }
+    activeDeviceRef.child(deviceId).once('value').then((snap)=>{
+      let allData=snap.val();
+      let found=false; let namaToko='';
+      if(allData){
+        for(let prodId in allData){
+          let d=allData[prodId];
+          if(d && d.pinHash && d.pinHash===hashedPrev){
+            found=true;
+            // cari nama toko dari produk yang masih ada
+            try{
+              let p = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id===prodId) : null);
+              if(p) namaToko = p.namaToko || p.nama || '';
+            }catch(e){}
+            if(!namaToko && d.ownerName) namaToko = d.ownerName;
+            break;
+          }
+        }
+      }
+      if(found){
+        loginSukses(pinPrev, namaToko);
+      } else {
+        // fallback data lama di HP ini
+        let savedPin=''; let savedNama='';
+        try{
+          savedPin=localStorage.getItem('chat_pin_rt36')||'';
+          savedNama=localStorage.getItem('verified_nama_rt36')||'';
+        }catch(e){}
+        if(pinPrev===savedPin && savedNama){
+          loginSukses(pinPrev, savedNama);
+        } else {
+          // cek juga apakah produk dengan pin lama masih ada di memori
+          alert('❌ PIN tidak ditemukan! Coba daftar baru atau cek di HP yang dulu buat daftar bosku.');
+        }
+      }
+    }).catch(e=>{
+      alert('Gagal baca toko, cek Rules Firebase bosku! '+e.message);
+    });
+  }catch(e){
+    alert('Gagal hash PIN: '+e.message);
+  }
+  return;
+}
     function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
     document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
     function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
