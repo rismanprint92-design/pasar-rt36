@@ -396,16 +396,15 @@
 // INI YANG BIKIN TOMBOL LIHAT PRODUK PASTI JALAN BOSKU
 window.lihatProdukTokoAdmin = function(deviceId){
   const box=document.getElementById('list-'+deviceId);
-  if(!box){ alert('Box tidak ketemu: list-'+deviceId); return; }
+  if(!box) return;
 
-  // Toggle buka tutup
   if(!box.classList.contains('hidden')){
     box.classList.add('hidden');
     return;
   }
 
   box.classList.remove('hidden');
-  box.innerHTML='<p class="text-[11px] text-gray-400">Memuat produk toko ini...</p>';
+  box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Memuat produk...</p>';
 
   activeDeviceRef.child(deviceId).once('value').then(async (snap)=>{
     const map=snap.val();
@@ -413,9 +412,8 @@ window.lihatProdukTokoAdmin = function(deviceId){
     const productIds=Object.keys(map);
     
     box.innerHTML='';
-    let ada = 0;
+    let ada=0;
     
-    // Ambil langsung dari Firebase, tidak pakai produkData biar pasti muncul
     for(const pid of productIds){
       try{
         const pSnap = await dbRef.child(pid).once('value');
@@ -425,24 +423,53 @@ window.lihatProdukTokoAdmin = function(deviceId){
         const foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
         box.innerHTML+=`
           <div class="flex gap-2 bg-white border rounded-lg p-2 mb-2 items-center">
-            <img src="${foto}" class="w-12 h-12 rounded object-cover">
-            <div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama||'Tanpa Nama')}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p></div>
-            <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus Produk</button>
+            <img src="${foto}" class="w-12 h-12 rounded object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-[12px] truncate">${bersihkanTeks(item.nama||'Tanpa Nama')}</p>
+              <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
+            </div>
+            <div class="flex flex-col gap-1">
+              <button onclick="editProdukAdmin('${pid}')" class="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
+              <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button>
+            </div>
           </div>`;
       }catch(e){ console.log(e); }
     }
     
     if(ada===0){
-      box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah terhapus di pasar, klik Hapus PIN Saja untuk bersihkan sisa PIN.</p>';
+      box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah terhapus, klik Hapus PIN Saja</p>';
     }
   });
 }
 
-window.hapusTokoAdmin = function(deviceId){
-  if(!isAdmin) return;
-  if(confirm('Hapus PIN toko ini saja? Produk tetap ada.')){
-    activeDeviceRef.child(deviceId).remove().then(()=>{ alert('PIN toko dihapus'); bukaModalDaftarToko(); });
-  }
+// FUNGSI BARU UNTUK EDIT DARI ADMIN BOSKU
+window.editProdukAdmin = async function(productId){
+  // Tutup modal daftar toko dulu
+  const modalToko=document.getElementById('modal-daftar-toko');
+  if(modalToko){ modalToko.classList.add('hidden'); modalToko.style.display='none'; }
+  
+  setTimeout(async()=>{
+    let item = produkData.find(x=>x.id===productId);
+    if(!item){
+      const snap=await dbRef.child(productId).once('value');
+      item=snap.val();
+      if(item) item.id=productId;
+    }
+    if(!item){ alert('Produk tidak ditemukan'); return; }
+    
+    document.getElementById('edit-id').value=productId;
+    document.getElementById('edit-nama').value=item.nama||'';
+    document.getElementById('edit-harga').value=item.harga||0;
+    document.getElementById('edit-kategori').value=item.kategori||'kuliner';
+    document.getElementById('edit-status').value=item.status||'tersedia';
+    document.getElementById('edit-penjual').value=item.penjual||'';
+    document.getElementById('edit-lokasi').value=item.lokasi||'';
+    document.getElementById('edit-whatsapp').value=item.wa||'';
+    document.getElementById('edit-catatan').value=item.catatan||'';
+    
+    const modalEdit=document.getElementById('modal-edit');
+    if(modalEdit){ modalEdit.classList.remove('hidden'); modalEdit.style.display='flex'; modalEdit.style.zIndex='99999'; }
+  },200);
 }
     
 function hapusProdukAdminFull(id, deviceId){
