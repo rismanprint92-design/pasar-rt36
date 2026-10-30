@@ -796,34 +796,30 @@ function hapusTokoAdmin(deviceId){
         inisialisasiChatLive();
         bukaPanelChatLangsung();
       }
-    if(pinPrev!==""){
+   if(pinPrev!==""){
   try{
-    let hashedPrev = await hashPin(pinPrev);
-    let deviceId = localStorage.getItem('my_device_id_pasar');
-    if(!deviceId){
-      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
-      localStorage.setItem('my_device_id_pasar', deviceId);
-    }
-    activeDeviceRef.child(deviceId).once('value').then((snap)=>{
+        activeDeviceRef.child(deviceId).once('value').then((snap)=>{
       let allData=snap.val();
       let found=false; let namaToko='';
       if(allData){
         for(let prodId in allData){
-          let d=allData[prodId];
-          if(d && d.pinHash && d.pinHash===hashedPrev){
+          let d = allData[prodId];
+          if(d){
             found=true;
-            // cari nama toko dari produk yang masih ada
             try{
-              let p = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id===prodId) : null);
+              let p = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id==prodId) : null);
               if(p) namaToko = p.namaToko || p.nama || '';
             }catch(e){}
             if(!namaToko && d.ownerName) namaToko = d.ownerName;
+            if(!namaToko && d.toko) namaToko = d.toko;
             break;
-          }
-        }
       }
-      if(found){
-        loginSukses(pinPrev, namaToko);
+    }
+  });
+}
+}
+if(found){
+  loginSukses(pinPrev, namaToko);
       } else {
         // fallback data lama di HP ini
         let savedPin=''; let savedNama='';
