@@ -393,39 +393,71 @@
   });
 }
 
+// INI YANG BIKIN TOMBOL LIHAT PRODUK PASTI JALAN BOSKU
 window.lihatProdukTokoAdmin = function(deviceId){
   const box=document.getElementById('list-'+deviceId);
   if(!box) return;
-  if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
+
+  if(!box.classList.contains('hidden')){
+    box.classList.add('hidden');
+    return;
+  }
+
   box.classList.remove('hidden');
-  box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Memuat...</p>';
+  box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Memuat produk...</p>';
+
   activeDeviceRef.child(deviceId).once('value').then(async (snap)=>{
-    const map=snap.val(); if(!map){ box.innerHTML='Kosong'; return; }
-    const ids=Object.keys(map); box.innerHTML='';
-    for(const pid of ids){
-      const pSnap=await dbRef.child(pid).once('value');
-      const item=pSnap.val(); if(!item) continue;
-      const foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
-      box.innerHTML+=`
-        <div class="flex gap-2 bg-white border rounded-lg p-2 mb-2 items-center">
-          <img src="${foto}" class="w-12 h-12 rounded object-cover">
-          <div class="flex-1 min-w-0"><p class="font-bold text-[12px] truncate">${item.nama||''}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p></div>
-          <div class="flex flex-col gap-1">
-            <button onclick="editProdukAdmin('${pid}')" style="background:#dbeafe;color:#2563eb;border:1px solid #bfdbfe;font-size:10px;font-weight:bold;padding:6px 12px;border-radius:8px;">Edit</button>
-            <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" style="background:#ef4444;color:white;font-size:10px;font-weight:bold;padding:6px 12px;border-radius:8px;">Hapus</button>
-          </div>
-        </div>`;
+    const map=snap.val();
+    if(!map){ box.innerHTML='<p class="text-[11px] text-gray-400">Tidak ada produk</p>'; return; }
+    const productIds=Object.keys(map);
+    
+    box.innerHTML='';
+    let ada=0;
+    
+    for(const pid of productIds){
+      try{
+        const pSnap = await dbRef.child(pid).once('value');
+        const item = pSnap.val();
+        if(!item) continue;
+        ada++;
+        const foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
+        box.innerHTML+=`
+          <div class="flex gap-2 bg-white border rounded-lg p-2 mb-2 items-center">
+            <img src="${foto}" class="w-12 h-12 rounded object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-[12px] truncate">${bersihkanTeks(item.nama||'Tanpa Nama')}</p>
+              <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
+            </div>
+            <div class="flex flex-col gap-1">
+              <button onclick="editProdukAdmin('${pid}')" class="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
+              <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button>
+            </div>
+          </div>`;
+      }catch(e){ console.log(e); }
+    }
+    
+    if(ada===0){
+      box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah terhapus, klik Hapus PIN Saja</p>';
     }
   });
 }
 
-window.editProdukAdmin = async function(pid){
-  const mToko=document.getElementById('modal-daftar-toko'); if(mToko){ mToko.classList.add('hidden'); mToko.style.display='none'; }
+// FUNGSI BARU UNTUK EDIT DARI ADMIN BOSKU
+window.editProdukAdmin = async function(productId){
+  // Tutup modal daftar toko dulu
+  const modalToko=document.getElementById('modal-daftar-toko');
+  if(modalToko){ modalToko.classList.add('hidden'); modalToko.style.display='none'; }
+  
   setTimeout(async()=>{
-    let item=produkData.find(x=>x.id===pid);
-    if(!item){ const s=await dbRef.child(pid).once('value'); item=s.val(); if(item) item.id=pid; }
-    if(!item){ alert('Produk tidak ada'); return; }
-    document.getElementById('edit-id').value=pid;
+    let item = produkData.find(x=>x.id===productId);
+    if(!item){
+      const snap=await dbRef.child(productId).once('value');
+      item=snap.val();
+      if(item) item.id=productId;
+    }
+    if(!item){ alert('Produk tidak ditemukan'); return; }
+    
+    document.getElementById('edit-id').value=productId;
     document.getElementById('edit-nama').value=item.nama||'';
     document.getElementById('edit-harga').value=item.harga||0;
     document.getElementById('edit-kategori').value=item.kategori||'kuliner';
@@ -434,10 +466,11 @@ window.editProdukAdmin = async function(pid){
     document.getElementById('edit-lokasi').value=item.lokasi||'';
     document.getElementById('edit-whatsapp').value=item.wa||'';
     document.getElementById('edit-catatan').value=item.catatan||'';
-    const mEdit=document.getElementById('modal-edit'); if(mEdit){ mEdit.classList.remove('hidden'); mEdit.style.display='flex'; mEdit.style.zIndex='99999'; }
+    
+    const modalEdit=document.getElementById('modal-edit');
+    if(modalEdit){ modalEdit.classList.remove('hidden'); modalEdit.style.display='flex'; modalEdit.style.zIndex='99999'; }
   },200);
 }
-  
     
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
