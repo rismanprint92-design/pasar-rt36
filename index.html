@@ -430,6 +430,7 @@ window.lihatProdukTokoAdmin = function(deviceId){
             </div>
             <div class="flex flex-col gap-1">
               <button onclick="editProdukAdmin('${pid}')" class="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
+              <button onclick="editProdukAdmin('${pid}')" class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg mr-1">Edit</button>
               <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button>
             </div>
           </div>`;
@@ -471,7 +472,19 @@ window.editProdukAdmin = async function(productId){
     if(modalEdit){ modalEdit.classList.remove('hidden'); modalEdit.style.display='flex'; modalEdit.style.zIndex='99999'; }
   },200);
 }
- window.editProdukAdmin = async function(pid){
+    
+function hapusProdukAdminFull(id, deviceId){
+  if(!isAdmin) return;
+  if(confirm('Hapus PRODUK ini permanen? Produk + PIN akan hilang semua!')){
+    dbRef.child(id).remove().then(()=>{
+      activeDeviceRef.child(deviceId).child(id).remove();
+      alert('Produk terhapus!');
+      lihatProdukTokoAdmin(deviceId);
+      terapkanFilterDanPencarian();
+    }).catch(e=>alert('Gagal hapus, cek Rules Firebase: '+e.message));
+  }
+}
+window.editProdukAdmin = async function(pid){
   const m=document.getElementById('modal-daftar-toko'); if(m){ m.classList.add('hidden'); }
   let item=produkData.find(x=>x.id===pid);
   if(!item){ const s=await dbRef.child(pid).once('value'); item=s.val(); }
@@ -486,18 +499,6 @@ window.editProdukAdmin = async function(productId){
   document.getElementById('edit-whatsapp').value=item.wa||'';
   document.getElementById('edit-catatan').value=item.catatan||'';
   const me=document.getElementById('modal-edit'); if(me){ me.classList.remove('hidden'); me.style.display='flex'; me.style.zIndex='99999'; }
-}
-   
-function hapusProdukAdminFull(id, deviceId){
-  if(!isAdmin) return;
-  if(confirm('Hapus PRODUK ini permanen? Produk + PIN akan hilang semua!')){
-    dbRef.child(id).remove().then(()=>{
-      activeDeviceRef.child(deviceId).child(id).remove();
-      alert('Produk terhapus!');
-      lihatProdukTokoAdmin(deviceId);
-      terapkanFilterDanPencarian();
-    }).catch(e=>alert('Gagal hapus, cek Rules Firebase: '+e.message));
-  }
 }
     function tutupModalDaftarToko(){ const el=document.getElementById('modal-daftar-toko'); if(el) el.classList.add('hidden'); }
     function bukaModalTokoSaya(){ tutupModalPilihanJual(); const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } const cont=document.getElementById('daftar-produk-toko'); if(cont) cont.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
