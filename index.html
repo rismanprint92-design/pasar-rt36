@@ -632,25 +632,33 @@ function hapusTokoAdmin(deviceId){
     function shareProdukKe(p){ if(!dataProdukBaru) return; const t=`🛒 *${dataProdukBaru.nama}*\n💰 Rp ${parseInt(dataProdukBaru.harga).toLocaleString('id-ID')}\n\n${dataProdukBaru.link}`; if(p.includes('wa')) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`,'_blank'); else if(p==='link') navigator.clipboard.writeText(dataProdukBaru.link).then(()=>alert('Link disalin!')); tutupModalShare(); }
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
-    function verifikasiAdmin(){
-      let v=document.getElementById('pin-admin').value.trim();
-      if(!v){ alert('Isi PIN dulu bosku!'); return; }
-      pinRef.once('value').then(s=>{
-        let dbPin = s.val();
-        if(!dbPin) dbPin = "1234";
-        if(String(v)===String(dbPin)){
-          isAdmin=true;
-          document.getElementById('banner-admin').classList.remove('hidden');
-          tutupModalAdmin();
-          terapkanFilterDanPencarian();
-        } else {
-          alert('PIN Admin RT Salah! Coba lagi bosku');
-        }
-      }).catch(e=>{
-        alert('Gagal baca PIN Admin, cek Rules! '+e.message);
-      });
+    // FIX BIAR ADMIN TIDAK HILANG PAS RELOAD
+function verifikasiAdmin(){
+  let v=document.getElementById('pin-admin').value.trim();
+  if(!v){ alert('Isi PIN dulu bosku!'); return; }
+  pinRef.once('value').then(s=>{
+    let dbPin = s.val() || "1234";
+    if(String(v)===String(dbPin)){
+      isAdmin=true;
+      try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
+      const banner=document.getElementById('banner-admin');
+      if(banner) banner.classList.remove('hidden');
+      tutupModalAdmin();
+      terapkanFilterDanPencarian();
+    } else {
+      alert('PIN Admin RT Salah!');
     }
-    function keluarAdmin(){ isAdmin=false; document.getElementById('banner-admin').classList.add('hidden'); terapkanFilterDanPencarian(); }
+  });
+}
+function keluarAdmin(){ 
+  isAdmin=false; 
+  try{ localStorage.removeItem('isAdminRT36'); }catch(e){}
+  const banner=document.getElementById('banner-admin');
+  if(banner) banner.classList.add('hidden'); 
+  terapkanFilterDanPencarian(); 
+}
+// Auto load admin jika sudah login sebelumnya
+(function(){ try{ if(localStorage.getItem('isAdminRT36')==='true'){ isAdmin=true; const b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); } }catch(e){} })();
     function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
     function simpanPinBaru(){ const lama=document.getElementById('pin-lama').value; const baru=document.getElementById('pin-baru').value; if(lama!==pinAdminAktif){ alert('PIN Lama salah!'); return; } pinRef.set(baru).then(()=>{ alert('PIN Admin berhasil diubah!'); pinAdminAktif=baru; tutupModalGantiPin(); }); }
