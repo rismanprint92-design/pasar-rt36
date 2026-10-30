@@ -434,33 +434,30 @@ function hapusTokoAdmin(deviceId){
     function hapusTokoAdmin(pin){ if(confirm('Hapus toko PIN '+pin+' dari daftar? Produk toko ini tidak terhapus, cuma data toko saja.')){ activeDeviceRef.child(pin).remove().then(()=>{ alert('Toko dihapus dari daftar!'); bukaModalDaftarToko(); }); } }
     function bukaModalTokoSaya(){ tutupModalPilihanJual(); document.getElementById('modal-toko-saya').classList.remove('hidden'); document.getElementById('modal-toko-saya').classList.add('flex'); document.getElementById('daftar-produk-toko').innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
     function tutupModalTokoSaya(){ document.getElementById('modal-toko-saya').classList.add('hidden'); document.getElementById('modal-toko-saya').classList.remove('flex'); }
-    function cariTokoSaya(){
-      const pin=document.getElementById('input-pin-toko').value.trim();
-      const waInput=document.getElementById('input-wa-toko').value.trim();
-      const container=document.getElementById('daftar-produk-toko');
-      if(!pin || !waInput){ alert('Masukkan PIN dan No.WA Toko bosku!'); return; }
-      activeDeviceRef.child(pin).once('value', (snap)=>{
-        const dataToko=snap.val();
-        if(!dataToko){ container.innerHTML=`<div class="text-center py-8"><p class="text-gray-400 text-xs">❌ Toko dengan PIN ini tidak ditemukan</p></div>`; return; }
-        let waTerdaftar = (dataToko.wa||'').replace(/\D/g,'');
-        let waDiInput = waInput.replace(/\D/g,'');
-        if(waTerdaftar !== waDiInput){
-          container.innerHTML=`<div class="text-center py-8 bg-red-50 rounded-xl p-4 border border-red-200"><p class="text-red-600 text-xs font-bold">❌ No.WA tidak cocok dengan PIN ini bosku!</p></div>`;
-          return;
+    async function cariTokoSaya(){
+  const pin=document.getElementById('input-pin-toko').value.trim();
+  const waInput=document.getElementById('input-wa-toko').value.trim();
+  const container=document.getElementById('daftar-produk-toko');
+  if(!pin || !waInput){ alert('Masukkan PIN dan WA!'); return; }
+  const hashed = await hashPin(pin);
+  activeDeviceRef.once('value').then(snap=>{
+    let all=snap.val(); let hasil=[];
+    if(all){
+      for(let dev in all){
+        for(let prodId in all[dev]){
+          let d=all[dev][prodId];
+          if(d && d.pinHash===hashed){ let p=produkData.find(x=>x.id===prodId); if(p) hasil.push(p); }
         }
-        let hasil=produkData.filter(p=> (p.pinHash===hashPin(pin)) || (p.ownerId && currentUser && p.ownerId===currentUser.uid) || (p.pinPenjual||'')===pin );
-        let info=`<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 mb-3 text-xs"><p class="font-bold text-emerald-800">🏪 Toko: ${bersihkanTeks(dataToko.nama||'')}</p><p class="text-[11px] text-gray-500">PIN: ${pin} • ${hasil.length} produk • Verified ✅</p></div>`;
-        container.innerHTML=info;
-        if(hasil.length===0){ container.innerHTML+=`<p class="text-center text-gray-400 text-xs py-4">Belum ada produk di toko ini</p>`; return; }
-        hasil.forEach(item=>{
-          let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-          let status=item.status||'tersedia'; let label=status==='tersedia'?'● Tersedia':'● Tidak';
-          let umurToko = hitungUmurProduk(item.timestamp);
-          let html=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${foto}" class="w-14 h-14 rounded-lg object-cover bg-gray-100 flex-shrink-0"><div class="flex-1 min-w-0"><p class="font-bold text-[12px] truncate">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p><p class="text-[10px] text-gray-500">${bersihkanTeks(item.kategori||'') } • ${label} • 🕒 ${umurToko}</p></div><div class="flex flex-col gap-1 flex-shrink-0"><button onclick="muatDataKeFormEdit('${item.id}'); tutupModalTokoSaya();" class="bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">✏️ Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🗑️ Hapus</button></div></div>`;
-          container.innerHTML+=html;
-        });
-      });
+      }
     }
+    if(hasil.length===0){ container.innerHTML='<p class="text-center py-8 text-gray-400 text-xs">❌ PIN tidak ditemukan</p>'; return; }
+    container.innerHTML=`<div class="bg-emerald-50 border rounded-xl p-2.5 mb-3 text-xs"><p class="font-bold text-emerald-800">🏪 ${hasil.length} produk • Verified ✅</p></div>`;
+    hasil.forEach(item=>{
+      let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
+      container.innerHTML+=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${foto}" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div><div class="flex flex-col gap-1"><button onclick="muatDataKeFormEdit('${item.id}'); tutupModalTokoSaya();" class="bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Hapus</button></div></div>`;
+    });
+  });
+}
    function hapusProdukDariToko(id){ 
   if(confirm('Yakin hapus produk ini dari toko Anda?')){
     let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
