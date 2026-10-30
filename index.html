@@ -388,18 +388,35 @@
         });
       });
     }
-    function lihatProdukTokoAdmin(deviceId){
-      activeDeviceRef.child(deviceId).once('value', snap=>{
-        let map=snap.val(); if(!map) return alert('Toko kosong');
-        document.getElementById('modal-daftar-toko').classList.add('hidden');
-      });
+    
+function lihatProdukTokoAdmin(deviceId){
+  activeDeviceRef.child(deviceId).once('value').then(snap=>{
+    const map = snap.val();
+    if(!map){ alert('Toko ini tidak punya produk'); return; }
+    const productIds = Object.keys(map);
+    // filter langsung
+    const filtered = produkData.filter(p => productIds.includes(p.id));
+    if(filtered.length===0){
+      alert('Produk sudah dihapus, tapi data toko masih ada. Klik Hapus untuk bersihkan.');
+      return;
     }
-    function hapusTokoAdmin(deviceId){
-      if(!isAdmin) return;
-      if(confirm('Hapus data toko '+deviceId.substring(0,8)+'?')){
-        activeDeviceRef.child(deviceId).remove().then(()=>{ alert('Dihapus!'); bukaModalDaftarToko(); });
-      }
-    }
+    produkFilteredGlobal = filtered;
+    BATAS_TAMPIL = 12;
+    renderProduk(filtered.slice(0,12));
+    document.getElementById('modal-daftar-toko').classList.add('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+}
+
+function hapusTokoAdmin(deviceId){
+  if(!isAdmin){ alert('Harus mode admin bosku!'); return; }
+  if(confirm('Hapus data toko '+deviceId.substring(0,8)+'? Produk tetap ada, cuma data PIN toko yang kehapus.')){
+    activeDeviceRef.child(deviceId).remove().then(()=>{
+      alert('Data toko dihapus!');
+      bukaModalDaftarToko();
+    }).catch(e=>alert('Gagal: '+e.message));
+  }
+} 
     function tutupModalDaftarToko(){ const el=document.getElementById('modal-daftar-toko'); if(el) el.classList.add('hidden'); }
     function bukaModalTokoSaya(){ tutupModalPilihanJual(); const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } const cont=document.getElementById('daftar-produk-toko'); if(cont) cont.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
     function tutupModalTokoSaya(){ const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
