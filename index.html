@@ -359,92 +359,56 @@
     function bukaModalJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } }
     function tutupModalPilihanJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
     function pilihJualBaru(){ tutupModalPilihanJual(); const el=document.getElementById('modal-jual'); if(el) el.classList.remove('hidden'); }
-    window.bukaModalDaftarToko = function(){
-  if(!isAdmin){ alert('Hanya Admin bosku!'); return; }
-  const modal=document.getElementById('modal-daftar-toko');
-  if(modal){ modal.classList.remove('hidden'); modal.style.display='flex'; }
+    function bukaModalDaftarToko(){
+  if(!isAdmin){ alert('Hanya Admin!'); return; }
+  document.getElementById('modal-daftar-toko').classList.remove('hidden');
   const container=document.getElementById('daftar-toko-admin');
-  if(!container) return;
-  container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat toko...</p>';
-  
-  activeDeviceRef.once('value').then(snap=>{
+  container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat...</p>';
+  activeDeviceRef.once('value', snap=>{
     const data=snap.val();
-    if(!data){ container.innerHTML='<p class="text-center py-6 text-xs">Belum ada toko</p>'; return; }
+    if(!data){ container.innerHTML='Belum ada toko'; return; }
     container.innerHTML='';
     Object.keys(data).forEach(deviceId=>{
-      const produkMap=data[deviceId];
-      if(!produkMap) return;
-      const ids=Object.keys(produkMap);
-      if(ids.length==0) return;
+      const produkMap=data[deviceId]; if(!produkMap) return;
+      const ids=Object.keys(produkMap); if(ids.length==0) return;
       const first=produkMap[ids[0]];
       const nama=first.ownerName||'Tanpa Nama';
       container.innerHTML+=`
-        <div class="bg-white border rounded-xl p-3 shadow-sm mb-2">
-          <div class="flex justify-between items-start">
-            <div><p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p><p class="text-[11px] text-gray-500">ID: ${deviceId.substring(0,12)} • ${ids.length} produk</p></div>
+        <div class="bg-white border rounded-xl p-3 shadow-sm">
+          <div class="flex justify-between">
+            <div><p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p><p class="text-[11px] text-gray-500">ID: ${deviceId.substring(0,8)} • ${ids.length} produk</p></div>
             <div class="flex flex-col gap-1">
-              <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
+              <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
               <button onclick="hapusTokoAdmin('${deviceId}')" class="bg-gray-50 text-gray-600 border text-[10px] px-3 py-1.5 rounded-lg">Hapus PIN Saja</button>
             </div>
           </div>
-          <div id="list-${deviceId}" class="mt-3 hidden bg-gray-50 rounded-lg p-2 border"></div>
+          <div id="list-${deviceId}" class="mt-3 hidden"></div>
         </div>`;
     });
   });
 }
 
-// INI YANG BIKIN TOMBOL LIHAT PRODUK PASTI JALAN BOSKU
-window.lihatProdukTokoAdmin = function(deviceId){
-  const box=document.getElementById('list-'+deviceId);
-  if(!box){ alert('Box tidak ketemu: list-'+deviceId); return; }
-
-  // Toggle buka tutup
-  if(!box.classList.contains('hidden')){
-    box.classList.add('hidden');
-    return;
-  }
-
-  box.classList.remove('hidden');
-  box.innerHTML='<p class="text-[11px] text-gray-400">Memuat produk toko ini...</p>';
-
-  activeDeviceRef.child(deviceId).once('value').then(async (snap)=>{
-    const map=snap.val();
-    if(!map){ box.innerHTML='<p class="text-[11px] text-gray-400">Tidak ada produk</p>'; return; }
+function lihatProdukTokoAdmin(deviceId){
+  activeDeviceRef.child(deviceId).once('value').then(snap=>{
+    const map=snap.val(); if(!map) return;
     const productIds=Object.keys(map);
-    
+    const filtered=produkData.filter(p=>productIds.includes(p.id));
+    const box=document.getElementById('list-'+deviceId);
+    if(!box) return;
+    box.classList.remove('hidden');
+    if(filtered.length==0){ box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah tidak ada, klik Hapus PIN Saja untuk bersihkan.</p>'; return; }
     box.innerHTML='';
-    let ada = 0;
-    
-    // Ambil langsung dari Firebase, tidak pakai produkData biar pasti muncul
-    for(const pid of productIds){
-      try{
-        const pSnap = await dbRef.child(pid).once('value');
-        const item = pSnap.val();
-        if(!item) continue;
-        ada++;
-        const foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
-        box.innerHTML+=`
-          <div class="flex gap-2 bg-white border rounded-lg p-2 mb-2 items-center">
-            <img src="${foto}" class="w-12 h-12 rounded object-cover">
-            <div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama||'Tanpa Nama')}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p></div>
-            <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus Produk</button>
-          </div>`;
-      }catch(e){ console.log(e); }
-    }
-    
-    if(ada===0){
-      box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Produk sudah terhapus di pasar, klik Hapus PIN Saja untuk bersihkan sisa PIN.</p>';
-    }
+    filtered.forEach(item=>{
+      box.innerHTML+=`
+        <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2">
+          <img src="${item.foto[0]}" class="w-12 h-12 rounded object-cover">
+          <div class="flex-1"><p class="font-bold text-[11px]">${bersihkanTeks(item.nama)}</p><p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div>
+          <button onclick="hapusProdukAdminFull('${item.id}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg h-fit self-center">Hapus Produk</button>
+        </div>`;
+    });
   });
 }
 
-window.hapusTokoAdmin = function(deviceId){
-  if(!isAdmin) return;
-  if(confirm('Hapus PIN toko ini saja? Produk tetap ada.')){
-    activeDeviceRef.child(deviceId).remove().then(()=>{ alert('PIN toko dihapus'); bukaModalDaftarToko(); });
-  }
-}
-    
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
   if(confirm('Hapus PRODUK ini permanen? Produk + PIN akan hilang semua!')){
@@ -612,30 +576,35 @@ function hapusProdukAdminFull(id, deviceId){
   }
 }
     let currentZoomPhotos=[], currentZoomIndex=0;
-  let currentZoomPhotos=[], currentZoomIndex=0;
-window.bukaDetailProduk = function(id){ 
-  try{
-    const item=produkData.find(p=>p.id===id); if(!item) return; 
-    let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):['https://via.placeholder.com/300?text=Produk+RT36']; 
-    currentZoomPhotos=list; currentZoomIndex=0; 
-    const imgT = document.getElementById('img-zoom-target'); if(imgT) imgT.src=list[0];
-    const counter = document.getElementById('zoom-foto-counter'); if(counter) counter.innerText = `1 / ${list.length}`;
-    const kat = document.getElementById('detail-kategori'); if(kat) kat.innerText = (item.kategori||'').toUpperCase();
-    const harga = document.getElementById('detail-harga'); if(harga) harga.innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
-    const nama = document.getElementById('detail-nama'); if(nama) nama.innerText=item.nama; 
-    const penj = document.getElementById('detail-penjual-text'); if(penj) penj.innerText = item.penjual + ' ('+item.lokasi+')';
-    const waktu = document.getElementById('detail-waktu-text'); if(waktu) waktu.innerText = hitungUmurProduk(item.timestamp);
-    const statusEl = document.getElementById('detail-status'); if(statusEl){ let isT = item.status!=='tidak'; statusEl.innerText = isT ? 'Tersedia' : 'Habis'; }
-    const catatanEl = document.getElementById('detail-catatan'); if(catatanEl){ let cat=item.catatan||''; catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border rounded-xl p-3 text-[13px]">${bersihkanTeks(cat)}</div>` : '<p class="text-gray-400 text-xs">Tidak ada deskripsi</p>'; }
-    const btnWa = document.getElementById('detail-btn-wa'); if(btnWa) btnWa.onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
-    const modal = document.getElementById('modal-zoom'); if(modal){ modal.classList.remove('hidden'); modal.style.display='flex'; modal.style.zIndex='99999'; }
-  }catch(e){ alert('Error detail: '+e.message); }
-}
-window.tutupModalZoom = function(){ const m=document.getElementById('modal-zoom'); if(m){ m.classList.add('hidden'); m.style.display='none'; } }
-window.geserFotoZoom = function(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; const img=document.getElementById('img-zoom-target'); if(img) img.src=currentZoomPhotos[currentZoomIndex]; const c=document.getElementById('zoom-foto-counter'); if(c) c.innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }  
+    function bukaDetailProduk(id){ 
+      const item=produkData.find(p=>p.id===id); if(!item) return; 
+      let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):['https://via.placeholder.com/300?text=Produk+RT36']; 
+      currentZoomPhotos=list; currentZoomIndex=0; 
+      document.getElementById('img-zoom-target').src=list[0]; 
+      document.getElementById('zoom-foto-counter').innerText = `1 / ${list.length}`;
+      document.getElementById('detail-kategori').innerText = (item.kategori||'').toUpperCase();
+      document.getElementById('detail-harga').innerText='Rp '+parseInt(item.harga).toLocaleString('id-ID'); 
+      document.getElementById('detail-nama').innerText=item.nama; 
+      document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
+      document.getElementById('detail-waktu-text').innerText = hitungUmurProduk(item.timestamp);
+      let isT = item.status!=='tidak';
+      let statusEl = document.getElementById('detail-status');
+      statusEl.innerText = isT ? 'Tersedia' : 'Habis';
+      statusEl.style.color = isT ? '#075E54' : '#ef4444';
+      statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2';
 
+      let cat=item.catatan||''; 
+      let catatanEl = document.getElementById('detail-catatan');
+      catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5"><p class="text-[11px] text-gray-500 mb-1">Detail Layanan</p><div id="catatan-detail" class="text-[13px] text-gray-800 leading-relaxed">${bersihkanTeks(cat)}</div><button class="text-[#075E54] text-[11px] mt-2 font-semibold" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button></div>` : `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400">Tidak ada deskripsi</div>`;
+
+      // Tombol WA
+      document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
     
-  function bukaChatDenganPenjual(namaPenjual, namaProduk){
+      document.getElementById('modal-zoom').classList.remove('hidden');
+      history.pushState({modalZoom:true},'');
+    }
+
+    function bukaChatDenganPenjual(namaPenjual, namaProduk){
   if(!cekVerifikasiChat()){ return; }
   let panel = document.getElementById('panelChatWarga');
   let btnBuka = document.getElementById('btnBukaChat');
@@ -657,7 +626,10 @@ window.geserFotoZoom = function(a){ if(!currentZoomPhotos.length) return; curren
     if(box) box.scrollTop=box.scrollHeight;
   }, 300);
 }
-     window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
+
+    function tutupModalZoom(){ document.getElementById('modal-zoom').classList.add('hidden'); if(history.state && history.state.modalZoom){ history.back(); } }
+    function geserFotoZoom(a){ if(!currentZoomPhotos.length) return; currentZoomIndex=(currentZoomIndex+a+currentZoomPhotos.length)%currentZoomPhotos.length; document.getElementById('img-zoom-target').src=currentZoomPhotos[currentZoomIndex]; document.getElementById('zoom-foto-counter').innerText = `${currentZoomIndex+1} / ${currentZoomPhotos.length}`; }
+    window.onpopstate = function(){ let mz = document.getElementById('modal-zoom'); if(mz) mz.classList.add('hidden'); };
     let dataProdukBaru=null;
     function tanyakanShareProduk(nama,harga,deskripsi,id){ dataProdukBaru={nama,harga,deskripsi:deskripsi||'', link:window.location.origin+window.location.pathname+'?id='+id}; document.getElementById('modal-share-produk').classList.remove('hidden'); }
     function tutupModalShare(){ document.getElementById('modal-share-produk').classList.add('hidden'); dataProdukBaru=null; }
