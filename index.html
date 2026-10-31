@@ -1039,7 +1039,32 @@ function keluarAdmin(){
     function bukaChatPribadi(nama, userId){ if(!cekVerifikasiChat()) return; let myId=localStorage.getItem('my_chat_id')||''; if(userId===myId) return; targetPrivId=userId; targetPrivNama=nama; document.getElementById('privNama').innerText=nama; document.getElementById('privAvatar').innerText=nama.charAt(0).toUpperCase(); document.getElementById('modalChatPribadi').classList.remove('hidden'); loadChatPribadi(); }
     function tutupChatPribadi(){ document.getElementById('modalChatPribadi').classList.add('hidden'); }
     function getRoomId(a,b){ return [a,b].sort().join('_PRIV_'); }
-    function loadChatPribadi(){ let myId=localStorage.getItem('my_chat_id')||''; let room=getRoomId(myId, targetPrivId); let box=document.getElementById('boxChatPribadi'); if(!box) return; box.innerHTML=''; database.ref('pesan_pribadi/'+room).limitToLast(50).off(); database.ref('pesan_pribadi/'+room).limitToLast(50).on('child_added', snap=>{ let d=snap.val(); if(!d) return; let isMe=d.userId===myId; let div=document.createElement('div'); div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1'; div.innerHTML=`<div class="bubble-wa ${isMe?'bubble-me':'bubble-other'}"><div class="py-0.5 text-[13px]">${bersihkanTeks(d.pesan)}</div><div class="text-right text-[9px] text-gray-400">${d.waktu}</div></div>`; box.appendChild(div); box.scrollTop=box.scrollHeight; if(!isMe) triggerNotifChat(true, true); }); }
+    function loadChatPribadi(){
+      let myId=localStorage.getItem('my_chat_id')||'';
+      let room=getRoomId(myId, targetPrivId);
+      let box=document.getElementById('boxChatPribadi');
+      if(!box) return; box.innerHTML='';
+      database.ref('pesan_pribadi/'+room).limitToLast(50).off();
+      database.ref('pesan_pribadi/'+room).limitToLast(50).on('child_added', snap=>{
+        let d=snap.val(); if(!d) return;
+        let isMe=d.userId===myId;
+        let div=document.createElement('div');
+        div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1';
+        let bubble=document.createElement('div');
+        bubble.className='bubble-wa '+(isMe?'bubble-me':'bubble-other');
+        let isi=document.createElement('div');
+        isi.className='py-0.5 text-[13px]';
+        isi.textContent=d.pesan||''; // AMAN BOSKU - pakai textContent!
+        let waktu=document.createElement('div');
+        waktu.className='text-right text-[9px] text-gray-400';
+        waktu.textContent=d.waktu||'';
+        bubble.append(isi,waktu);
+        div.appendChild(bubble);
+        box.appendChild(div);
+        box.scrollTop=box.scrollHeight;
+        if(!isMe) triggerNotifChat(true, true);
+      });
+    }
     function kirimPesanPribadi(){ let input=document.getElementById('teksPesanPribadi'); let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
     function autoHapus24Jam(){
       let batas = Date.now() - (24*60*60*1000);
