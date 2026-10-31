@@ -393,26 +393,73 @@
       const nama=first.ownerName||'Tanpa Nama';
       const waToko = first.wa || '-';
       const hashPendek = (first.pinHash||'').substring(0,10);
-      container.innerHTML+=`
-        <div class="bg-white border rounded-xl p-3 shadow-sm mb-3">
-          <div class="flex justify-between items-start">
-            <div class="flex-1 min-w-0">
-              <p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p>
-              <p class="text-[11px] text-gray-500">ID: ${deviceId}</p>
-              <p class="text-[11px] text-red-600 font-bold mt-1">🔑 ID Toko: ${deviceId}</p>
-              <p class="text-[10px] text-gray-400">Hash PIN: ${hashPendek}...</p>
-              <p class="text-[11px] text-emerald-700 font-bold">📱 WA: ${waToko}</p>
-              <p class="text-[11px] text-gray-500">${ids.length} produk</p>
-            </div>
-            <div class="flex flex-col gap-1 ml-2">
-              <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
-              <button onclick="resetPinPenjual('${deviceId}')" class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Reset PIN</button>
-              <button onclick="hapusTokoPermanen('${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">HAPUS TOKO</button>
-              <button onclick="hapusTokoAdmin('${deviceId}')" class="bg-gray-50 text-gray-600 border text-[10px] px-3 py-1.5 rounded-lg">Hapus PIN Saja</button>
-            </div>
-          </div>
-          <div id="list-${deviceId}" class="mt-3 hidden"></div>
-        </div>`;
+      let card=document.createElement('div');
+        card.className='bg-white border rounded-xl p-3 shadow-sm mb-3';
+
+        let flex=document.createElement('div');
+        flex.className='flex justify-between items-start gap-2';
+
+        let kiri=document.createElement('div');
+        kiri.className='flex-1 min-w-0';
+
+        let p1=document.createElement('p');
+        p1.className='font-bold text-[13px] truncate';
+        p1.textContent='🏪 '+(first.ownerName||'Tanpa Nama');
+
+        let p2=document.createElement('p');
+        p2.className='text-[11px] text-gray-600 truncate';
+        p2.textContent='ID: '+deviceId;
+
+        let p3=document.createElement('p');
+        p3.className='text-[11px] text-gray-500';
+        p3.textContent='Jumlah Produk: '+(ids.length||0);
+
+        let p4=document.createElement('p');
+        p4.className='text-[10px] text-gray-400';
+        p4.textContent='HP: '+(first.ownerPhone||'-');
+
+        let p5=document.createElement('p');
+        p5.className='text-[11px] text-gray-600';
+        p5.textContent='Toko: '+(first.namaToko||'-');
+
+        let p6=document.createElement('p');
+        p6.className='text-[11px] text-gray-500';
+        p6.textContent='Alamat: '+(first.alamatToko||'-');
+
+        kiri.append(p1,p2,p3,p4,p5,p6);
+
+        let kanan=document.createElement('div');
+        kanan.className='flex flex-col gap-1';
+
+        let b1=document.createElement('button');
+        b1.className='bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg';
+        b1.textContent='Lihat Produk';
+        b1.addEventListener('click', ()=>lihatProdukTokoAdmin(deviceId));
+
+        let b2=document.createElement('button');
+        b2.className='bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg';
+        b2.textContent='Reset Password';
+        b2.addEventListener('click', ()=>resetPasswordToko(deviceId));
+
+        let b3=document.createElement('button');
+        b3.className='bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg';
+        b3.textContent='Hapus Toko';
+        b3.addEventListener('click', ()=>hapusTokoAdmin(deviceId));
+
+        let b4=document.createElement('button');
+        b4.className='bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg';
+        b4.textContent='Hapus Semua Produk';
+        b4.addEventListener('click', ()=>hapusSemuaProdukToko(deviceId));
+
+        kanan.append(b1,b2,b3,b4);
+        flex.append(kiri,kanan);
+
+        let listDiv=document.createElement('div');
+        listDiv.id='list-'+deviceId;
+        listDiv.className='mt-2';
+
+        card.append(flex,listDiv);
+        container.appendChild(card);
     });
   });
 }
