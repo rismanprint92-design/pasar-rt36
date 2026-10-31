@@ -256,10 +256,8 @@
     if(!url) return 'https://via.placeholder.com/300?text=Produk+RT36';
     let s=String(url).trim(); if(!s) return 'https://via.placeholder.com/300?text=Produk+RT36';
     let low=s.toLowerCase();
-    // FIX WAJIB CODEQL - HARUS CEK 3 INI!
-    if(low.startsWith('javascript:') || low.includes('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
-    if(low.startsWith('vbscript:') || low.includes('vbscript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
-    if(low.includes('data:text/html')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    if(low.startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    if(low.startsWith('vbscript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
     if(low.startsWith('data:') && !low.startsWith('data:image/')) return 'https://via.placeholder.com/300?text=Produk+RT36';
     if(low.startsWith('data:image/')) return s;
     if(low.startsWith('blob:')) return s;
@@ -268,6 +266,7 @@
     return 'https://via.placeholder.com/300?text=Produk+RT36';
   }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; }
 }
+    
 // TAMBAHAN KHUSUS CHAT - BOLEHIN AUDIO + LOKASI
 function amanAudio(url){
   try{
