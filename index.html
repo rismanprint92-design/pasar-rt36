@@ -883,10 +883,18 @@ window.editDariTokoSaya = function(id){
       statusEl.style.color = isT ? '#075E54' : '#ef4444';
       statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2';
 
-      let cat=item.catatan||''; 
-      let catatanEl = document.getElementById('detail-catatan');
-      catatanEl.innerHTML = cat ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5"><p class="text-[11px] text-gray-500 mb-1">Detail Layanan</p><div id="catatan-detail" class="text-[13px] text-gray-800 leading-relaxed">${bersihkanTeks(cat)}</div><button class="text-[#075E54] text-[11px] mt-2 font-semibold" onclick="bukaTutupCatatan('catatan-detail',this)">Lihat selengkapnya ▼</button></div>` : `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400">Tidak ada deskripsi</div>`;
-
+      let cat=item.catatan||'';
+      let catatanEl=document.getElementById('detail-catatan');
+      catatanEl.innerHTML='';
+      if(cat){
+        let boxD=document.createElement('div'); boxD.className='bg-gray-50 border border-gray-100 rounded-xl p-3.5';
+        let pL=document.createElement('p'); pL.className='text-[11px] text-gray-500 mb-1'; pL.textContent='Detail Layanan';
+        let divT=document.createElement('div'); divT.id='catatan-detail'; divT.className='text-[13px] text-gray-800 leading-relaxed'; divT.textContent=cat;
+        let btnL=document.createElement('button'); btnL.className='text-[#075E54] text-[11px] mt-2 font-semibold'; btnL.textContent='Lihat selengkapnya ▼'; btnL.addEventListener('click', function(){ bukaTutupCatatan('catatan-detail', this); });
+        boxD.append(pL,divT,btnL); catatanEl.appendChild(boxD);
+      } else {
+        let boxE=document.createElement('div'); boxE.className='bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-center text-[12px] text-gray-400'; boxE.textContent='Tidak ada deskripsi'; catatanEl.appendChild(boxE);
+      }
       // Tombol WA
       document.getElementById('detail-btn-wa').onclick=function(){ bukaModalOpsiBeli(item.wa||'', item.nama, item.harga, item.catatan||''); }; 
     
