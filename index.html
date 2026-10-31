@@ -252,14 +252,16 @@
   const auth = firebase.auth();
   const database = firebase.database();
   function amanFoto(url){
-  try{
-    const fallback='https://via.placeholder.com/300?text=Produk+RT36';
-    if(!url) return fallback;
-    const s=String(url).trim(); if(!s) return fallback;
-    const u=new URL(s, window.location.origin);
-    if(u.protocol==='http:' || u.protocol==='https:') return u.href;
-    return fallback;
-  }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; }
+ try{
+  const fallback='https://via.placeholder.com/400x400?text=Produk+RT36';
+  if(!url) return fallback;
+  const s=String(url).trim(); if(!s) return fallback;
+  const u=new URL(s, window.location.origin);
+  if(u.protocol!=='http:' && u.protocol!=='https:' && u.protocol!=='data:' && u.protocol!=='blob:'){
+   return fallback;
+  }
+  return u.href;
+ }catch(e){ return 'https://via.placeholder.com/400x400?text=Produk+RT36'; }
 }
 function amanLokasi(url){
   try{
