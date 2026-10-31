@@ -549,7 +549,7 @@ window.editProdukAdmin = async function(pid){
         container.innerHTML=`<div class="bg-emerald-50 border rounded-xl p-2.5 mb-3 text-xs"><p class="font-bold text-emerald-800">🏪 ${hasil.length} produk • Verified ✅</p></div>`;
         hasil.forEach(item=>{
           let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-          container.innerHTML+=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${foto}" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div><div class="flex flex-col gap-1"><button onclick="muatDataKeFormEdit('${item.id}'); tutupModalTokoSaya();" class="bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Hapus</button></div></div>`;
+          container.innerHTML+=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${foto}" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div><div class="flex flex-col gap-1"><button onclick="editDariTokoSaya('${item.id}')" class="bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Hapus</button></div></div>`;
         });
       });
     }
@@ -655,7 +655,25 @@ window.editProdukAdmin = async function(pid){
     function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
-    function muatDataKeFormEdit(id){ const p=produkData.find(x=>x.id===id); if(!p) return; document.getElementById('edit-id').value=p.id; document.getElementById('edit-nama').value=p.nama; document.getElementById('edit-harga').value=p.harga; document.getElementById('edit-kategori').value=p.kategori; document.getElementById('edit-status').value=p.status||'tersedia'; document.getElementById('edit-penjual').value=p.penjual; document.getElementById('edit-lokasi').value=p.lokasi; document.getElementById('edit-whatsapp').value=p.wa; document.getElementById('edit-catatan').value=p.catatan||''; document.getElementById('modal-edit').classList.remove('hidden'); }
+   function muatDataKeFormEdit(id){
+  const p=produkData.find(x=>x.id===id);
+  if(!p){ alert('Produk tidak ketemu, refresh dulu bosku'); return; }
+  document.getElementById('edit-id').value=p.id;
+  document.getElementById('edit-nama').value=p.nama;
+  document.getElementById('edit-harga').value=p.harga;
+  document.getElementById('edit-kategori').value=p.kategori;
+  document.getElementById('edit-status').value=p.status||'tersedia';
+  document.getElementById('edit-penjual').value=p.penjual;
+  document.getElementById('edit-lokasi').value=p.lokasi;
+  document.getElementById('edit-whatsapp').value=p.wa;
+  document.getElementById('edit-catatan').value=p.catatan||'';
+  const m=document.getElementById('modal-edit');
+  if(m){ m.classList.remove('hidden'); m.classList.add('flex'); m.style.display='flex'; m.style.zIndex='99999'; }
+}
+window.editDariTokoSaya = function(id){
+  tutupModalTokoSaya();
+  setTimeout(function(){ muatDataKeFormEdit(id); }, 150);
+}
     function tutupModalEdit(){ 
   const el=document.getElementById('modal-edit'); 
   if(el){ 
