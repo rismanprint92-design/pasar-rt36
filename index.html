@@ -317,11 +317,17 @@ function amanLokasi(url){
   function amanUrlWa(no,teks){ try{ let n=String(no).replace(/\D/g,''); if(n.startsWith('0')) n='62'+n.slice(1); if(!/^\d{10,15}$/.test(n)) return null; const href='https://wa.me/'+n+'?text='+encodeURIComponent(teks); const u=new URL(href); if(u.origin!=='https://wa.me') return null; return u.href; }catch(e){ return null; } }
 
   let currentUser = null;
-  auth.signInAnonymously().catch(function(err){ console.log(err); });
   auth.onAuthStateChanged(function(user){ 
-    if(user){ currentUser = user; console.log("Auth OK:", user.uid); } 
+    if(user){ 
+      currentUser = user; 
+      console.log("Auth OK:", user.uid);
+      // BARU BACA PIN SETELAH AUTH JADI - INI KUNCINYA!
+      pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
+      adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
+    } else {
+      auth.signInAnonymously().catch(function(err){ console.log(err); });
+    }
   });
-
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
     const adminWaRef = database.ref('pengaturan/admin_wa');
