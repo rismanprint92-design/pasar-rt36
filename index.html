@@ -607,19 +607,56 @@ window.editProdukAdmin = async function(pid){
       }); 
     }
     async function tambahProduk(e){
-      e.preventDefault();
-      const pin=document.getElementById('pin-penjual').value.trim();
-      if(pin.length<4){ alert('PIN minimal 4 digit bosku!'); return; }
-      const cek=await cekPinTokoUnik(pin);
-      if(!cek.boleh){ alert(`❌ PIN ${pin} sudah dipakai toko lain!`); return; }
-      const fileInput=document.getElementById('input-file-foto');
-      const prosesSimpan=(arrFoto)=>{ simpanKeFirebase(arrFoto, pin); };
-      if(fileInput.files&&fileInput.files.length>0){
-        if(fileInput.files.length>3){ alert('Maksimal 3 foto!'); return; }
-        let comp=[], proc=0, tot=fileInput.files.length;
-        Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
-      } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
-    }
+  e.preventDefault();
+  const pin=document.getElementById('pin-penjual').value.trim();
+  const waInputRaw=document.getElementById('whatsapp').value.trim();
+  const waInput = waInputRaw.replace(/\D/g,'');
+  if(pin.length<4){ alert('PIN minimal 4 digit bosku!'); return; }
+  if(waInput.length<10){ alert('WA tidak valid bosku!'); return; }
+
+  // === CEK 1 WA = 1 PIN BOSKU ===
+  const hashedBaru = await hashPin(pin);
+  const cekWADulu = await new Promise((resolve)=>{
+    activeDeviceRef.once('value').then(snap=>{
+      const all=snap.val();
+      if(!all){ resolve({boleh:true}); return; }
+      for(let devId in all){
+        for(let prodId in all[devId]){
+          let d=all[devId][prodId];
+          if(!d || !d.wa) continue;
+          let waDB = String(d.wa).replace(/\D/g,'');
+          if(waDB===waInput){
+            // WA sudah ada, cek PIN nya sama atau beda?
+            if(d.pinHash !== hashedBaru){
+              resolve({boleh:false, owner:d.ownerName||'Toko lain'});
+              return;
+            } else {
+              resolve({boleh:true}); // PIN sama = toko yang sama, boleh tambah barang
+              return;
+            }
+          }
+        }
+      }
+      resolve({boleh:true});
+    }).catch(()=>resolve({boleh:true}));
+  });
+
+  if(!cekWADulu.boleh){
+    alert(`❌ Nomor WA ${waInputRaw} sudah dipakai toko "${cekWADulu.owner}" dengan PIN berbeda!\n\n1 WA hanya boleh 1 PIN bosku!\nGunakan PIN lama toko tersebut untuk tambah barang!`);
+    return;
+  }
+
+  const cek=await cekPinTokoUnik(pin);
+  if(!cek.boleh){ alert(`❌ PIN ${pin} sudah dipakai toko lain!`); return; }
+
+  const fileInput=document.getElementById('input-file-foto');
+  const prosesSimpan=(arrFoto)=>{ simpanKeFirebase(arrFoto, pin); };
+  if(fileInput.files&&fileInput.files.length>0){
+    if(fileInput.files.length>3){ alert('Maksimal 3 foto!'); return; }
+    let comp=[], proc=0, tot=fileInput.files.length;
+    Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
+  } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
+}
     async function simpanKeFirebase(arr, pinInput){
       let pin = pinInput || document.getElementById('pin-penjual').value;
       try{
