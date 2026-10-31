@@ -266,6 +266,35 @@
     return 'https://via.placeholder.com/300?text=Produk+RT36';
   }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; }
 }
+function amanLokasi(url){
+  try{
+    const u=new URL(String(url).trim());
+    if(!(u.protocol==='http:'||u.protocol==='https:')) return '';
+    const hostOk = u.hostname==='google.com' || u.hostname.endsWith('.google.com');
+    const pathOk = u.pathname.startsWith('/maps');
+    if(hostOk && pathOk) return u.href;
+    return '';
+  }catch(e){ return ''; }
+}
+function amanUrlWa(no,teks){ 
+  try{ 
+    let n=String(no).replace(/\D/g,''); 
+    if(n.startsWith('0')) n='62'+n.slice(1); 
+    if(!/^\d{10,15}$/.test(n)) return null; 
+    const href='https://wa.me/'+n+'?text='+encodeURIComponent(String(teks||'').slice(0,500)); 
+    const u=new URL(href); 
+    if(u.origin!=='https://wa.me') return null; 
+    return u.href; 
+  }catch(e){ return null; } 
+}
+function amanUrlShareWa(teks){
+  try{
+    const href='https://api.whatsapp.com/send?text='+encodeURIComponent(String(teks||'').slice(0,1000));
+    const u=new URL(href);
+    if(u.origin!=='https://api.whatsapp.com') return null;
+    return u.href;
+  }catch(e){ return null; }
+}
     
 // TAMBAHAN KHUSUS CHAT - BOLEHIN AUDIO + LOKASI
 function amanAudio(url){
@@ -335,8 +364,14 @@ function amanLokasi(url){
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12;btn.textContent=`Lihat ${sisa} Produk Lainnya ↓ (${BATAS_TAMPIL}/${produkFilteredGlobal.length})`; } else btn.style.display='none'; } }
     function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
     function renderProduk(data){
-  const container=document.getElementById('daftar-produk'); if(!container) return; container.innerHTML='';
-  if(!data||data.length===0){ container.innerHTML='<div class="col-span-2 text-center py-10 text-gray-400 text-xs">Belum ada barang.</div>'; return; }
+  const container=document.getElementById('daftar-produk'); if(!container) return; 
+  container.textContent='';
+  if(!data||data.length===0){ 
+    let empty=document.createElement('div');
+    empty.className='col-span-2 text-center py-10 text-gray-400 text-xs';
+    empty.textContent='Belum ada barang.';
+    container.appendChild(empty); return; 
+  }
   data.forEach(item=>{
     let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
     let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
@@ -402,7 +437,21 @@ function amanLokasi(url){
       };
       r.readAsDataURL(file);
     }
-    function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ const m=document.getElementById('modal-opsi-beli'); document.getElementById('info-produk-beli').innerText=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; let nomorWA=nomorInput.replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; document.getElementById('btn-wa-otomatis').onclick=function(){ window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`,'_blank'); tutupModalOpsiBeli(); }; document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; m.classList.remove('hidden'); }
+    function bukaModalOpsiBeli(nomorInput,namaBarang,harga,catatan){ 
+  const m=document.getElementById('modal-opsi-beli'); 
+  const infoEl=document.getElementById('info-produk-beli');
+  if(infoEl) infoEl.textContent=`Produk: ${namaBarang} (Rp ${parseInt(harga).toLocaleString('id-ID')})`; 
+  let nomorWA=String(nomorInput||'').replace(/\D/g,''); if(nomorWA.startsWith('0')) nomorWA='62'+nomorWA.slice(1); 
+  const pesan=`Halo, saya mau pesan via Aplikasi Pasar RT:\n\n*Produk:* ${namaBarang}\n*Harga:* Rp ${parseInt(harga).toLocaleString('id-ID')}\n*Catatan:* ${catatan}`; 
+  document.getElementById('btn-wa-otomatis').onclick=function(){ 
+    const url=amanUrlWa(nomorWA,pesan);
+    if(!url){ alert('Nomor WA tidak valid'); return; }
+    window.open(url,'_blank','noopener'); 
+    tutupModalOpsiBeli(); 
+  }; 
+  document.getElementById('btn-salin-nomor').onclick=function(){ navigator.clipboard.writeText(nomorInput).then(()=>alert(`Nomor HP disalin!`)); tutupModalOpsiBeli(); }; 
+  if(m) m.classList.remove('hidden'); 
+}
     function tutupModalOpsiBeli(){ const el=document.getElementById('modal-opsi-beli'); if(el) el.classList.add('hidden'); }
     function bukaModalJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } }
     function tutupModalPilihanJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
