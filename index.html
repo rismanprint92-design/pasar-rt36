@@ -258,8 +258,7 @@
     let low=s.toLowerCase();
     if(low.startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
     if(low.startsWith('vbscript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
-    if(low.startsWith('data:') && !low.startsWith('data:image/')) return 'https://via.placeholder.com/300?text=Produk+RT36';
-    if(low.startsWith('data:image/')) return s;
+    if(low.startsWith('data:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
     if(low.startsWith('blob:')) return s;
     const u=new URL(s);
     if(u.protocol==='http:' || u.protocol==='https:') return s;
