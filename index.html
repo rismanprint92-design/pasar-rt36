@@ -359,10 +359,10 @@
     function bukaModalJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } }
     function tutupModalPilihanJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
     function pilihJualBaru(){ tutupModalPilihanJual(); const el=document.getElementById('modal-jual'); if(el) el.classList.remove('hidden'); }
-    function bukaModalDaftarToko(){
+   function bukaModalDaftarToko(){
   if(!isAdmin){ alert('Hanya Admin!'); return; }
   const modalEl = document.getElementById('modal-daftar-toko');
-  if(modalEl) modalEl.classList.remove('hidden');
+  if(modalEl){ modalEl.classList.remove('hidden'); modalEl.style.display='flex'; }
   const container=document.getElementById('daftar-toko-admin');
   container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">Memuat...</p>';
   activeDeviceRef.once('value', snap=>{
@@ -377,18 +377,21 @@
       const first = produkMap[ids[0]] || {};
       const nama=first.ownerName||'Tanpa Nama';
       const waToko = first.wa || '-';
+      const hashPendek = (first.pinHash||'').substring(0,10);
       container.innerHTML+=`
         <div class="bg-white border rounded-xl p-3 shadow-sm mb-3">
           <div class="flex justify-between items-start">
             <div class="flex-1 min-w-0">
               <p class="font-bold text-[13px]">🏪 ${bersihkanTeks(nama)}</p>
               <p class="text-[11px] text-gray-500">ID: ${deviceId}</p>
-              <p class="text-[11px] text-red-600 font-bold mt-1">🔑 PIN/Sandi: ${deviceId}</p>
+              <p class="text-[11px] text-red-600 font-bold mt-1">🔑 ID Toko: ${deviceId}</p>
+              <p class="text-[10px] text-gray-400">Hash PIN: ${hashPendek}...</p>
               <p class="text-[11px] text-emerald-700 font-bold">📱 WA: ${waToko}</p>
               <p class="text-[11px] text-gray-500">${ids.length} produk</p>
             </div>
             <div class="flex flex-col gap-1 ml-2">
               <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
+              <button onclick="resetPinPenjual('${deviceId}')" class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Reset PIN</button>
               <button onclick="hapusTokoAdmin('${deviceId}')" class="bg-gray-50 text-gray-600 border text-[10px] px-3 py-1.5 rounded-lg">Hapus PIN Saja</button>
             </div>
           </div>
@@ -397,7 +400,38 @@
     });
   });
 }
+function resetPinPenjual(deviceId){
+  if(!isAdmin){ alert('Hanya admin!'); return; }
+  const pinBaru = prompt('Reset PIN toko ini\nMasukkan PIN baru minimal 4 digit:');
+  if(!pinBaru || pinBaru.length<4){ alert('Batal, minimal 4 digit bosku'); return; }
+  if(!confirm('Yakin reset PIN toko '+deviceId+' jadi '+pinBaru+' ?')) return;
+  hashPin(pinBaru).then(hashBaru=>{
+    activeDeviceRef.child(deviceId).once('value').then(snap=>{
+      const map=snap.val(); if(!map){ alert('Toko kosong'); return; }
+      let updates = 0;
+      Object.keys(map).forEach(pid=>{
+        activeDeviceRef.child(deviceId).child(pid).update({pinHash: hashBaru});
+        updates++;
+      });
+      alert('✅ BERHASIL!\nPIN baru: '+pinBaru+'\n'+updates+' produk di-update\n\nKasih tau penjualnya ya bosku!');
+      bukaModalDaftarToko();
+    });
+  });
+}
 
+function hapusTokoAdmin(deviceId){
+  if(!isAdmin) return;
+  if(confirm('Hapus PIN toko ini saja? Produk tetap ada tapi jadi Tanpa Nama bosku!')){
+    activeDeviceRef.child(deviceId).remove().then(()=>{
+      alert('PIN toko dihapus!');
+      bukaModalDaftarToko();
+    });
+  }
+}
+function tutupModalDaftarToko(){ 
+  const el=document.getElementById('modal-daftar-toko'); 
+  if(el){ el.classList.add('hidden'); el.style.display='none'; }
+}
 function lihatProdukTokoAdmin(deviceId){
   const box = document.getElementById('list-'+deviceId);
   if(!box) return;
