@@ -1136,11 +1136,24 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
     function kirimLokasi(){ if(!cekVerifikasiChat()) return; if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; } navigator.geolocation.getCurrentPosition(pos=>{ let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:mapsLink,waktu:jam,userId:id,timestamp:Date.now(),tipe:'lokasi'}); }); }
     async function mulaiRekam(){ if(!cekVerifikasiChat()) return; isRekam=true; let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.add('hidden'); if(areaRekam) areaRekam.classList.remove('hidden'); if(iconKotak) iconKotak.classList.add('hidden'); try{ micStream = await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder = new MediaRecorder(micStream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { let blob = new Blob(audioChunks, {type:'audio/webm'}); let reader = new FileReader(); reader.onload = e => { let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(ex){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:e.target.result,waktu:jam,userId:id,timestamp:Date.now(),tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(e){ alert('Izinkan akses mic!'); isRekam=false; } }
     function stopRekam(){ if(!isRekam) return; isRekam=false; if(mediaRecorder) mediaRecorder.stop(); if(micStream){ micStream.getTracks().forEach(t=>t.stop()); } let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.remove('hidden'); if(areaRekam) areaRekam.classList.add('hidden'); if(iconKotak) iconKotak.classList.remove('hidden'); cekKetik(); }
-    function triggerNotifChat(isBalasan, isPribadi=false){
-      let panel=document.getElementById('panelChatWarga'); let btnBuka=document.getElementById('btnBukaChat'); let badge=document.getElementById('badgeBaru');
-      if(panel && panel.classList.contains('hidden') && btnBuka){ btnBuka.classList.remove('bg-[#25D366]'); btnBuka.classList.add('bg-red-500'); if(badge){ badge.classList.remove('hidden'); badge.innerText=isPribadi?'P':'!'; } if(navigator.vibrate) navigator.vibrate([200,100,200]); }
-      bunyikanNotifikasi(isBalasan || isPribadi);
+    function triggerNotifChat(isPribadi, isBaru){
+  try{
+    // 1. Getaran HP
+    if(navigator.vibrate) navigator.vibrate(isPribadi ? [200,100,200] : [200]);
+    
+    // 2. Bunyi notif
+    let audio = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a3bc30.mp3');
+    audio.volume = 0.7;
+    audio.play().catch(()=>{});
+    
+    // 3. Notif di judul tab
+    if(isBaru){
+      let oldTitle = document.title;
+      document.title = isPribadi ? '💬 Chat Pribadi Baru!' : '🔔 Pesan Warga Baru!';
+      setTimeout(()=>{ document.title = oldTitle }, 3000);
     }
+  }catch(e){}
+}
     function hapusPesanWarga(keyPesan, idPengirim){ 
   let myId=''; 
   try{ 
