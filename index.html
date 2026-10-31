@@ -1012,13 +1012,107 @@ function keluarAdmin(){
       ref.limitToLast(80).on('child_added', snap=>{
         let data=snap.val(), key=snap.key; if(!data) return;
         let isMe=(data.userId===myId); let pengirimNama=data.nama; let pengirimId=data.userId;
-        let div=document.createElement('div'); div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1'; div.id='msg_'+key;
-        let avatarHtml=''; if(data.fotoProfil){ avatarHtml=`<img src="${data.fotoProfil}" class="w-5 h-5 rounded-full object-cover inline-block mr-1 flex-shrink-0">`; } else { let initial=pengirimNama?pengirimNama.charAt(0).toUpperCase():'W'; avatarHtml=`<span class="w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold inline-flex items-center justify-center mr-1 flex-shrink-0">${initial}</span>`; }
-        let isiPesan=data.pesan; if(data.tipe==='foto'){ isiPesan=`<img src="${data.pesan}" class="max-w-[200px] rounded-lg cursor-pointer" onclick="bukaModalZoom(['${data.pesan}'], 0)">`; } else if(data.tipe==='voice'){ isiPesan=`<audio controls src="${data.pesan}" class="max-w-[220px] h-10"></audio>`; } else if(data.tipe==='lokasi'){ isiPesan=`📍 <a href="${data.pesan}" target="_blank" class="text-blue-600 underline font-bold">Kirim Lokasi GPS Warga</a>`; } else { isiPesan=`<span id="teks_val_${key}">${bersihkanTeks(data.pesan)}</span>`; }
-        let replyHtml=''; if(data.replyTo&&data.replyContent){ replyHtml=`<div class="bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]"><p class="font-bold text-emerald-800">${bersihkanTeks(data.replyTo)}</p><p class="text-gray-600 truncate">${bersihkanTeks(data.replyContent)}</p></div>`; }
-        let tombolAksiChat=''; if((isMe||isAdmin)&&data.tipe==='teks'){ tombolAksiChat=`<div class="flex gap-1.5 items-center"><button onclick="event.stopPropagation(); mulaiEditPesan('${key}', \`${encodeURIComponent(data.pesan)}\`, '${pengirimId}')" class="text-gray-400 hover:text-blue-600 text-[12px]" title="Edit">✏️</button><button onclick="event.stopPropagation(); hapusPesanWarga('${key}', '${pengirimId}')" class="text-gray-400 hover:text-red-600 text-[12px]" title="Hapus">🗑️</button></div>`; }
-        let statusEdit=data.diedit?' <span class="text-[9px] text-gray-400 italic">(diedit)</span>':'';
-        div.innerHTML=`<div class="bubble-wa ${isMe?'bubble-me':'bubble-other'} cursor-pointer" onclick="if(!event.target.closest('button')) mulaiBalasPesan('${pengirimNama}', '${data.tipe==='teks'?data.pesan:'[Media]'}')"><div class="flex justify-between items-center gap-2"><span class="nama-atas flex items-center text-emerald-800">${avatarHtml}${pengirimNama}</span>${tombolAksiChat}</div>${replyHtml}<div class="py-0.5">${isiPesan}${statusEdit}</div><div class="text-right text-[10px] text-gray-500">${data.waktu}</div></div>`;
+        let div=document.createElement('div');
+        div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1';
+        div.id='msg_'+key;
+
+        let bubble=document.createElement('div');
+        bubble.className='bubble-wa '+(isMe?'bubble-me':'bubble-other')+' cursor-pointer';
+        bubble.addEventListener('click', (e)=>{
+          if(e.target.closest('button')) return;
+          mulaiBalasPesan(pengirimNama, data.tipe==='teks'?data.pesan:'[Media]');
+        });
+
+        let header=document.createElement('div');
+        header.className='flex justify-between items-center gap-2';
+
+        let namaSpan=document.createElement('span');
+        namaSpan.className='nama-atas flex items-center text-emerald-800';
+
+        if(data.fotoProfil){
+          let imgAv=document.createElement('img');
+          imgAv.className='w-5 h-5 rounded-full object-cover inline-block mr-1 flex-shrink-0';
+          imgAv.src=amanFoto(data.fotoProfil);
+          namaSpan.appendChild(imgAv);
+        }else{
+          let initial=pengirimNama?pengirimNama.charAt(0).toUpperCase():'W';
+          let sp=document.createElement('span');
+          sp.className='w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold inline-flex items-center justify-center mr-1 flex-shrink-0';
+          sp.textContent=initial;
+          namaSpan.appendChild(sp);
+        }
+        let txtNama=document.createElement('span');
+        txtNama.textContent=pengirimNama||'Warga';
+        namaSpan.appendChild(txtNama);
+
+        let aksiWrap=document.createElement('div');
+        aksiWrap.className='flex gap-1.5 items-center';
+        if((isMe||isAdmin)&&data.tipe==='teks'){
+          let be=document.createElement('button');
+          be.className='text-gray-400 hover:text-blue-600 text-[12px]';
+          be.textContent='✏️';
+          be.title='Edit';
+          be.addEventListener('click', (e)=>{ e.stopPropagation(); mulaiEditPesan(key, encodeURIComponent(data.pesan), pengirimId); });
+          let bh=document.createElement('button');
+          bh.className='text-gray-400 hover:text-red-600 text-[12px]';
+          bh.textContent='🗑️';
+          bh.title='Hapus';
+          bh.addEventListener('click', (e)=>{ e.stopPropagation(); hapusPesanWarga(key, pengirimId); });
+          aksiWrap.append(be,bh);
+        }
+
+        header.append(namaSpan,aksiWrap);
+
+        if(data.replyTo&&data.replyContent){
+          let replyDiv=document.createElement('div');
+          replyDiv.className='bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]';
+          let pR1=document.createElement('p'); pR1.className='font-bold text-emerald-800'; pR1.textContent=data.replyTo;
+          let pR2=document.createElement('p'); pR2.className='text-gray-600 truncate'; pR2.textContent=data.replyContent;
+          replyDiv.append(pR1,pR2);
+          bubble.appendChild(replyDiv);
+        }
+
+        let isiDiv=document.createElement('div');
+        isiDiv.className='py-0.5';
+
+        if(data.tipe==='foto'){
+          let imgF=document.createElement('img');
+          imgF.className='max-w-[200px] rounded-lg cursor-pointer';
+          imgF.src=amanFoto(data.pesan);
+          imgF.addEventListener('click', ()=>{ bukaModalZoom([amanFoto(data.pesan)],0); });
+          isiDiv.appendChild(imgF);
+        }else if(data.tipe==='voice'){
+          let aud=document.createElement('audio');
+          aud.controls=true; aud.src=data.pesan; aud.className='max-w-[220px] h-10';
+          isiDiv.appendChild(aud);
+        }else if(data.tipe==='lokasi'){
+          let aLoc=document.createElement('a');
+          try{
+            let u=new URL(data.pesan);
+            if(u.hostname.includes('google.com')){ aLoc.href=data.pesan; aLoc.target='_blank'; aLoc.rel='noopener'; aLoc.className='text-blue-600 underline font-bold'; aLoc.textContent='📍 Kirim Lokasi GPS Warga'; }
+            else{ aLoc.textContent='📍 Lokasi'; }
+          }catch(e){ aLoc.textContent='📍 Lokasi'; }
+          isiDiv.appendChild(aLoc);
+        }else{
+          let sp=document.createElement('span');
+          sp.id='teks_val_'+key;
+          sp.textContent=data.pesan||'';
+          if(data.diedit){
+            let editMark=document.createElement('span');
+            editMark.className='text-[9px] text-gray-400 italic';
+            editMark.textContent=' (diedit)';
+            sp.appendChild(editMark);
+          }
+          isiDiv.appendChild(sp);
+        }
+
+        let timeDiv=document.createElement('div');
+        timeDiv.className='text-right text-[10px] text-gray-500';
+        timeDiv.textContent=data.waktu||'';
+
+        bubble.prepend(header);
+        bubble.append(isiDiv,timeDiv);
+        div.appendChild(bubble);
         box.appendChild(div); box.scrollTop=box.scrollHeight;
         if(!chatPertamaLoad&&!isMe){ let isBalasanKeSaya=(data.replyTo&&myNama&&data.replyTo.toLowerCase()===myNama.toLowerCase()); triggerNotifChat(isBalasanKeSaya); }
       });
