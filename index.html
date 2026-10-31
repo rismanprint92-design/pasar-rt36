@@ -456,8 +456,30 @@ function hapusTokoPermanen(deviceId){
 }
 function tutupModalDaftarToko(){ 
   const el=document.getElementById('modal-daftar-toko'); 
-  if(el){ el.classList.add('hidden'); el.style.display='none'; }
+  if(el){ 
+    el.classList.add('hidden'); 
+    el.style.display='none'; 
+    el.style.zIndex=''; 
+  }
 }
+function tutupSemuaModalAdmin(){
+  tutupModalDaftarToko();
+}
+// FIX KLIK DI LUAR MODAL & TOMBOL X
+document.addEventListener('click', function(e){
+  const modal = document.getElementById('modal-daftar-toko');
+  if(!modal || modal.classList.contains('hidden')) return;
+  // Kalau klik background gelap di luar kotak putih
+  if(e.target.id === 'modal-daftar-toko'){
+    tutupModalDaftarToko();
+  }
+  // Kalau klik tombol X (huruf X)
+  if(e.target.textContent.trim() === 'X' || e.target.textContent.trim() === 'x'){
+    if(e.target.closest('#modal-daftar-toko')){
+      tutupModalDaftarToko();
+    }
+  }
+});
 function lihatProdukTokoAdmin(deviceId){
   const box = document.getElementById('list-'+deviceId);
   if(!box) return;
