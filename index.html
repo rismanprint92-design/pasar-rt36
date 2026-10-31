@@ -299,11 +299,13 @@ function amanUrlShareWa(teks){
 // TAMBAHAN KHUSUS CHAT - BOLEHIN AUDIO + LOKASI
 function amanAudio(url){
   try{
-    let s=String(url).trim(); let low=s.toLowerCase();
-    if(low.startsWith('data:audio/')) return s;
-    if(low.startsWith('blob:')) return s;
-    const u=new URL(s); if(u.protocol==='http:'||u.protocol==='https:') return s;
-    return '';
+    const s = String(url || '').trim();
+    if(!s) return '';
+    const u = new URL(s);
+    if(u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+    const p = u.pathname.toLowerCase();
+    if(!/\.(mp3|m4a|ogg|wav|aac|webm)(\?.*)?(#.*)?$/.test(p + u.search + u.hash)) return '';
+    return u.href;
   }catch(e){ return ''; }
 }
 function amanLokasi(url){
