@@ -315,7 +315,11 @@ function amanLokasi(url){
   }catch(e){ return ''; }
 }
   function amanUrlWa(no,teks){ try{ let n=String(no).replace(/\D/g,''); if(n.startsWith('0')) n='62'+n.slice(1); if(!/^\d{10,15}$/.test(n)) return null; const href='https://wa.me/'+n+'?text='+encodeURIComponent(teks); const u=new URL(href); if(u.origin!=='https://wa.me') return null; return u.href; }catch(e){ return null; } }
-
+  const dbRef = database.ref('produk_pasar');
+  const pinRef = database.ref('pengaturan/admin_pin');
+  const adminWaRef = database.ref('pengaturan/admin_wa');
+  const activeDeviceRef = database.ref('active_device_pins');
+    
   let currentUser = null;
   auth.onAuthStateChanged(function(user){ 
     if(user){ 
@@ -328,10 +332,6 @@ function amanLokasi(url){
       auth.signInAnonymously().catch(function(err){ console.log(err); });
     }
   });
-    const dbRef = database.ref('produk_pasar');
-    const pinRef = database.ref('pengaturan/admin_pin');
-    const adminWaRef = database.ref('pengaturan/admin_wa');
-    const activeDeviceRef = database.ref('active_device_pins');
     let isAdmin = false; let pinAdminAktif = null; let adminWaAktif = "6282299511782";
     let pesanBalasanData = null; let isProsesHapus = false; let menuSubAktif = null; let isChatInitialized = false;
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false; let chatPertamaLoad = true;
