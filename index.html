@@ -622,46 +622,43 @@ window.editProdukAdmin = async function(pid){
     function bukaModalTokoSaya(){ tutupModalPilihanJual(); const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } const cont=document.getElementById('daftar-produk-toko'); if(cont) cont.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
     function tutupModalTokoSaya(){ const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
     async function cariTokoSaya(){
-      const pin=document.getElementById('input-pin-toko').value.trim();
-      const waInput=document.getElementById('input-wa-toko').value.trim();
-      const container=document.getElementById('daftar-produk-toko');
-      if(!pin || !waInput){ alert('Masukkan PIN dan WA!'); return; }
-      const hashed = await hashPin(pin);
-      activeDeviceRef.once('value').then(snap=>{
-        let all=snap.val(); let hasil=[];
-        if(all){
-          for(let dev in all){
-            for(let prodId in all[dev]){
-              let d=all[dev][prodId];
-              if(d && d.pinHash===hashed){ let p=produkData.find(x=>x.id===prodId); if(p) hasil.push(p); }
-            }
-          }
+  const pin=document.getElementById('input-pin-toko').value.trim();
+  const waInput=document.getElementById('input-wa-toko').value.trim();
+  const container=document.getElementById('daftar-produk-toko');
+  if(!pin || !waInput){ alert('Masukkan PIN dan WA!'); return; }
+  const hashed = await hashPin(pin);
+  activeDeviceRef.once('value').then(snap=>{
+    let all=snap.val(); let hasil=[];
+    if(all){
+      for(let dev in all){
+        for(let prodId in all[dev]){
+          let d=all[dev][prodId];
+          if(d && d.pinHash===hashed){ let p=produkData.find(x=>x.id===prodId); if(p) hasil.push(p); }
         }
-        if(hasil.length===0){ 
-          container.innerHTML=''; 
-          let pErr=document.createElement('p'); 
-          pErr.className='text-center py-8 text-gray-400 text-xs'; 
-          pErr.textContent='❌ PIN tidak ditemukan'; 
-          container.appendChild(pErr); 
-          return; 
-        }
-        container.innerHTML='';
-        let infoTop=document.createElement('div'); infoTop.className='bg-emerald-50 border rounded-xl p-2.5 mb-3 text-xs';
-        let pTop=document.createElement('p'); pTop.className='font-bold text-emerald-800'; pTop.textContent='🏪 '+hasil.length+' produk • Verified ✅'; infoTop.appendChild(pTop); container.appendChild(infoTop);
-        hasil.forEach(item=>{
-          let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-          let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
-          let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
-          let mid=document.createElement('div'); mid.className='flex-1';
-          let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
-          let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
-          mid.append(pN,pH);
-          let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
-          let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
-          let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
-          aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
-        });
+      }
     }
+    if(!container) return;
+    container.textContent='';
+    if(hasil.length===0){
+      let pErr=document.createElement('p'); pErr.className='text-center py-8 text-gray-400 text-xs'; pErr.textContent='❌ PIN tidak ditemukan'; container.appendChild(pErr); return;
+    }
+    let infoTop=document.createElement('div'); infoTop.className='bg-emerald-50 border rounded-xl p-2.5 mb-3 text-xs';
+    let pTop=document.createElement('p'); pTop.className='font-bold text-emerald-800'; pTop.textContent='🏪 '+hasil.length+' produk • Verified ✅'; infoTop.appendChild(pTop); container.appendChild(infoTop);
+    hasil.forEach(item=>{
+      let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
+      let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
+      let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
+      let mid=document.createElement('div'); mid.className='flex-1';
+      let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
+      let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
+      mid.append(pN,pH);
+      let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
+      let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
+      let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
+      aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
+    });
+  });
+}
     function hapusProdukDariToko(id){ 
       if(confirm('Yakin hapus produk ini dari toko Anda?')){
         let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
