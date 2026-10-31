@@ -306,7 +306,9 @@ function amanAudio(url){
 function amanLokasi(url){
   try{
     const u=new URL(String(url).trim());
-    if((u.protocol==='http:'||u.protocol==='https:') && u.hostname.includes('google.com') && u.pathname.includes('/maps')) return u.href;
+    const hostOk = u.hostname==='google.com' || u.hostname.endsWith('.google.com');
+    const pathOk = u.pathname.startsWith('/maps');
+    if((u.protocol==='http:'||u.protocol==='https:') && hostOk && pathOk) return u.href;
     return '';
   }catch(e){ return ''; }
 }
