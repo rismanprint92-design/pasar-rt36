@@ -251,7 +251,21 @@
   }
   const auth = firebase.auth();
   const database = firebase.database();
-    function amanFoto(url){ try{ if(!url) return 'https://via.placeholder.com/300?text=Produk+RT36'; let s=String(url).trim(); if(s.toLowerCase().startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36'; if(s.toLowerCase().startsWith('data:image/')) return s; const u=new URL(s); if(u.protocol==='http:'||u.protocol==='https:') return s; return 'https://via.placeholder.com/300?text=Produk+RT36'; }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; } }
+  function amanFoto(url){
+  try{
+    if(!url) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    let s=String(url).trim(); if(!s) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    let low=s.toLowerCase();
+    // FIX CODEQL - HARUS CEK 3 INI BOSKU!
+    if(low.startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    if(low.startsWith('vbscript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    if(low.startsWith('data:') && !low.startsWith('data:image/')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+    if(low.startsWith('data:image/')) return s;
+    const u=new URL(s);
+    if(u.protocol==='http:' || u.protocol==='https:') return s;
+    return 'https://via.placeholder.com/300?text=Produk+RT36';
+  }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; }
+}
   function amanUrlWa(no,teks){ try{ let n=String(no).replace(/\D/g,''); if(n.startsWith('0')) n='62'+n.slice(1); if(!/^\d{10,15}$/.test(n)) return null; const href='https://wa.me/'+n+'?text='+encodeURIComponent(teks); const u=new URL(href); if(u.origin!=='https://wa.me') return null; return u.href; }catch(e){ return null; } }
 
   let currentUser = null;
