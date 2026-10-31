@@ -454,32 +454,6 @@ function hapusTokoPermanen(deviceId){
     }, 500);
   });
 }
-function tutupModalDaftarToko(){ 
-  const el=document.getElementById('modal-daftar-toko'); 
-  if(el){ 
-    el.classList.add('hidden'); 
-    el.style.display='none'; 
-    el.style.zIndex=''; 
-  }
-}
-function tutupSemuaModalAdmin(){
-  tutupModalDaftarToko();
-}
-// FIX KLIK DI LUAR MODAL & TOMBOL X
-document.addEventListener('click', function(e){
-  const modal = document.getElementById('modal-daftar-toko');
-  if(!modal || modal.classList.contains('hidden')) return;
-  // Kalau klik background gelap di luar kotak putih
-  if(e.target.id === 'modal-daftar-toko'){
-    tutupModalDaftarToko();
-  }
-  // Kalau klik tombol X (huruf X)
-  if(e.target.textContent.trim() === 'X' || e.target.textContent.trim() === 'x'){
-    if(e.target.closest('#modal-daftar-toko')){
-      tutupModalDaftarToko();
-    }
-  }
-});
 function lihatProdukTokoAdmin(deviceId){
   const box = document.getElementById('list-'+deviceId);
   if(!box) return;
@@ -489,7 +463,7 @@ function lihatProdukTokoAdmin(deviceId){
   activeDeviceRef.child(deviceId).once('value').then(async snap=>{
     const map=snap.val(); if(!map){ box.innerHTML='<p class="text-[11px]">Kosong</p>'; return; }
     const ids=Object.keys(map);
-    box.innerHTML='';
+    box.innerHTML=`<button onclick="tutupListToko('${deviceId}')" class="w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold">✕ Tutup</button>`;
     for(const pid of ids){
       const pSnap = await dbRef.child(pid).once('value');
       const item = pSnap.val(); if(!item) continue;
@@ -500,7 +474,6 @@ function lihatProdukTokoAdmin(deviceId){
           <div class="flex-1 min-w-0">
             <p class="font-bold text-[11px] truncate">${bersihkanTeks(item.nama||'')}</p>
             <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
-            <p class="text-[10px] text-gray-600">WA: ${item.wa||'-'} | ${item.penjual||''}</p>
           </div>
           <div class="flex flex-col gap-1">
             <button onclick="editProdukAdmin('${pid}')" class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
@@ -509,6 +482,11 @@ function lihatProdukTokoAdmin(deviceId){
         </div>`;
     }
   });
+}
+// TAMBAH FUNGSI INI DIBAWAHNYA - INI KUNCI X NYA BOSKU
+window.tutupListToko = function(deviceId){
+  const el = document.getElementById('list-'+deviceId);
+  if(el) el.classList.add('hidden');
 }
 
 function hapusProdukAdminFull(id, deviceId){
@@ -1062,7 +1040,21 @@ function keluarAdmin(){
     let m=document.getElementById('modal-pengumuman');
     if(m) m.classList.add('hidden');
   };
-
+// ===== FIX FINAL TOMBOL X - 1 KALI SAJA BOSKU =====
+window.tutupModalDaftarToko = function(){ 
+  const el=document.getElementById('modal-daftar-toko'); 
+  if(el){ 
+    el.classList.add('hidden'); 
+    el.classList.remove('flex'); 
+    el.style.display='none'; 
+  }
+};
+// Klik background abu gelap untuk tutup
+document.getElementById('modal-daftar-toko')?.addEventListener('click', function(e){
+  if(e.target.id === 'modal-daftar-toko'){
+    tutupModalDaftarToko();
+  }
+});
   </script>
 </body>
 </html>
