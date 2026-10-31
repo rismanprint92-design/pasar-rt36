@@ -1112,14 +1112,118 @@ function keluarAdmin(){
 }
     function mulaiEditPesan(keyPesan, encodedPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat mengedit pesan yang Anda kirim sendiri!'); return; } let pesanLama=decodeURIComponent(encodedPesan); let pesanBaru=prompt("Edit pesan:", pesanLama); if(pesanBaru===null) return; pesanBaru=pesanBaru.trim(); if(!pesanBaru){ alert("Pesan tidak boleh kosong!"); return; } database.ref('pesan_warga').child(keyPesan).update({pesan:pesanBaru,diedit:true}).catch(err=>{ alert("Gagal mengedit pesan: "+err.message); }); }
     function inisialisasiChatLive(){
+  if(isChatInitialized) return; isChatInitialized=true;
+  let myId='tamu_'+Date.now(); let myNama=''; try{ myId=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); myNama=localStorage.getItem('verified_nama_rt36')||''; }catch(e){}
+  let audio=document.getElementById('notifSound'); if(suaraIndex!=='off'&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; }
+  let ref=database.ref('pesan_warga'); let box=document.getElementById('boxChatWarga'); if(!box) return; box.textContent='';
+  ref.limitToLast(80).on('value', snap=>{ let dataMap=snap.val(); let teksNotif=document.getElementById('teksNotif24Jam'); if(teksNotif){ if(dataMap&&Object.keys(dataMap).length>0){ teksNotif.classList.remove('hidden'); } else { teksNotif.classList.add('hidden'); } } });
+  ref.limitToLast(80).on('child_added', snap=>{
+    let data=snap.val(), key=snap.key; if(!data) return;
+    let isMe=(data.userId===myId); let pengirimNama=data.nama; let pengirimId=data.userId;
+    let div=document.createElement('div');
+    div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1';
+    div.id='msg_'+key;
+    let bubble=document.createElement('div');
+    bubble.className='bubble-wa '+(isMe?'bubble-me':'bubble-other')+' cursor-pointer';
+    bubble.addEventListener('click', (e)=>{
+      if(e.target.closest('button')) return;
+      mulaiBalasPesan(pengirimNama, data.tipe==='teks'?data.pesan:'[Media]');
+    });
+    let header=document.createElement('div');
+    header.className='flex justify-between items-center gap-2';
+    let namaSpan=document.createElement('span');
+    namaSpan.className='nama-atas flex items-center text-emerald-800';
+    if(data.fotoProfil){
+      let imgAv=document.createElement('img');
+      imgAv.className='w-5 h-5 rounded-full object-cover inline-block mr-1 flex-shrink-0';
+      imgAv.src=amanFoto(data.fotoProfil);
+      namaSpan.appendChild(imgAv);
+    }else{
+      let initial=pengirimNama?pengirimNama.charAt(0).toUpperCase():'W';
+      let sp=document.createElement('span');
+      sp.className='w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold inline-flex items-center justify-center mr-1 flex-shrink-0';
+      sp.textContent=initial;
+      namaSpan.appendChild(sp);
+    }
+    let txtNama=document.createElement('span');
+    txtNama.textContent=pengirimNama||'Warga';
+    namaSpan.appendChild(txtNama);
+    let aksiWrap=document.createElement('div');
+    aksiWrap.className='flex gap-1.5 items-center';
+    if((isMe||isAdmin)&&data.tipe==='teks'){
+      let be=document.createElement('button');
+      be.className='text-gray-400 hover:text-blue-600 text-[12px]';
+      be.textContent='✏️';
+      be.title='Edit';
+      be.addEventListener('click', (e)=>{ e.stopPropagation(); mulaiEditPesan(key, encodeURIComponent(data.pesan), pengirimId); });
+      let bh=document.createElement('button');
+      bh.className='text-gray-400 hover:text-red-600 text-[12px]';
+      bh.textContent='🗑️';
+      bh.title='Hapus';
+      bh.addEventListener('click', (e)=>{ e.stopPropagation(); hapusPesanWarga(key, pengirimId); });
+      aksiWrap.append(be,bh);
+    }
+    header.append(namaSpan,aksiWrap);
+    if(data.replyTo&&data.replyContent){
+      let replyDiv=document.createElement('div');
+      replyDiv.className='bg-black/5 border-l-2 border-emerald-600 p-1 mb-1 rounded text-[11px]';
+      let pR1=document.createElement('p'); pR1.className='font-bold text-emerald-800'; pR1.textContent=data.replyTo;
+      let pR2=document.createElement('p'); pR2.className='text-gray-600 truncate'; pR2.textContent=data.replyContent;
+      replyDiv.append(pR1,pR2);
+      bubble.appendChild(replyDiv);
+    }
+    let isiDiv=document.createElement('div');
+    isiDiv.className='py-0.5';
     if(data.tipe==='foto'){
-  let imgF=document.createElement('img'); imgF.className='max-w-[200px] rounded-lg cursor-pointer'; imgF.src=amanFoto(data.pesan); imgF.addEventListener('click', ()=>{ bukaModalZoom([amanFoto(data.pesan)],0); }); isiDiv.appendChild(imgF);
-}else if(data.tipe==='voice'){
-  let srcAud=amanAudio(data.pesan); if(srcAud){ let aud=document.createElement('audio'); aud.controls=true; aud.src=srcAud; aud.className='max-w-[220px] h-10'; isiDiv.appendChild(aud); } else { let sp=document.createElement('span'); sp.textContent='[Voice]'; isiDiv.appendChild(sp); }
-}else if(data.tipe==='lokasi'){
-  let urlLok=amanLokasi(data.pesan);
-  if(urlLok){ let aLoc=document.createElement('a'); aLoc.href=urlLok; aLoc.target='_blank'; aLoc.rel='noopener'; aLoc.className='text-blue-600 underline font-bold'; aLoc.textContent='📍 Kirim Lokasi GPS Warga'; isiDiv.appendChild(aLoc); }
-  else { let sp=document.createElement('span'); sp.textContent='📍 Lokasi'; isiDiv.appendChild(sp); }
+      let imgF=document.createElement('img');
+      imgF.className='max-w-[200px] rounded-lg cursor-pointer';
+      imgF.src=amanFoto(data.pesan);
+      imgF.addEventListener('click', ()=>{ bukaDetailProdukFoto([amanFoto(data.pesan)]); });
+      isiDiv.appendChild(imgF);
+    }else if(data.tipe==='voice'){
+      let srcAud=amanAudio(data.pesan);
+      if(srcAud){
+        let aud=document.createElement('audio'); aud.controls=true; aud.src=srcAud; aud.className='max-w-[220px] h-10';
+        isiDiv.appendChild(aud);
+      } else {
+        let sp=document.createElement('span'); sp.textContent='[Voice]'; isiDiv.appendChild(sp);
+      }
+    }else if(data.tipe==='lokasi'){
+      let urlLok=amanLokasi(data.pesan);
+      if(urlLok){
+        let aLoc=document.createElement('a'); aLoc.href=urlLok; aLoc.target='_blank'; aLoc.rel='noopener'; aLoc.className='text-blue-600 underline font-bold'; aLoc.textContent='📍 Kirim Lokasi GPS Warga';
+        isiDiv.appendChild(aLoc);
+      } else { let sp=document.createElement('span'); sp.textContent='📍 Lokasi'; isiDiv.appendChild(sp); }
+    }else{
+      let sp=document.createElement('span');
+      sp.id='teks_val_'+key;
+      sp.textContent=data.pesan||'';
+      if(data.diedit){
+        let editMark=document.createElement('span');
+        editMark.className='text-[9px] text-gray-400 italic';
+        editMark.textContent=' (diedit)';
+        sp.appendChild(editMark);
+      }
+      isiDiv.appendChild(sp);
+    }
+    let timeDiv=document.createElement('div');
+    timeDiv.className='text-right text-[10px] text-gray-500';
+    timeDiv.textContent=data.waktu||'';
+    bubble.append(header,isiDiv,timeDiv);
+    div.appendChild(bubble);
+    box.appendChild(div); box.scrollTop=box.scrollHeight;
+    if(!chatPertamaLoad&&!isMe){ let isBalasanKeSaya=(data.replyTo&&myNama&&data.replyTo.toLowerCase()===myNama.toLowerCase()); triggerNotifChat(isBalasanKeSaya); }
+  });
+  setTimeout(()=>{ chatPertamaLoad=false; },3000);
+}
+function bukaDetailProdukFoto(arr){
+  window.currentZoomPhotos=arr; window.currentZoomIndex=0;
+  const target=document.getElementById('img-zoom-target');
+  const counter=document.getElementById('zoom-foto-counter');
+  if(target) target.src=amanFoto(arr[0]);
+  if(counter) counter.textContent=`1 / ${arr.length}`;
+  const modalZoom=document.getElementById('modal-zoom');
+  if(modalZoom) modalZoom.classList.remove('hidden');
 }
     function bunyikanNotifikasi(){ if(suaraIndex==='off') return; let audio=document.getElementById('notifSound'); if(audio&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; audio.currentTime=0; audio.play().catch(()=>{}); } }
     function updateHeaderDropdownMenu(){ let dropHeader=document.getElementById('dropdownHeaderChat'); if(dropHeader){ dropHeader.innerHTML=`<button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil</button><button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi</button><button onclick="keluarDariPasarRT36()" class="w-full text-left px-3.5 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2 border-b"><i class="ph ph-sign-out text-base text-red-600"></i> Keluar Akun (Logout)</button><button onclick="toggleBoxChat()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-600 hover:bg-gray-100 flex items-center gap-2 font-medium"><i class="ph ph-x text-base"></i> Tutup Chat</button>`; } }
