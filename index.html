@@ -596,7 +596,14 @@ window.editProdukAdmin = async function(pid){
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
     function muatDataKeFormEdit(id){ const p=produkData.find(x=>x.id===id); if(!p) return; document.getElementById('edit-id').value=p.id; document.getElementById('edit-nama').value=p.nama; document.getElementById('edit-harga').value=p.harga; document.getElementById('edit-kategori').value=p.kategori; document.getElementById('edit-status').value=p.status||'tersedia'; document.getElementById('edit-penjual').value=p.penjual; document.getElementById('edit-lokasi').value=p.lokasi; document.getElementById('edit-whatsapp').value=p.wa; document.getElementById('edit-catatan').value=p.catatan||''; document.getElementById('modal-edit').classList.remove('hidden'); }
-    function tutupModalEdit(){ document.getElementById('modal-edit').classList.add('hidden'); }
+    function tutupModalEdit(){ 
+  const el=document.getElementById('modal-edit'); 
+  if(el){ 
+    el.classList.add('hidden'); 
+    el.style.display='none'; 
+    el.style.zIndex=''; 
+  }
+}
   function simpanPerubahanProduk(e){ 
   e.preventDefault(); 
   const id=document.getElementById('edit-id').value; 
@@ -615,7 +622,6 @@ window.editProdukAdmin = async function(pid){
     ownerId: lama.ownerId || null
   };
   dbRef.child(id).update(dataBaru).then(()=>{
-    // update juga WA di active_device_pins biar sinkron
     activeDeviceRef.once('value').then(snap=>{
       const all=snap.val();
       if(all){
@@ -626,8 +632,8 @@ window.editProdukAdmin = async function(pid){
         }
       }
     });
-    tutupModalEdit(); 
-    alert('Berhasil diperbarui! WA & data penjual sudah update bosku.');
+    tutupModalEdit();
+    setTimeout(function(){ alert('Berhasil diperbarui bosku!'); }, 200);
   }).catch(err=>alert('Gagal: '+err.message));
 }
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
