@@ -1226,7 +1226,17 @@ function bukaDetailProdukFoto(arr){
   if(modalZoom) modalZoom.classList.remove('hidden');
 }
     function bunyikanNotifikasi(){ if(suaraIndex==='off') return; let audio=document.getElementById('notifSound'); if(audio&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; audio.currentTime=0; audio.play().catch(()=>{}); } }
-    function updateHeaderDropdownMenu(){ let dropHeader=document.getElementById('dropdownHeaderChat'); if(dropHeader){ dropHeader.innerHTML=`<button onclick="bukaModalGantiProfil()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-user-circle text-base text-emerald-600"></i> Ganti Nama & Foto Profil</button><button onclick="toggleNotifikasi()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium"><i class="ph ph-bell text-base text-emerald-600"></i> Suara Notifikasi</button><button onclick="keluarDariPasarRT36()" class="w-full text-left px-3.5 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2 border-b"><i class="ph ph-sign-out text-base text-red-600"></i> Keluar Akun (Logout)</button><button onclick="toggleBoxChat()" class="w-full text-left px-3.5 py-2.5 text-xs text-gray-600 hover:bg-gray-100 flex items-center gap-2 font-medium"><i class="ph ph-x text-base"></i> Tutup Chat</button>`; } }
+    function updateHeaderDropdownMenu(){ 
+  let dropHeader=document.getElementById('dropdownHeaderChat'); 
+  if(dropHeader){ 
+    dropHeader.textContent=''; 
+    let b1=document.createElement('button'); b1.className='w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium'; b1.textContent='👤 Ganti Nama & Foto Profil'; b1.addEventListener('click', bukaModalGantiProfil); 
+    let b2=document.createElement('button'); b2.className='w-full text-left px-3.5 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 flex items-center gap-2 border-b font-medium'; b2.textContent='🔔 Suara Notifikasi'; b2.addEventListener('click', toggleNotifikasi); 
+    let b3=document.createElement('button'); b3.className='w-full text-left px-3.5 py-2.5 text-xs text-red-600 font-bold hover:bg-red-50 flex items-center gap-2 border-b'; b3.textContent='🚪 Keluar Akun (Logout)'; b3.addEventListener('click', keluarDariPasarRT36); 
+    let b4=document.createElement('button'); b4.className='w-full text-left px-3.5 py-2.5 text-xs text-gray-600 hover:bg-gray-100 flex items-center gap-2 font-medium'; b4.textContent='✕ Tutup Chat'; b4.addEventListener('click', toggleBoxChat); 
+    dropHeader.append(b1,b2,b3,b4); 
+  } 
+}
     window.addEventListener('load', function(){ inisialisasiChatLive(); updateHeaderDropdownMenu(); });
     function keluarDariPasarRT36(){
       if(confirm('Yakin mau keluar akun & hapus sesi perangkat ini?')){
