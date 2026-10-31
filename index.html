@@ -551,31 +551,27 @@ function hapusTokoPermanen(deviceId){
   });
 }
 function lihatProdukTokoAdmin(deviceId){
-  const box = document.getElementById('list-'+deviceId);
-  if(!box) return;
+  const box=document.getElementById('list-'+deviceId); if(!box) return;
   if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
-  box.classList.remove('hidden');
-  box.innerHTML='<p class="text-[11px] text-gray-400 py-2">Memuat...</p>';
+  box.classList.remove('hidden'); box.innerHTML='';
+  let btnTutup=document.createElement('button'); btnTutup.className='w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold'; btnTutup.textContent='✕ Tutup'; btnTutup.addEventListener('click', ()=>tutupListToko(deviceId)); box.appendChild(btnTutup);
+  let pLoad=document.createElement('p'); pLoad.className='text-[11px] text-gray-400 py-2'; pLoad.textContent='Memuat...'; box.appendChild(pLoad);
   activeDeviceRef.child(deviceId).once('value').then(async snap=>{
-    const map=snap.val(); if(!map){ box.innerHTML='<p class="text-[11px]">Kosong</p>'; return; }
+    const map=snap.val(); pLoad.remove(); if(!map){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong'; box.appendChild(p); return; }
     const ids=Object.keys(map);
-    box.innerHTML=`<button onclick="tutupListToko('${deviceId}')" class="w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold">✕ Tutup</button>`;
     for(const pid of ids){
-      const pSnap = await dbRef.child(pid).once('value');
-      const item = pSnap.val(); if(!item) continue;
-      const foto = (item.foto && item.foto[0]) ? item.foto[0] : 'https://via.placeholder.com/100';
-      box.innerHTML+=`
-        <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center">
-        <img src="${amanFoto(foto)}" class="w-12 h-12 rounded object-cover bg-white">
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-[11px] truncate">${bersihkanTeks(item.nama||'')}</p>
-            <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
-          </div>
-          <div class="flex flex-col gap-1">
-            <button onclick="editProdukAdmin('${pid}')" class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Edit</button>
-            <button onclick="hapusProdukAdminFull('${pid}','${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Hapus</button>
-          </div>
-        </div>`;
+      const pSnap=await dbRef.child(pid).once('value'); const item=pSnap.val(); if(!item) continue;
+      const foto=(item.foto && item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
+      let row=document.createElement('div'); row.className='flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center';
+      let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-12 h-12 rounded object-cover bg-white';
+      let info=document.createElement('div'); info.className='flex-1 min-w-0';
+      let pNama=document.createElement('p'); pNama.className='font-bold text-[11px] truncate'; pNama.textContent=item.nama||'';
+      let pHarga=document.createElement('p'); pHarga.className='text-[11px] text-emerald-700'; pHarga.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
+      info.append(pNama,pHarga);
+      let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
+      let be=document.createElement('button'); be.className='bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editProdukAdmin(pid));
+      let bh=document.createElement('button'); bh.className='bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukAdminFull(pid,deviceId));
+      aksi.append(be,bh); row.append(img,info,aksi); box.appendChild(row);
     }
   });
 }
