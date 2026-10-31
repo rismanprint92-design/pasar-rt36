@@ -246,17 +246,44 @@
     appId: "1:217440554731:web:5c40a642385f5586eeb8ae",
     measurementId: "G-KX2C8L1NC8"
   };
-  if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-  }
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
   const auth = firebase.auth();
   const database = firebase.database();
 
+  // === FIX UTAMA CODEQL BOSKU - HARUS DI ATAS SENDIRI! ===
+  function amanFoto(url){
+    try{
+      if(!url) return 'https://via.placeholder.com/300?text=Produk+RT36';
+      let s = String(url).trim();
+      if(!s) return 'https://via.placeholder.com/300?text=Produk+RT36';
+      if(s.toLowerCase().startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+      if(s.toLowerCase().startsWith('data:text/html')) return 'https://via.placeholder.com/300?text=Produk+RT36';
+      // data:image aman
+      if(s.toLowerCase().startsWith('data:image/')) return s;
+      const u = new URL(s);
+      if(u.protocol === 'https:' || u.protocol === 'http:') return s;
+      return 'https://via.placeholder.com/300?text=Produk+RT36';
+    }catch(e){
+      return 'https://via.placeholder.com/300?text=Produk+RT36';
+    }
+  }
+  function amanUrlWa(no, teks){
+    try{
+      let n = String(no).replace(/\D/g,'');
+      if(n.startsWith('0')) n = '62' + n.slice(1);
+      if(!/^\d{10,15}$/.test(n)) return null;
+      const base = 'https://wa.me/';
+      const url = base + encodeURIComponent(n) + '?text=' + encodeURIComponent(teks);
+      const u = new URL(url);
+      if(u.origin !== 'https://wa.me') return null;
+      if(!u.href.startsWith(base)) return null;
+      return u.href;
+    }catch(e){ return null; }
+  }
+
   let currentUser = null;
   auth.signInAnonymously().catch(function(err){ console.log(err); });
-  auth.onAuthStateChanged(function(user){ 
-    if(user){ currentUser = user; console.log("Auth OK:", user.uid); } 
-  });
+  auth.onAuthStateChanged(function(user){ if(user){ currentUser = user; } });
 
     const dbRef = database.ref('produk_pasar');
     const pinRef = database.ref('pengaturan/admin_pin');
@@ -287,58 +314,38 @@
     pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
     adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
     let produkData = []; let kategoriAktif = 'semua'; let BATAS_TAMPIL = 12; let produkFilteredGlobal = [];
-    dbRef.on('value', (snap) => { 
-      const data=snap.val(); produkData=[]; 
-      if(data){ 
-        Object.keys(data).forEach(k=>{ 
-          let v = data[k] || {};
-          delete v.pinHash; delete v.pinPenjual; delete v.pin;
-          produkData.unshift({id:k, ...v}); 
-        }); 
-      } 
-      BATAS_TAMPIL=12; terapkanFilterDanPencarian(); 
-    });
+    dbRef.on('value', (snap) => { const data=snap.val(); produkData=[]; if(data){ Object.keys(data).forEach(k=>{ let v = data[k] || {}; delete v.pinHash; delete v.pinPenjual; delete v.pin; produkData.unshift({id:k, ...v}); }); } BATAS_TAMPIL=12; terapkanFilterDanPencarian(); });
     function terapkanFilterDanPencarian(){ const kwEl=document.getElementById('input-pencarian'); const kw=kwEl?kwEl.value.toLowerCase().trim():''; let hasil=produkData; if(kategoriAktif!=='semua'){ hasil=hasil.filter(p=>p.kategori===kategoriAktif); } if(kw!==''){ hasil=hasil.filter(p=>(p.nama&&p.nama.toLowerCase().includes(kw))||(p.penjual&&p.penjual.toLowerCase().includes(kw))||(p.lokasi&&p.lokasi.toLowerCase().includes(kw))||(p.catatan&&p.catatan.toLowerCase().includes(kw))); } produkFilteredGlobal=hasil; renderProduk(hasil.slice(0,BATAS_TAMPIL)); const btn=document.getElementById('btn-shopee'); if(btn){ if(produkFilteredGlobal.length>BATAS_TAMPIL){ btn.style.display='block'; let sisa=produkFilteredGlobal.length-BATAS_TAMPIL; if(sisa>12) sisa=12; btn.innerHTML=`Lihat ${sisa} Produk Lainnya ↓ <span style="opacity:0.7">(${BATAS_TAMPIL}/${produkFilteredGlobal.length})</span>`; } else btn.style.display='none'; } }
     function muatLebihBanyakProduk(){ BATAS_TAMPIL+=12; terapkanFilterDanPencarian(); }
-   function renderProduk(data){
-  const container=document.getElementById('daftar-produk'); 
-  if(!container) return; 
-  container.innerHTML='';
-  if(!data||data.length===0){ 
-    container.textContent='Belum ada barang.'; 
-    return; 
-  }
-  data.forEach(item=>{
-    let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
-    let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
-    let foto=list[0];
-    
-    // Buat elemen pakai createElement = AMAN dari XSS bosku!
-    let cardDiv = document.createElement('div');
-    cardDiv.className = "bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card";
-    cardDiv.id = "produk-" + item.id;
-    
-    let img = document.createElement('img');
-    img.src = amanFoto(foto);;
-    img.className = "w-full h-40 object-cover bg-white";
-    img.loading = "lazy";
-    
-    let h3 = document.createElement('h3');
-    h3.className = "font-bold text-[13px]";
-    h3.textContent = item.nama; // PAKAI textContent BOSKU, BUKAN innerHTML!
-    
-    let pHarga = document.createElement('p');
-    pHarga.className = "text-[#064e3b] font-extrabold text-[14.5px]";
-    pHarga.textContent = "Rp " + parseInt(item.harga).toLocaleString('id-ID');
-    
-    cardDiv.appendChild(img);
-    cardDiv.appendChild(h3);
-    cardDiv.appendChild(pHarga);
-    cardDiv.onclick = () => bukaDetailProduk(item.id);
-    
-    container.appendChild(cardDiv);
-  });
-}
+    function renderProduk(data){
+      const container=document.getElementById('daftar-produk'); 
+      if(!container) return; 
+      container.innerHTML='';
+      if(!data||data.length===0){ container.textContent='Belum ada barang.'; return; }
+      data.forEach(item=>{
+        let def='https://via.placeholder.com/300x300/ffffff/cccccc?text=Produk'; 
+        let list=item.foto?(Array.isArray(item.foto)?item.foto:[item.foto]):[def]; 
+        let foto=list[0];
+        let cardDiv = document.createElement('div');
+        cardDiv.className = "bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card";
+        cardDiv.id = "produk-" + item.id;
+        let img = document.createElement('img');
+        img.src = amanFoto(foto);
+        img.className = "w-full h-40 object-cover bg-white";
+        img.loading = "lazy";
+        let h3 = document.createElement('h3');
+        h3.className = "font-bold text-[13px]";
+        h3.textContent = item.nama;
+        let pHarga = document.createElement('p');
+        pHarga.className = "text-[#064e3b] font-extrabold text-[14.5px]";
+        pHarga.textContent = "Rp " + parseInt(item.harga).toLocaleString('id-ID');
+        cardDiv.appendChild(img);
+        cardDiv.appendChild(h3);
+        cardDiv.appendChild(pHarga);
+        cardDiv.onclick = () => bukaDetailProduk(item.id);
+        container.appendChild(cardDiv);
+      });
+    }
     function filterKategori(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ const m=document.getElementById('modal-pengumuman'); if(m) m.classList.remove('hidden'); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; }
@@ -347,10 +354,10 @@
       if(!el){ alert('Nomor tidak ketemu bosku'); return; }
       var no = el.value.trim().replace(/\D/g,'');
       if(!no){ alert('Nomor kosong bosku'); return; }
-      if(no.startsWith('0')) no = '62' + no.slice(1);
-      var teks = 'Halo Pengelola Pasar RT.36, saya dari website pasar-rt36.my.id 🙏';
-      var url = 'https://wa.me/' + no + '?text=' + encodeURIComponent(teks);
-      window.open(url, '_blank');
+      var teks = 'Halo Pengelola Pasar RT.36, saya dari website pasar-rt36.my.id';
+      var url = amanUrlWa(no, teks);
+      if(!url){ alert('Nomor tidak valid bosku'); return; }
+      window.open(url, '_blank', 'noopener');
     }
     function kompresGambar(file, cb){
       let r=new FileReader();
