@@ -392,6 +392,7 @@
             <div class="flex flex-col gap-1 ml-2">
               <button onclick="lihatProdukTokoAdmin('${deviceId}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Lihat Produk</button>
               <button onclick="resetPinPenjual('${deviceId}')" class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-3 py-1.5 rounded-lg">Reset PIN</button>
+              <button onclick="hapusTokoPermanen('${deviceId}')" class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">HAPUS TOKO</button>
               <button onclick="hapusTokoAdmin('${deviceId}')" class="bg-gray-50 text-gray-600 border text-[10px] px-3 py-1.5 rounded-lg">Hapus PIN Saja</button>
             </div>
           </div>
@@ -427,6 +428,31 @@ function hapusTokoAdmin(deviceId){
       bukaModalDaftarToko();
     });
   }
+}
+function hapusTokoPermanen(deviceId){
+  if(!isAdmin){ alert('Hanya admin!'); return; }
+  if(!confirm('⚠️ HAPUS TOKO PERMANEN?\n\nToko '+deviceId+' + SEMUA produknya akan hilang permanen dari website pasar-rt36.my.id!\n\nYakin bosku?')) return;
+  
+  activeDeviceRef.child(deviceId).once('value').then(snap=>{
+    const map=snap.val();
+    if(!map){ 
+      activeDeviceRef.child(deviceId).remove().then(()=>{ alert('Toko kosong terhapus!'); bukaModalDaftarToko(); });
+      return;
+    }
+    const ids = Object.keys(map);
+    let hapusCount = 0;
+    ids.forEach(pid=>{
+      dbRef.child(pid).remove().then(()=>{ hapusCount++; }).catch(()=>{});
+    });
+    // Hapus juga PIN nya
+    setTimeout(()=>{
+      activeDeviceRef.child(deviceId).remove().then(()=>{
+        alert('✅ TOKO TERHAPUS PERMANEN!\n'+ids.length+' produk + PIN dihapus bosku!');
+        bukaModalDaftarToko();
+        terapkanFilterDanPencarian();
+      });
+    }, 500);
+  });
 }
 function tutupModalDaftarToko(){ 
   const el=document.getElementById('modal-daftar-toko'); 
