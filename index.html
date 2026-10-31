@@ -319,7 +319,7 @@
     cardDiv.id = "produk-" + item.id;
     
     let img = document.createElement('img');
-    img.src = foto;
+    img.src = amanFoto(foto);;
     img.className = "w-full h-40 object-cover bg-white";
     img.loading = "lazy";
     
@@ -550,7 +550,26 @@ function lihatProdukTokoAdmin(deviceId){
 
       const img = document.createElement('img');
       img.className = "w-12 h-12 rounded object-cover bg-white";
-      img.src = foto; // src aman bosku, bukan innerHTML
+      // VALIDASI FOTO ANTI XSS BOSKU - CodeQL MAU INI!
+function amanFoto(url){
+  try{
+    if(!url) return 'https://via.placeholder.com/100';
+    // Tolak javascript: , data:text/html, dll
+    if(url.toLowerCase().startsWith('javascript:')) return 'https://via.placeholder.com/100';
+    if(url.toLowerCase().startsWith('data:text/html')) return 'https://via.placeholder.com/100';
+    const u = new URL(url);
+    if(u.protocol !== 'https:' && u.protocol !== 'http:' && !u.protocol.startsWith('data:image')) {
+      return 'https://via.placeholder.com/100';
+    }
+    return url;
+  }catch(e){
+    return 'https://via.placeholder.com/100';
+  }
+}
+
+const img = document.createElement('img');
+img.className = "w-12 h-12 rounded object-cover bg-white";
+img.src = amanFoto(foto); // PAKAI FUNGSI VALIDASI BOSKU!
 
       const divInfo = document.createElement('div');
       divInfo.className = "flex-1 min-w-0";
@@ -673,7 +692,7 @@ window.editProdukAdmin = async function(pid){
 
       const img = document.createElement('img');
       img.className = "w-14 h-14 rounded-lg object-cover";
-      img.src = foto;
+      img.src = amanFoto(foto);;
 
       const divInfo = document.createElement('div');
       divInfo.className = "flex-1 min-w-0";
