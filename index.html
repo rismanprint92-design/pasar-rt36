@@ -251,6 +251,8 @@
   }
   const auth = firebase.auth();
   const database = firebase.database();
+    function amanFoto(url){ try{ if(!url) return 'https://via.placeholder.com/300?text=Produk+RT36'; let s=String(url).trim(); if(s.toLowerCase().startsWith('javascript:')) return 'https://via.placeholder.com/300?text=Produk+RT36'; if(s.toLowerCase().startsWith('data:image/')) return s; const u=new URL(s); if(u.protocol==='http:'||u.protocol==='https:') return s; return 'https://via.placeholder.com/300?text=Produk+RT36'; }catch(e){ return 'https://via.placeholder.com/300?text=Produk+RT36'; } }
+  function amanUrlWa(no,teks){ try{ let n=String(no).replace(/\D/g,''); if(n.startsWith('0')) n='62'+n.slice(1); if(!/^\d{10,15}$/.test(n)) return null; const href='https://wa.me/'+n+'?text='+encodeURIComponent(teks); const u=new URL(href); if(u.origin!=='https://wa.me') return null; return u.href; }catch(e){ return null; } }
 
   let currentUser = null;
   auth.signInAnonymously().catch(function(err){ console.log(err); });
@@ -314,7 +316,7 @@
         let badge=list.length>1?'<span class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-medium">'+list.length+' Foto</span>':'';
         let card=`<div id="produk-${item.id}" class="bg-white rounded-[16px] shadow-sm border overflow-hidden flex flex-col produk-card">
           <div class="relative cursor-pointer w-full" onclick="bukaDetailProduk('${item.id}')">
-            <img loading="lazy" src="${foto}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
+          <img loading="lazy" src="${amanFoto(foto)}" class="w-full h-40 object-cover bg-white">${badge}${overlay}
           </div>
           <div class="p-2.5 pt-2 flex flex-col gap-0 cursor-pointer" onclick="bukaDetailProduk('${item.id}')">
             <div class="leading-none mb-1">${indikator}</div>
@@ -328,15 +330,14 @@
     function filterKategori(k){ kategoriAktif=k; ['semua','kuliner','sembako','jasa','bekas','pakaian','aksesoris','elektronik','dll'].forEach(x=>{ const b=document.getElementById(`btn-kat-${x}`); if(b) b.className=x===k?"px-4 py-2 bg-emerald-600 text-white rounded-full whitespace-nowrap shadow-sm":"px-4 py-2 bg-white text-gray-700 rounded-full border whitespace-nowrap"; }); terapkanFilterDanPencarian(); }
     function jalankanPencarian(){ terapkanFilterDanPencarian(); }
     function bukaModalPengumuman(){ const m=document.getElementById('modal-pengumuman'); if(m) m.classList.remove('hidden'); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; }
-    function kirimPesanKeAdminRT(){
+        function kirimPesanKeAdminRT(){
       var el = document.getElementById('admin-whatsapp-nomor');
       if(!el){ alert('Nomor tidak ketemu bosku'); return; }
-      var no = el.value.trim().replace(/\D/g,'');
-      if(!no){ alert('Nomor kosong bosku'); return; }
-      if(no.startsWith('0')) no = '62' + no.slice(1);
+      var no = el.value.trim();
       var teks = 'Halo Pengelola Pasar RT.36, saya dari website pasar-rt36.my.id 🙏';
-      var url = 'https://wa.me/' + no + '?text=' + encodeURIComponent(teks);
-      window.open(url, '_blank');
+      var url = amanUrlWa(no, teks);
+      if(!url){ alert('Nomor tidak valid bosku'); return; }
+      window.open(url, '_blank', 'noopener');
     }
     function kompresGambar(file, cb){
       let r=new FileReader();
@@ -470,7 +471,7 @@ function lihatProdukTokoAdmin(deviceId){
       const foto = (item.foto && item.foto[0]) ? item.foto[0] : 'https://via.placeholder.com/100';
       box.innerHTML+=`
         <div class="flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center">
-          <img src="${foto}" class="w-12 h-12 rounded object-cover bg-white">
+        <img src="${amanFoto(foto)}" class="w-12 h-12 rounded object-cover bg-white">
           <div class="flex-1 min-w-0">
             <p class="font-bold text-[11px] truncate">${bersihkanTeks(item.nama||'')}</p>
             <p class="text-[11px] text-emerald-700">Rp ${parseInt(item.harga||0).toLocaleString('id-ID')}</p>
@@ -549,7 +550,7 @@ window.editProdukAdmin = async function(pid){
         container.innerHTML=`<div class="bg-emerald-50 border rounded-xl p-2.5 mb-3 text-xs"><p class="font-bold text-emerald-800">🏪 ${hasil.length} produk • Verified ✅</p></div>`;
         hasil.forEach(item=>{
           let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-          container.innerHTML+=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${foto}" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div><div class="flex flex-col gap-1"><button onclick="editDariTokoSaya('${item.id}')" class="bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Hapus</button></div></div>`;
+          container.innerHTML+=`<div class="flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm"><img src="${amanFoto(foto)}" class="w-14 h-14 rounded-lg object-cover"><div class="flex-1"><p class="font-bold text-[12px]">${bersihkanTeks(item.nama)}</p><p class="text-orange-500 font-bold text-[12px]">Rp ${parseInt(item.harga).toLocaleString('id-ID')}</p></div><div class="flex flex-col gap-1"><button onclick="editDariTokoSaya('${item.id}')" class="bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Edit</button><button onclick="hapusProdukDariToko('${item.id}')" class="bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg">Hapus</button></div></div>`;
         });
       });
     }
