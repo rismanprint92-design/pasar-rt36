@@ -1426,11 +1426,18 @@ function bukaDetailProdukFoto(arr){
 }
     window.addEventListener('load', function(){ inisialisasiChatLive(); updateHeaderDropdownMenu(); });
     function keluarDariPasarRT36(){
-      if(confirm('Yakin mau keluar akun & hapus sesi perangkat ini?')){
-        try { localStorage.removeItem('chat_pin_rt36'); localStorage.removeItem('verified_nama_rt36'); localStorage.removeItem('verified_foto_rt36'); localStorage.removeItem('my_chat_id'); localStorage.removeItem('my_device_uid'); } catch(e) {}
-        location.reload();
-      }
-    }
+  if(confirm('Yakin mau keluar akun & hapus sesi perangkat ini?')){
+    try { 
+      localStorage.removeItem('chat_pin_rt36'); 
+      localStorage.removeItem('verified_nama_rt36'); 
+      localStorage.removeItem('verified_foto_rt36'); 
+      localStorage.removeItem('my_chat_id'); 
+      localStorage.removeItem('my_device_uid');
+      // JANGAN HAPUS verified_wa_rt36 & isAdminRT36 BOSKU - BIAR OTP & ADMIN INGAT SELAMANYA!
+    } catch(e) {}
+    location.reload();
+  }
+}
 
     // ===== FINAL CLEAN FIX BOSKU - 1x DRAG + CHAT PRIVAT + AUTO HAPUS =====
     let targetPrivId=null, targetPrivNama=null;
