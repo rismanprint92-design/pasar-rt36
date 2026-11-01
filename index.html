@@ -269,7 +269,35 @@
   }
   const auth = firebase.auth();
   const database = firebase.database();
-  function amanFoto(url){
+  // ==== TAMBAHAN OPSI A - PIN MASTER & OTP SELAMANYA BOSKU ====
+const PIN_MASTER_AR36 = "AR36";
+let confirmationResultWA = null;
+let waYangMauDiVerifikasi = "";
+let dataProdukPendingOTP = null;
+
+function getVerifiedWAList(){
+  try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
+}
+function isWA_SudahVerifikasi(wa){
+  let list = getVerifiedWAList();
+  let clean = String(wa).replace(/\D/g,'');
+  return list.includes(clean);
+}
+function setWA_SudahVerifikasi(wa){
+  let clean = String(wa).replace(/\D/g,'');
+  let list = getVerifiedWAList();
+  if(!list.includes(clean)){
+    list.push(clean);
+    localStorage.setItem('verified_wa_rt36', JSON.stringify(list));
+  }
+}
+function formatKePlus62(wa){
+  let n = String(wa).replace(/\D/g,'');
+  if(n.startsWith('0')) n = '62'+n.slice(1);
+  if(!n.startsWith('62')) n = '62'+n;
+  return '+'+n;
+}
+ function amanFoto(url){
  try{
   const fallback='https://via.placeholder.com/400x400?text=Produk+RT36';
   if(!url) return fallback;
