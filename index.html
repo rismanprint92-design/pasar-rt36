@@ -1058,9 +1058,20 @@ window.editDariTokoSaya = function(id){
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
     // FIX BIAR ADMIN TIDAK HILANG PAS RELOAD
+    // ==== ADMIN MASTER AR36 INGAT SELAMANYA ====
 function verifikasiAdmin(){
   let v=document.getElementById('pin-admin').value.trim();
   if(!v){ alert('Isi PIN dulu bosku!'); return; }
+  if(String(v).toUpperCase() === PIN_MASTER_AR36){
+    isAdmin=true;
+    try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
+    const banner=document.getElementById('banner-admin');
+    if(banner) banner.classList.remove('hidden');
+    tutupModalAdmin();
+    terapkanFilterDanPencarian();
+    alert('✅ ADMIN MASTER AR36 AKTIF - Bisa edit semua toko!');
+    return;
+  }
   pinRef.once('value').then(s=>{
     let dbPin = s.val() || "1234";
     if(String(v)===String(dbPin)){
@@ -1071,7 +1082,7 @@ function verifikasiAdmin(){
       tutupModalAdmin();
       terapkanFilterDanPencarian();
     } else {
-      alert('PIN Admin RT Salah!');
+      alert('PIN Admin Salah!');
     }
   });
 }
@@ -1082,8 +1093,49 @@ function keluarAdmin(){
   if(banner) banner.classList.add('hidden'); 
   terapkanFilterDanPencarian(); 
 }
-// Auto load admin jika sudah login sebelumnya
 (function(){ try{ if(localStorage.getItem('isAdminRT36')==='true'){ isAdmin=true; const b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); } }catch(e){} })();
+
+// ==== FUNGSI OTP WA - POPUP KECIL ====
+function bukaModalOTP_WA(wa){
+  waYangMauDiVerifikasi = wa;
+  document.getElementById('label-wa-otp').innerText = wa;
+  document.getElementById('modal-otp-wa-verifikasi').classList.remove('hidden');
+}
+function tutupModalOTP_WA(){
+  let el = document.getElementById('modal-otp-wa-verifikasi');
+  if(el) el.classList.add('hidden');
+}
+function kirimOTPVerifikasiWA(wa){
+  try{
+    if(!window.recaptchaVerifierToko){
+      window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'invisible'});
+    }
+    let noPlus62 = formatKePlus62(wa);
+    bukaModalOTP_WA(noPlus62);
+    document.getElementById('info-otp-wa').innerHTML = `Mengirim SMS ke ${noPlus62}...`;
+    auth.signInWithPhoneNumber(noPlus62, window.recaptchaVerifierToko).then(function(result){
+      confirmationResultWA = result;
+      document.getElementById('info-otp-wa').innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS Bosku!`;
+    }).catch(function(err){
+      alert('Gagal kirim OTP: '+err.message);
+      if(window.recaptchaVerifierToko){ window.recaptchaVerifierToko.clear(); window.recaptchaVerifierToko=null; }
+    });
+  }catch(e){ alert('Error OTP: '+e.message); }
+}
+function konfirmasiOTP_WA(){
+  let kode = document.getElementById('input-kode-otp-wa').value.trim();
+  if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
+  if(!confirmationResultWA){ alert('Belum ada OTP!'); return; }
+  confirmationResultWA.confirm(kode).then(function(){
+    setWA_SudahVerifikasi(waYangMauDiVerifikasi);
+    alert('✅ No WA '+waYangMauDiVerifikasi+' terverifikasi! Ingat selamanya!');
+    tutupModalOTP_WA();
+    if(dataProdukPendingOTP){
+      simpanKeFirebase(dataProdukPendingOTP.foto, dataProdukPendingOTP.pin);
+      dataProdukPendingOTP = null;
+    }
+  }).catch(function(err){ alert('Kode salah: '+err.message); });
+}
     function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
     function simpanPinBaru(){ const lama=document.getElementById('pin-lama').value; const baru=document.getElementById('pin-baru').value; if(lama!==pinAdminAktif){ alert('PIN Lama salah!'); return; } pinRef.set(baru).then(()=>{ alert('PIN Admin berhasil diubah!'); pinAdminAktif=baru; tutupModalGantiPin(); }); }
