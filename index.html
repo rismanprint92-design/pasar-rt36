@@ -1104,11 +1104,13 @@ function keluarAdmin(){
 }
 (function(){ try{ if(localStorage.getItem('isAdminRT36')==='true'){ isAdmin=true; const b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); } }catch(e){} })();
 
-// ==== FUNGSI OTP WA - POPUP KECIL ====
+// ==== FUNGSI OTP WA - VERSI AMAN ANTI NULL BOSKU ====
 function bukaModalOTP_WA(wa){
   waYangMauDiVerifikasi = wa;
-  document.getElementById('label-wa-otp').innerText = wa;
-  document.getElementById('modal-otp-wa-verifikasi').classList.remove('hidden');
+  let elModal = document.getElementById('modal-otp-wa-verifikasi');
+  let elLabel = document.getElementById('label-wa-otp');
+  if(elLabel) elLabel.innerText = wa;
+  if(elModal) elModal.classList.remove('hidden');
 }
 function tutupModalOTP_WA(){
   let el = document.getElementById('modal-otp-wa-verifikasi');
@@ -1116,23 +1118,38 @@ function tutupModalOTP_WA(){
 }
 function kirimOTPVerifikasiWA(wa){
   try{
+    // Cek ada container recaptcha tidak?
+    let recaptchaEl = document.getElementById('recaptcha-container-toko');
+    if(!recaptchaEl){
+      console.log('Buat recaptcha container dulu');
+      recaptchaEl = document.createElement('div');
+      recaptchaEl.id = 'recaptcha-container-toko';
+      recaptchaEl.style.display = 'none';
+      document.body.appendChild(recaptchaEl);
+    }
     if(!window.recaptchaVerifierToko){
       window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'invisible'});
     }
     let noPlus62 = formatKePlus62(wa);
     bukaModalOTP_WA(noPlus62);
-    document.getElementById('info-otp-wa').innerHTML = `Mengirim SMS ke ${noPlus62}...`;
+    let infoEl = document.getElementById('info-otp-wa');
+    if(infoEl) infoEl.innerHTML = `Mengirim SMS ke ${noPlus62}...`;
     auth.signInWithPhoneNumber(noPlus62, window.recaptchaVerifierToko).then(function(result){
       confirmationResultWA = result;
-      document.getElementById('info-otp-wa').innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS Bosku!`;
+      if(infoEl) infoEl.innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS Bosku!`;
     }).catch(function(err){
       alert('Gagal kirim OTP: '+err.message);
-      if(window.recaptchaVerifierToko){ window.recaptchaVerifierToko.clear(); window.recaptchaVerifierToko=null; }
+      console.error(err);
+      if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; }
+      // Reset recaptcha
+      if(infoEl) infoEl.innerText = 'Gagal: '+err.message;
     });
-  }catch(e){ alert('Error OTP: '+e.message); }
+  }catch(e){ alert('Error OTP: '+e.message); console.error(e); }
 }
 function konfirmasiOTP_WA(){
-  let kode = document.getElementById('input-kode-otp-wa').value.trim();
+  let inputEl = document.getElementById('input-kode-otp-wa');
+  if(!inputEl){ alert('Input OTP tidak ketemu!'); return; }
+  let kode = inputEl.value.trim();
   if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
   if(!confirmationResultWA){ alert('Belum ada OTP!'); return; }
   confirmationResultWA.confirm(kode).then(function(){
