@@ -1576,9 +1576,7 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
 <!-- NOTIFIKASI PASAR RT36 -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-
 <script>
-  // CONFIG ASLI PASAR RT36
   const firebaseConfig = {
     apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
     authDomain: "pasar-rt36.firebaseapp.com",
@@ -1591,45 +1589,20 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
   firebase.initializeApp(firebaseConfig);
   const messaging = firebase.messaging();
   const VAPID_KEY = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
-
-  // Daftarkan Service Worker dulu!
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-      .then(() => console.log("SW Pasar RT36 Terdaftar!"))
-      .catch(err => console.log("SW Gagal:", err));
+    navigator.serviceWorker.register('/firebase-messaging-sw.js').then(()=>console.log("SW OK")).catch(e=>console.log(e));
   }
-
-  function aktifkanNotifPasar() {
-    console.log("Tombol diklik!");
-    alert("Tombol diklik, sedang minta izin notif...");
-
-    Notification.requestPermission().then((perm) => {
-      if (perm === 'granted') {
-        messaging.getToken({ vapidKey: VAPID_KEY }).then((token) => {
-          if (token) {
-            console.log("TOKEN:", token);
-            alert("Mantap! Token dapat: " + token.substring(0,20) + "...\nNotif Aktif!");
-            // Simpan ke database
-            fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json', {
-              method: 'POST',
-              body: JSON.stringify({token: token, tgl: new Date().toISOString()})
-            }).then(() => alert("Token berhasil disimpan di Database!"));
-          } else {
-            alert("Gagal dapat token, coba pakai Chrome bukan browser dalam WA!");
-          }
-        }).catch((err) => {
-          alert("Error getToken: " + err);
-          console.log(err);
-        });
-      } else {
-        alert("Izin notif ditolak! Aktifkan di Setelan Chrome > Situs > Notifikasi > Izinkan");
-      }
+  function aktifkanNotifPasar(){
+    alert("Tombol terpencet! Meminta izin...");
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        messaging.getToken({vapidKey:VAPID_KEY}).then(t=>{
+          alert("BERHASIL! Token: "+t.substring(0,30)+"...");
+          fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json',{method:'POST',body:JSON.stringify({token:t})});
+        }).catch(e=>alert("Error token: "+e.message));
+      } else { alert("Izin ditolak bosku! Buka di Chrome, bukan di WA!"); }
     });
   }
-
-  messaging.onMessage((payload) => {
-    alert(payload.notification.title + "\n" + payload.notification.body);
-  });
 </script>
 
 <!-- TOMBOL UNTUK PEMBELI KLIK -->
