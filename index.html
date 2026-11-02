@@ -1573,5 +1573,51 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
   }
 });
   </script>
+<!-- NOTIFIKASI PASAR RT36 -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
+  authDomain: "pasar-rt36.firebaseapp.com",
+  databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pasar-rt36",
+  storageBucket: "pasar-rt36.firebasestorage.app",
+  messagingSenderId: "217440554731",
+  appId: "1:217440554731:web:876717f8204cf40deeb8ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+const VAPID_KEY = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
+
+window.aktifkanNotifPasar = () => {
+  Notification.requestPermission().then((perm) => {
+    if (perm === 'granted') {
+      getToken(messaging, { vapidKey: VAPID_KEY }).then((token) => {
+        if (token) {
+          console.log("TOKEN PEMBELI:", token);
+alert("Mantap! Notif Pasar RT36 Aktif! Nanti kalau ada ikan baru, HP bunyi otomatis bosku!");
+// Simpan token ke database biar bisa broadcast
+fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json', { 
+  method: 'POST', 
+  body: JSON.stringify({token: token, tgl: new Date().toISOString()}) 
+});
+    } else {
+      alert("Aktifkan notif dulu biar tidak ketinggalan ikan segar!");
+    }
+  });
+};
+
+onMessage(messaging, (payload) => {
+  alert(payload.notification.title + "\n" + payload.notification.body);
+});
+</script>
+
+<!-- TOMBOL UNTUK PEMBELI KLIK -->
+<button onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#0f9d58;color:white;padding:12px 18px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3)">
+🔔 Aktifkan Notif Pasar
+</button>
 </body>
 </html>
