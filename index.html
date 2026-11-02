@@ -1572,42 +1572,62 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
     tutupModalDaftarToko();
   }
 });
-  </script>
-<!-- NOTIFIKASI PASAR RT36 -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+ 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
-    authDomain: "pasar-rt36.firebaseapp.com",
-    databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "pasar-rt36",
-    storageBucket: "pasar-rt36.firebasestorage.app",
-    messagingSenderId: "217440554731",
-    appId: "1:217440554731:web:876717f8204cf40deeb8ae"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const messaging = firebase.messaging();
-  const VAPID_KEY = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js').then(()=>console.log("SW OK")).catch(e=>console.log(e));
-  }
-  function aktifkanNotifPasar(){
-    alert("Tombol terpencet! Meminta izin...");
-    Notification.requestPermission().then(p=>{
-      if(p==='granted'){
-        messaging.getToken({vapidKey:VAPID_KEY}).then(t=>{
-          alert("BERHASIL! Token: "+t.substring(0,30)+"...");
-          fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json',{method:'POST',body:JSON.stringify({token:t})});
-        }).catch(e=>alert("Error token: "+e.message));
-      } else { alert("Izin ditolak bosku! Buka di Chrome, bukan di WA!"); }
+  // PAKAI FIREBASE YANG SUDAH ADA DI BAGIAN 1, JANGAN BIKIN BARU!
+  try {
+    const messagingRT36 = firebase.messaging();
+    const VAPID_KEY_RT36 = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then(()=>console.log("SW Pasar RT36 OK"))
+        .catch(e=>console.log("SW Gagal:", e));
+    }
+
+    window.aktifkanNotifPasar = function(){
+      console.log("Tombol Notif Diklik!");
+      if (!("Notification" in window)) {
+        alert("Browser ini tidak support notif bosku, buka di Chrome!");
+        return;
+      }
+      Notification.requestPermission().then(p=>{
+        if(p==='granted'){
+          messagingRT36.getToken({vapidKey: VAPID_KEY_RT36}).then(t=>{
+            if(t){
+              alert("✅ BERHASIL! Notif Aktif Bosku!\nToken: "+t.substring(0,30)+"...");
+              console.log("TOKEN:", t);
+              // Simpan token ke database RT36
+              fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({token:t, waktu: new Date().toISOString()})
+              }).then(()=>console.log("Token disimpan!"));
+            } else {
+              alert("Gagal dapat token, coba reload Chrome bosku!");
+            }
+          }).catch(e=>alert("Error token: "+e.message));
+        } else {
+          alert("Izin ditolak! Aktifkan di Setelan Chrome > Situs > Notifikasi > Izinkan");
+        }
+      });
+    };
+
+    // Kalau ada pesan masuk saat website dibuka
+    messagingRT36.onMessage((payload)=>{
+      console.log("Pesan masuk:", payload);
+      alert((payload.notification?.title||"Pasar RT36") + "\n" + (payload.notification?.body||"Ada info baru bosku!"));
     });
+
+  } catch(e) {
+    console.log("Messaging belum siap:", e);
+    window.aktifkanNotifPasar = function(){ alert("Firebase belum siap, refresh dulu bosku! Error: "+e.message); };
   }
 </script>
 
-<!-- TOMBOL UNTUK PEMBELI KLIK -->
-<button onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#0f9d58;color:white;padding:12px 18px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3)">
+<button onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#0f9d58;color:white;padding:12px 18px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer">
 🔔 Aktifkan Notif Pasar
 </button>
+
 </body>
 </html>
