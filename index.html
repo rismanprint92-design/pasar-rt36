@@ -1574,45 +1574,62 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
 });
   </script>
 <!-- NOTIFIKASI PASAR RT36 -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
-  authDomain: "pasar-rt36.firebaseapp.com",
-  databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pasar-rt36",
-  storageBucket: "pasar-rt36.firebasestorage.app",
-  messagingSenderId: "217440554731",
-  appId: "1:217440554731:web:876717f8204cf40deeb8ae"
-};
+<script>
+  // CONFIG ASLI PASAR RT36
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJTAM4MdsOzcy2i3NOJySDTZ5XV384vvY",
+    authDomain: "pasar-rt36.firebaseapp.com",
+    databaseURL: "https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pasar-rt36",
+    storageBucket: "pasar-rt36.firebasestorage.app",
+    messagingSenderId: "217440554731",
+    appId: "1:217440554731:web:876717f8204cf40deeb8ae"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const messaging = firebase.messaging();
+  const VAPID_KEY = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
 
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
-const VAPID_KEY = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
+  // Daftarkan Service Worker dulu!
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then(() => console.log("SW Pasar RT36 Terdaftar!"))
+      .catch(err => console.log("SW Gagal:", err));
+  }
 
-window.aktifkanNotifPasar = () => {
-  Notification.requestPermission().then((perm) => {
-    if (perm === 'granted') {
-      getToken(messaging, { vapidKey: VAPID_KEY }).then((token) => {
-        if (token) {
-          console.log("TOKEN PEMBELI:", token);
-alert("Mantap! Notif Pasar RT36 Aktif! Nanti kalau ada ikan baru, HP bunyi otomatis bosku!");
-// Simpan token ke database biar bisa broadcast
-fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json', { 
-  method: 'POST', 
-  body: JSON.stringify({token: token, tgl: new Date().toISOString()}) 
-});
-    } else {
-      alert("Aktifkan notif dulu biar tidak ketinggalan ikan segar!");
-    }
+  function aktifkanNotifPasar() {
+    console.log("Tombol diklik!");
+    alert("Tombol diklik, sedang minta izin notif...");
+
+    Notification.requestPermission().then((perm) => {
+      if (perm === 'granted') {
+        messaging.getToken({ vapidKey: VAPID_KEY }).then((token) => {
+          if (token) {
+            console.log("TOKEN:", token);
+            alert("Mantap! Token dapat: " + token.substring(0,20) + "...\nNotif Aktif!");
+            // Simpan ke database
+            fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json', {
+              method: 'POST',
+              body: JSON.stringify({token: token, tgl: new Date().toISOString()})
+            }).then(() => alert("Token berhasil disimpan di Database!"));
+          } else {
+            alert("Gagal dapat token, coba pakai Chrome bukan browser dalam WA!");
+          }
+        }).catch((err) => {
+          alert("Error getToken: " + err);
+          console.log(err);
+        });
+      } else {
+        alert("Izin notif ditolak! Aktifkan di Setelan Chrome > Situs > Notifikasi > Izinkan");
+      }
+    });
+  }
+
+  messaging.onMessage((payload) => {
+    alert(payload.notification.title + "\n" + payload.notification.body);
   });
-};
-
-onMessage(messaging, (payload) => {
-  alert(payload.notification.title + "\n" + payload.notification.body);
-});
 </script>
 
 <!-- TOMBOL UNTUK PEMBELI KLIK -->
