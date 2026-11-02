@@ -1607,8 +1607,8 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
               localStorage.setItem('notif_pasar_rt36_aktif', 'ya');
               document.getElementById('btnNotifPasarRT36').style.display = 'none';
               alert("✅ BERHASIL! Notif Aktif Bosku! Tombol akan hilang otomatis!");
-              fetch('https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t, waktu:new Date().toISOString()})});
-            } else { alert("Gagal token, reload dulu!"); }
+              const uidTok = firebase.auth().currentUser.uid;
+              fetch(`https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens/${uidTok}/${Date.now()}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t, waktu:new Date().toISOString(), uid: uidTok})});
           }).catch(e=>alert("Error: "+e.message));
         } else { alert("Izin ditolak bosku!"); }
       });
