@@ -282,22 +282,16 @@ function getVerifiedWAList(){
   try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
 }
 function isWA_SudahVerifikasi(wa){
-  let list = getVerifiedWAList();
-  let clean = String(wa).replace(/\D/g,'');
+  let clean = String(wa).replace(/\D/g,''); // 082299511782 -> jadi 082299511782
   return list.includes(clean);
 }
 function setWA_SudahVerifikasi(wa){
-  let clean = String(wa).replace(/\D/g,'');
-  let list = getVerifiedWAList();
-  if(!list.includes(clean)){
-    list.push(clean);
-    localStorage.setItem('verified_wa_rt36', JSON.stringify(list));
-  }
+  let clean = String(wa).replace(/\D/g,''); // +6282299511782 -> jadi 6282299511782
+  list.push(clean);
 }
 function formatKePlus62(wa){
   let n = String(wa).replace(/\D/g,'');
-  if(n.startsWith('0')) n = '62'+n.slice(1);
-  if(!n.startsWith('62')) n = '62'+n;
+  if(n.startsWith('0')) n = '62'+n.slice(1); // 08 -> 62
   return '+'+n;
 }
  function amanFoto(url){
