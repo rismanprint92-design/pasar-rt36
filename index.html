@@ -1302,34 +1302,22 @@ function getSecureId() {
 }
 
 async function kirimPesanWarga(){ 
-  let ti=document.getElementById('teksPesanWarga'); 
-  if(!ti) return; 
-  let pesan=ti.value.trim(); 
-  if(!pesan) return; 
-  if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously();
-  
-  let nama='Warga'; let foto=''; let id=getSecureId();
-  try{ 
-    nama=localStorage.getItem('verified_nama_rt36')||'Warga'; 
-    foto=localStorage.getItem('verified_foto_rt36')||''; 
-  }catch(e){}
-  
-  let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+  if(!cekRateLimit()) return;
+  let ti=document.getElementById('teksPesanWarga'); if(!ti) return; 
+  let pesan=ti.value.trim(); if(!pesan||pesan.length>900) { alert('Pesan kepanjangan bosku, max 900 huruf!'); return; } // 900 biar lolos <1000
+  if(!currentUser) await auth.signInAnonymously();
   let data={
-    nama:bersihkanTeks(nama),
-    fotoProfil:foto, // foto profil link saja, bukan base64
-    pesan:bersihkanTeks(pesan),
-    waktu:jam,
-    userId:id, // <- SUDAH TER-HASH! Contoh: "aBcD123..." bukan "tamu_..."
-    timestamp:Date.now(),
-    tipe:'teks'
+    userId: getSecureId(), // WAJIB ADA - sesuai rules lama bosku
+    pesan: bersihkanTeks(pesan), // WAJIB ADA - sesuai rules lama
+    nama: bersihkanTeks(localStorage.getItem('verified_nama_rt36')||'Warga'),
+    fotoProfil: localStorage.getItem('verified_foto_rt36')||'',
+    waktu: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+    timestamp: Date.now(),
+    tipe: 'teks'
   }; 
-  if(pesanBalasanData){ 
-    data.replyTo=bersihkanTeks(pesanBalasanData.nama); 
-    data.replyContent=bersihkanTeks(pesanBalasanData.pesan); 
-  } 
-  ti.value=''; ti.style.height='auto'; batalkanBalasChat(); cekKetik(); 
-  database.ref('pesan_warga').push(data).catch(err=>{ alert('Gagal mengirim pesan: '+err.message); }); 
+  if(pesanBalasanData){ data.replyTo=bersihkanTeks(pesanBalasanData.nama); data.replyContent=bersihkanTeks(pesanBalasanData.pesan).slice(0,200); } 
+  ti.value=''; batalkanBalasChat(); cekKetik(); 
+  database.ref('pesan_warga').push(data).catch(err=>alert('Gagal: '+err.message)); 
 }
 
   // GANTI FUNGSI kirimFoto YANG LAMA DENGAN INI - COCOK RULES 1000 KARAKTER BOSKU
