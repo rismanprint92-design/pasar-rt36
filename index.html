@@ -1592,37 +1592,38 @@ function bukaDetailProdukFoto(arr){
       });
     }
     function kirimPesanPribadi(){ let input=document.getElementById('teksPesanPribadi'); let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
-    function autoHapus24Jam(){
-  let batas = Date.now() - (24*60*60*1000);
-  database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{ 
-    snap.forEach(child=>{
-      let d = child.val();
-      // Jika ini foto dari Storage, hapus file nya juga permanen!
-      if(d && d.pesan && d.pesan.includes('firebasestorage.googleapis.com') && d.tipe==='foto'){
-        try{
-          let storageRef = firebase.storage().refFromURL(d.pesan);
-          storageRef.delete().catch(e=>{});
-        }catch(e){}
-      }
-      child.ref.remove(); // Baru hapus chat nya
-    }); 
-  });
-  // Untuk chat pribadi juga
-  database.ref('pesan_pribadi').once('value', snap=>{
-    snap.forEach(room=>{
-      room.forEach(msg=>{
-        let d=msg.val();
-        if(d && d.timestamp && d.timestamp < batas){
-          if(d.pesan && d.pesan.includes && d.pesan.includes('firebasestorage.googleapis.com')){
-            try{ firebase.storage().refFromURL(d.pesan).delete().catch(e=>{}); }catch(e){}
+   function autoHapus24Jam(){
+      let batas = Date.now() - (24*60*60*1000);
+      database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{
+        snap.forEach(child=>{
+          let d = child.val();
+          // Hapus permanen file foto di Storage juga!
+          if(d && d.pesan && d.pesan.includes('firebasestorage.googleapis.com') && d.tipe==='foto'){
+            try{
+              let refDel = firebase.storage().refFromURL(d.pesan);
+              refDel.delete().then(()=>{console.log('Auto hapus storage OK')}).catch(()=>{});
+            }catch(e){}
           }
-          msg.ref.remove();
-        }
+          child.ref.remove();
+        });
       });
-    });
-  });
-  console.log('Auto hapus 24 jam permanen jalan bosku!');
-}
+      database.ref('pesan_pribadi').once('value', snap=>{
+        snap.forEach(room=>{
+          room.forEach(msg=>{
+            let dataP=msg.val();
+            if(dataP && dataP.timestamp && dataP.timestamp < batas){
+              if(dataP.pesan && dataP.pesan.includes && dataP.pesan.includes('firebasestorage.googleapis.com')){
+                try{ firebase.storage().refFromURL(dataP.pesan).delete().catch(()=>{}); }catch(e){}
+              }
+              msg.ref.remove();
+            }
+          });
+        });
+      });
+    }
+    setInterval(autoHapus24Jam, 3600000);
+    autoHapus24Jam();
+    
     // SATU-SATUNYA DRAG HANDLER - ANTI BENTROK BOSKU
     (function(){
       const b=document.getElementById('btnBukaChat'); if(!b) return;
