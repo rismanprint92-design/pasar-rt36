@@ -281,22 +281,19 @@ let dataProdukPendingOTP = null;
 function getVerifiedWAList(){
   try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
 }
+// HAPUS getVerifiedWAList, isWA_SudahVerifikasi, setWA_SudahVerifikasi YANG LAMA
+// GANTI JADI INI - COPY PASTE PERSIS!
+
 function normalisasiWA(wa){
   let n = String(wa).replace(/\D/g,'');
   if(n.startsWith('0')) n = '62' + n.slice(1);
-  return n; // selalu jadi 628xxx
+  return n;
 }
 function getVerifiedWAList(){
-  try{ 
-    let data = JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]');
-    // migrasi data lama yang masih 08
-    return data.map(normalisasiWA);
-  }catch(e){ return []; }
+  try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]').map(function(x){ return normalisasiWA(x); }); }catch(e){ return []; }
 }
 function isWA_SudahVerifikasi(wa){
-  let list = getVerifiedWAList();
-  let clean = normalisasiWA(wa);
-  return list.includes(clean);
+  return getVerifiedWAList().includes(normalisasiWA(wa));
 }
 function setWA_SudahVerifikasi(wa){
   let clean = normalisasiWA(wa);
@@ -304,7 +301,6 @@ function setWA_SudahVerifikasi(wa){
   if(!list.includes(clean)){
     list.push(clean);
     localStorage.setItem('verified_wa_rt36', JSON.stringify(list));
-    console.log('SIMPAN VERIF BOSKU:', clean, list);
   }
 }
  function amanFoto(url){
