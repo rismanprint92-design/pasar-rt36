@@ -1214,6 +1214,23 @@ function konfirmasiOTP_WA(){
       localStorage.setItem('verified_nama_rt36',nama);
       localStorage.setItem('my_chat_id','user_pin_'+pin);
     }catch(e){}
+    
+    // --- UPGRADE AMAN RT36 - 4 BARIS INI WAJIB ---
+    try {
+      firebase.auth().signInAnonymously().then(cred => {
+        let anonUid = cred.user.uid;
+        localStorage.setItem('firebase_anon_uid', anonUid);
+        // Simpan mapping anonUid -> user_pin_O987 biar Rules bisa cek pemilik!
+        firebase.database().ref('active_device_pins/' + anonUid).set({
+          userId: 'user_pin_' + pin,
+          nama: nama,
+          pin: pin,
+          timestamp: Date.now()
+        });
+      }).catch(e => console.log("Auth error:", e.message));
+    } catch(e) { console.log("Firebase Auth belum load", e); }
+    // --- AKHIR UPGRADE ---
+
     tutupModalLoginPin(); inisialisasiChatLive(); bukaPanelChatLangsung();
   }
   if(pinPrev!==""){
@@ -1241,7 +1258,7 @@ function konfirmasiOTP_WA(){
     if(pinBaru.length<4){ alert('PIN minimal 4!'); return; }
     loginSukses(pinBaru, namaBaru);
   } else { alert('Isi PIN lama ATAU Nama + PIN Baru!'); }
-}        
+}
     function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
     document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
     function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
