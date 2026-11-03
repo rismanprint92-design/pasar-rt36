@@ -1716,6 +1716,16 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
     console.log("Notifikasi Pasar RT36 Siap!");
   }
   if(document.readyState === 'complete'){ initNotifPasarRT36(); } else { window.addEventListener('load', initNotifPasarRT36); }
+
+// TAMBAHAN FIX - PASTIKAN ADA MESKIPUN YANG LAMA HILANG BOSKU
+window.triggerNotifChat = function(isPribadi){
+  try{
+    if(navigator.vibrate) navigator.vibrate([100]);
+    let a=document.getElementById('notifSound');
+    if(a){ a.currentTime=0; a.play().catch(()=>{}); }
+  }catch(e){}
+};
+window.triggernotifchat = window.triggerNotifChat;
 </script>
 
 <button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
