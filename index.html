@@ -25,7 +25,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
   <style>
     #search-bar-container { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
     .catatan-teks { font-size: 11px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #6b7280; font-style: italic; margin-top: 4px; }
@@ -270,20 +269,6 @@
   if (!firebase.apps.length) { 
     firebase.initializeApp(firebaseConfig); 
   }
-      // === ANTI SPAM RATE LIMITING - PASAR RT36 (FIXED) ===
-  let riwayatKirim = [];
-  function cekRateLimit(){
-    let now = Date.now();
-    riwayatKirim = riwayatKirim.filter(t => now - t < 60000);
-    if(riwayatKirim.length >= 5){
-      let sisa = Math.ceil((60000 - (now - riwayatKirim[0]))/1000);
-      alert('Sabar bosku! Jangan spam! Tunggu ' + sisa + ' detik 🙏');
-      return false;
-    }
-    riwayatKirim.push(now);
-    return true;
-  }
-
   const auth = firebase.auth();
   const database = firebase.database();
   // ==== TAMBAHAN OPSI A - PIN MASTER & OTP SELAMANYA BOSKU ====
@@ -1295,78 +1280,28 @@ function konfirmasiOTP_WA(){
   let t=document.getElementById('teksPesanWarga'); if(t) t.focus();
 }
 function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementById('containerPreviewBalas'); if(c) c.textContent=''; }
-   // TAMBAHKAN DI ATAS - FUNGSI HASH UNTUK DATA SENSITIF
-function getSecureId() {
-  let user = firebase.auth().currentUser;
-  return user ? user.uid : null; // UID Firebase = sudah di-hash SHA-256 otomatis!
-}
-
-async function kirimPesanWarga(){ 
-  if(!cekRateLimit()) return;
-  let ti=document.getElementById('teksPesanWarga'); if(!ti) return; 
-  let pesan=ti.value.trim(); if(!pesan||pesan.length>900) { alert('Pesan kepanjangan bosku, max 900 huruf!'); return; } // 900 biar lolos <1000
-  if(!currentUser) await auth.signInAnonymously();
-  let data={
-    userId: getSecureId(), // WAJIB ADA - sesuai rules lama bosku
-    pesan: bersihkanTeks(pesan), // WAJIB ADA - sesuai rules lama
-    nama: bersihkanTeks(localStorage.getItem('verified_nama_rt36')||'Warga'),
-    fotoProfil: localStorage.getItem('verified_foto_rt36')||'',
-    waktu: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-    timestamp: Date.now(),
-    tipe: 'teks'
-  }; 
-  if(pesanBalasanData){ data.replyTo=bersihkanTeks(pesanBalasanData.nama); data.replyContent=bersihkanTeks(pesanBalasanData.pesan).slice(0,200); } 
-  ti.value=''; batalkanBalasChat(); cekKetik(); 
-  database.ref('pesan_warga').push(data).catch(err=>alert('Gagal: '+err.message)); 
-}
-
-  // GANTI FUNGSI kirimFoto YANG LAMA DENGAN INI - COCOK RULES 1000 KARAKTER BOSKU
-function kirimFoto(inp){ 
-  if(!cekVerifikasiChat()) return; 
-  if(!inp.files||!inp.files.length) return; 
-  let files=Array.from(inp.files).slice(0,3); 
-  files.forEach(f=>{ 
-    let storageRef = firebase.storage().ref('chat_foto/'+Date.now()+'_'+f.name);
-    storageRef.put(f).then(snap=>snap.ref.getDownloadURL()).then(url=>{
-      database.ref('pesan_warga').push({
-        userId: getSecureId(),
-        pesan: url, // URL cuma 100 huruf, LOLOS rules <1000 bosku!
-        nama: bersihkanTeks(localStorage.getItem('verified_nama_rt36')||'Warga'),
-        fotoProfil: localStorage.getItem('verified_foto_rt36')||'',
-        waktu: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-        timestamp: Date.now(),
-        tipe: 'foto'
-      });
-    });
-  }); 
-  inp.value=''; 
-}
-
-// GANTI FUNGSI mulaiRekam YANG LAMA DENGAN INI
-async function mulaiRekam(){ 
-  if(!cekVerifikasiChat()||!cekRateLimit()) return;
+    function kirimPesanWarga(){ let ti=document.getElementById('teksPesanWarga'); if(!ti) return; let pesan=ti.value.trim(); if(!pesan) return; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); let data={nama:bersihkanTeks(nama),fotoProfil:foto,pesan:bersihkanTeks(pesan),waktu:jam,userId:id,timestamp:Date.now(),tipe:'teks'}; if(pesanBalasanData){ data.replyTo=bersihkanTeks(pesanBalasanData.nama); data.replyContent=bersihkanTeks(pesanBalasanData.pesan); } ti.value=''; ti.style.height='auto'; batalkanBalasChat(); cekKetik(); database.ref('pesan_warga').push(data).catch(err=>{ alert('Gagal mengirim pesan: '+err.message); }); }
+    function kirimFoto(inp){ if(!cekVerifikasiChat()) return; if(!inp.files||inp.files.length===0) return; let files=Array.from(inp.files); if(files.length>3){ alert('Maksimal mengirim 3 foto sekaligus!'); return; } let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} files.forEach(f=>{ kompresGambar(f,function(b64){ let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:b64,waktu:jam,userId:id,timestamp:Date.now(),tipe:'foto'}); }); }); inp.value=''; }
+    function kirimLokasi(){ if(!cekVerifikasiChat()) return; if(!navigator.geolocation){ alert('HP tidak support lokasi!'); return; } navigator.geolocation.getCurrentPosition(pos=>{ let mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(e){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:mapsLink,waktu:jam,userId:id,timestamp:Date.now(),tipe:'lokasi'}); }); }
+    async function mulaiRekam(){ if(!cekVerifikasiChat()) return; isRekam=true; let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.add('hidden'); if(areaRekam) areaRekam.classList.remove('hidden'); if(iconKotak) iconKotak.classList.add('hidden'); try{ micStream = await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder = new MediaRecorder(micStream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { let blob = new Blob(audioChunks, {type:'audio/webm'}); let reader = new FileReader(); reader.onload = e => { let nama='Warga'; let foto=''; let id='tamu_'+Date.now(); try{ nama=localStorage.getItem('verified_nama_rt36')||'Warga'; foto=localStorage.getItem('verified_foto_rt36')||''; id=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); }catch(ex){} let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_warga').push({nama:nama,fotoProfil:foto,pesan:e.target.result,waktu:jam,userId:id,timestamp:Date.now(),tipe:'voice'}); }; reader.readAsDataURL(blob); }; mediaRecorder.start(); }catch(e){ alert('Izinkan akses mic!'); isRekam=false; } }
+    function stopRekam(){ if(!isRekam) return; isRekam=false; if(mediaRecorder) mediaRecorder.stop(); if(micStream){ micStream.getTracks().forEach(t=>t.stop()); } let areaKetik=document.getElementById('areaKetikNormal'); let areaRekam=document.getElementById('areaRekamDalamKotak'); let iconKotak=document.getElementById('iconDalamKotak'); if(areaKetik) areaKetik.classList.remove('hidden'); if(areaRekam) areaRekam.classList.add('hidden'); if(iconKotak) iconKotak.classList.remove('hidden'); cekKetik(); }
+    function triggerNotifChat(isPribadi, isBaru){
   try{
-    micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder = new MediaRecorder(micStream); audioChunks = [];
-    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = ()=>{ 
-      let blob=new Blob(audioChunks,{type:'audio/webm'}); 
-      let ref = firebase.storage().ref('chat_voice/'+Date.now()+'.webm');
-      ref.put(blob).then(s=>s.ref.getDownloadURL()).then(url=>{
-        database.ref('pesan_warga').push({
-          userId: getSecureId(),
-          pesan: url, // URL pendek, LOLOS rules aman bosku!
-          nama: bersihkanTeks(localStorage.getItem('verified_nama_rt36')||'Warga'),
-          fotoProfil: localStorage.getItem('verified_foto_rt36')||'',
-          waktu: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-          timestamp: Date.now(),
-          tipe: 'voice'
-        });
-      });
-      micStream.getTracks().forEach(t=>t.stop()); isRekam=false;
-    }; 
-    mediaRecorder.start(); isRekam=true;
-  }catch(e){ alert('Mic gagal: '+e.message); }
+    // 1. Getaran HP
+    if(navigator.vibrate) navigator.vibrate(isPribadi ? [200,100,200] : [200]);
+    
+    // 2. Bunyi notif
+    let audio = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a3bc30.mp3');
+    audio.volume = 0.7;
+    audio.play().catch(()=>{});
+    
+    // 3. Notif di judul tab
+    if(isBaru){
+      let oldTitle = document.title;
+      document.title = isPribadi ? '💬 Chat Pribadi Baru!' : '🔔 Pesan Warga Baru!';
+      setTimeout(()=>{ document.title = oldTitle }, 3000);
+    }
+  }catch(e){}
 }
   function hapusPesanWarga(keyPesan, idPengirim){ 
   let myId=''; 
@@ -1415,9 +1350,7 @@ async function mulaiRekam(){
     function mulaiEditPesan(keyPesan, encodedPesan, idPengirim){ let myId=''; try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} if(idPengirim!==myId && !isAdmin){ alert('Anda hanya dapat mengedit pesan yang Anda kirim sendiri!'); return; } let pesanLama=decodeURIComponent(encodedPesan); let pesanBaru=prompt("Edit pesan:", pesanLama); if(pesanBaru===null) return; pesanBaru=pesanBaru.trim(); if(!pesanBaru){ alert("Pesan tidak boleh kosong!"); return; } database.ref('pesan_warga').child(keyPesan).update({pesan:pesanBaru,diedit:true}).catch(err=>{ alert("Gagal mengedit pesan: "+err.message); }); }
     function inisialisasiChatLive(){
   if(isChatInitialized) return; isChatInitialized=true;
-  let myId=localStorage.getItem('my_chat_id')||''; 
-   if(!myId){ myId='tamu_'+Date.now(); localStorage.setItem('my_chat_id',myId); }
-   let myNama='';
+  let myId='tamu_'+Date.now(); let myNama=''; try{ myId=localStorage.getItem('my_chat_id')||('tamu_'+Date.now()); myNama=localStorage.getItem('verified_nama_rt36')||''; }catch(e){}
   let audio=document.getElementById('notifSound'); if(suaraIndex!=='off'&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; }
   let ref=database.ref('pesan_warga'); let box=document.getElementById('boxChatWarga'); if(!box) return; box.textContent='';
   ref.limitToLast(80).on('value', snap=>{ let dataMap=snap.val(); let teksNotif=document.getElementById('teksNotif24Jam'); if(teksNotif){ if(dataMap&&Object.keys(dataMap).length>0){ teksNotif.classList.remove('hidden'); } else { teksNotif.classList.add('hidden'); } } });
@@ -1586,11 +1519,43 @@ function bukaDetailProdukFoto(arr){
   }
 }
 
-  // ===== FINAL CLEAN FIX BOSKU - CUMA PESAN WARGA + AUTO HAPUS 24 JAM =====
+    // ===== FINAL CLEAN FIX BOSKU - 1x DRAG + CHAT PRIVAT + AUTO HAPUS =====
+    let targetPrivId=null, targetPrivNama=null;
+    function bukaChatPribadi(nama, userId){ if(!cekVerifikasiChat()) return; let myId=localStorage.getItem('my_chat_id')||''; if(userId===myId) return; targetPrivId=userId; targetPrivNama=nama; document.getElementById('privNama').innerText=nama; document.getElementById('privAvatar').innerText=nama.charAt(0).toUpperCase(); document.getElementById('modalChatPribadi').classList.remove('hidden'); loadChatPribadi(); }
+    function tutupChatPribadi(){ document.getElementById('modalChatPribadi').classList.add('hidden'); }
+    function getRoomId(a,b){ return [a,b].sort().join('_PRIV_'); }
+    function loadChatPribadi(){
+      let myId=localStorage.getItem('my_chat_id')||'';
+      let room=getRoomId(myId, targetPrivId);
+      let box=document.getElementById('boxChatPribadi');
+      if(!box) return; box.innerHTML='';
+      database.ref('pesan_pribadi/'+room).limitToLast(50).off();
+      database.ref('pesan_pribadi/'+room).limitToLast(50).on('child_added', snap=>{
+        let d=snap.val(); if(!d) return;
+        let isMe=d.userId===myId;
+        let div=document.createElement('div');
+        div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1';
+        let bubble=document.createElement('div');
+        bubble.className='bubble-wa '+(isMe?'bubble-me':'bubble-other');
+        let isi=document.createElement('div');
+        isi.className='py-0.5 text-[13px]';
+        isi.textContent=d.pesan||''; // AMAN BOSKU - pakai textContent!
+        let waktu=document.createElement('div');
+        waktu.className='text-right text-[9px] text-gray-400';
+        waktu.textContent=d.waktu||'';
+        bubble.append(isi,waktu);
+        div.appendChild(bubble);
+        box.appendChild(div);
+        box.scrollTop=box.scrollHeight;
+        if(!isMe) triggerNotifChat(true, true);
+      });
+    }
+    function kirimPesanPribadi(){ let input=document.getElementById('teksPesanPribadi'); let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
     function autoHapus24Jam(){
       let batas = Date.now() - (24*60*60*1000);
-      database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{ 
-        snap.forEach(c=> c.ref.remove()); 
+      database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{ snap.forEach(c=> c.ref.remove()); });
+      database.ref('pesan_pribadi').once('value', snap=>{
+        snap.forEach(room=>{ room.forEach(msg=>{ let d=msg.val(); if(d && d.timestamp && d.timestamp < batas) msg.ref.remove(); }); });
       });
     }
     setInterval(autoHapus24Jam, 3600000);
@@ -1716,16 +1681,6 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
     console.log("Notifikasi Pasar RT36 Siap!");
   }
   if(document.readyState === 'complete'){ initNotifPasarRT36(); } else { window.addEventListener('load', initNotifPasarRT36); }
-
-// TAMBAHAN FIX - PASTIKAN ADA MESKIPUN YANG LAMA HILANG BOSKU
-window.triggerNotifChat = function(isPribadi){
-  try{
-    if(navigator.vibrate) navigator.vibrate([100]);
-    let a=document.getElementById('notifSound');
-    if(a){ a.currentTime=0; a.play().catch(()=>{}); }
-  }catch(e){}
-};
-window.triggernotifchat = window.triggerNotifChat;
 </script>
 
 <button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
