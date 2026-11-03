@@ -1154,16 +1154,48 @@ function konfirmasiOTP_WA(){
   if(!inputEl){ alert('Input OTP tidak ketemu!'); return; }
   let kode = inputEl.value.trim();
   if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
-  if(!confirmationResultWA){ alert('Belum ada OTP!'); return; }
-  confirmationResultWA.confirm(kode).then(function(){
-    setWA_SudahVerifikasi(waYangMauDiVerifikasi);
-    alert('✅ No WA '+waYangMauDiVerifikasi+' terverifikasi! Ingat selamanya!');
-    tutupModalOTP_WA();
-    if(dataProdukPendingOTP){
-      simpanKeFirebase(dataProdukPendingOTP.foto, dataProdukPendingOTP.pin);
-      dataProdukPendingOTP = null;
+  if(!confirmationResultWA){ alert('Belum ada OTP! Kirim ulang bosku!'); return; }
+  
+  confirmationResultWA.confirm(kode).then(function(result){
+    // Ambil nomor asli dari Firebase Auth biar format pasti +62
+    let nomorFirebase = result.user ? result.user.phoneNumber : waYangMauDiVerifikasi;
+    let nomorSimpan = nomorFirebase || waYangMauDiVerifikasi;
+    
+    // Fungsi simpan biar semua key keisi
+    if(typeof setWA_SudahVerifikasi === 'function'){
+      setWA_SudahVerifikasi(nomorSimpan);
     }
-  }).catch(function(err){ alert('Kode salah: '+err.message); });
+    // Paksa simpan dobel biar tidak miss key
+    localStorage.setItem('verified_wa_rt36', nomorSimpan);
+    // Simpan juga versi 08 biar cek lama tetap lolos
+    let versi08 = nomorSimpan.replace(/^\+62/, '0').replace(/^62/, '0');
+    localStorage.setItem('verified_wa_08', versi08);
+    localStorage.setItem('verified_nama_rt36', localStorage.getItem('nama_warga_rt36') || 'Warga RT36');
+    localStorage.setItem('verified_wa_time', Date.now().toString());
+
+    console.log('VERIFIED BOSKU:', nomorSimpan, 'versi 08:', versi08);
+    
+    tutupModalOTP_WA();
+    
+    // JANGAN PAKAI alert() YANG BLOKIR! Simpan dulu baru alert!
+    if(dataProdukPendingOTP){
+      try{
+        let data = dataProdukPendingOTP; // simpan dulu
+        dataProdukPendingOTP = null; // baru null kan
+        simpanKeFirebase(data.foto, data.pin);
+        alert('✅ No WA '+nomorSimpan+' terverifikasi! Dagangan langsung tayang bosku!');
+      }catch(e){
+        console.error('Gagal simpan bosku:', e);
+        alert('Terverifikasi bosku, tapi gagal tayang: '+e.message+' Coba klik Tayangkan lagi!');
+      }
+    } else {
+      alert('✅ No WA '+nomorSimpan+' terverifikasi! Ingat selamanya! Sekarang klik lagi Tayangkan Dagangan bosku!');
+    }
+    
+  }).catch(function(err){ 
+    console.error(err);
+    alert('Kode salah: '+err.message); 
+  });
 }
     function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
     function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
