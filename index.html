@@ -1303,11 +1303,9 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
     }
   }catch(e){}
 }
-    function hapusPesanWarga(keyPesan, idPengirim){ 
+  function hapusPesanWarga(keyPesan, idPengirim){ 
   let myId=''; 
-  try{ 
-    myId=localStorage.getItem('my_chat_id')||''; 
-  }catch(e){} 
+  try{ myId=localStorage.getItem('my_chat_id')||''; }catch(e){} 
   
   if(idPengirim!==myId && !isAdmin){ 
     alert('Anda hanya dapat menghapus pesan yang Anda kirim sendiri!'); 
@@ -1317,18 +1315,34 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
   if(confirm('Hapus pesan ini?')){
     isProsesHapus=true; 
     
-    // TAMBAHAN FIX: Hapus langsung di layar dulu biar cepat!
-    const el = document.getElementById(keyPesan) || document.querySelector(`[data-key="${keyPesan}"]`);
-    if(el) el.style.display = 'none'; // langsung hilangkan di layar
+    const user = firebase.auth().currentUser;
+    if(!user){
+      firebase.auth().signInAnonymously().then(()=>{
+        hapusPesanWarga(keyPesan, idPengirim);
+      }).catch(e=>{
+        isProsesHapus=false;
+        alert('Gagal auth, refresh dulu: '+e.message);
+      });
+      return;
+    }
+
+    // FIX FINAL: pakai msg_ + keyPesan SESUAI inisialisasiChatLive!
+    const el = document.getElementById('msg_'+keyPesan);
+    
+    let parentBackup = null;
+    let elBackup = null;
+    if(el){
+      parentBackup = el.parentNode;
+      elBackup = el.cloneNode(true);
+      el.style.opacity = '0.3'; // jangan langsung remove, biar child_removed yang hapus
+    }
     
     database.ref('pesan_warga').child(keyPesan).remove().then(()=>{
-      // Hapus permanen di layar setelah sukses di DB
-      if(el) el.remove();
-      
-      setTimeout(()=>{ isProsesHapus=false; },500); // percepat jadi 0.5 detik saja
+      setTimeout(()=>{ isProsesHapus=false; },500);
+      // jangan el.remove() disini, biar listener child_removed yang hapus = ANTI DOBEL!
     }).catch(err=>{
       isProsesHapus=false; 
-      if(el) el.style.display = ''; // kalau gagal, munculkan lagi
+      if(el) el.style.opacity = '1';
       alert('Gagal menghapus pesan: '+err.message); 
     }); 
   } 
@@ -1340,12 +1354,19 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
   let audio=document.getElementById('notifSound'); if(suaraIndex!=='off'&&suaraList[suaraIndex]){ audio.src=suaraList[suaraIndex].url; }
   let ref=database.ref('pesan_warga'); let box=document.getElementById('boxChatWarga'); if(!box) return; box.textContent='';
   ref.limitToLast(80).on('value', snap=>{ let dataMap=snap.val(); let teksNotif=document.getElementById('teksNotif24Jam'); if(teksNotif){ if(dataMap&&Object.keys(dataMap).length>0){ teksNotif.classList.remove('hidden'); } else { teksNotif.classList.add('hidden'); } } });
+  
+  // ANTI DOBEL FIX
   ref.limitToLast(80).on('child_added', snap=>{
     let data=snap.val(), key=snap.key; if(!data) return;
+    
+    // FIX ANTI DOBEL TEKS - INI KUNCINYA!
+    if(document.getElementById('msg_'+key)) return;
+    
     let isMe=(data.userId===myId); let pengirimNama=data.nama; let pengirimId=data.userId;
     let div=document.createElement('div');
     div.className=isMe?'flex flex-col items-end my-1':'flex flex-col items-start my-1';
     div.id='msg_'+key;
+    div.setAttribute('data-key', key);
     let bubble=document.createElement('div');
     bubble.className='bubble-wa '+(isMe?'bubble-me':'bubble-other')+' cursor-pointer';
     bubble.addEventListener('click', (e)=>{
@@ -1437,6 +1458,29 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
     box.appendChild(div); box.scrollTop=box.scrollHeight;
     if(!chatPertamaLoad&&!isMe){ let isBalasanKeSaya=(data.replyTo&&myNama&&data.replyTo.toLowerCase()===myNama.toLowerCase()); triggerNotifChat(isBalasanKeSaya); }
   });
+
+  // FIX BIAR OTOMATIS HILANG SAAT DIHAPUS - TAMBAHAN BARU!
+  ref.on('child_removed', snap=>{
+    let el = document.getElementById('msg_'+snap.key);
+    if(el) el.remove();
+  });
+  
+  // FIX JUGA UNTUK EDIT
+  ref.on('child_changed', snap=>{
+    let key = snap.key;
+    let data = snap.val();
+    let elTeks = document.getElementById('teks_val_'+key);
+    if(elTeks && data){
+      elTeks.textContent = data.pesan||'';
+      if(data.diedit){
+        let editMark=document.createElement('span');
+        editMark.className='text-[9px] text-gray-400 italic';
+        editMark.textContent=' (diedit)';
+        elTeks.appendChild(editMark);
+      }
+    }
+  });
+
   setTimeout(()=>{ chatPertamaLoad=false; },3000);
 }
 function bukaDetailProdukFoto(arr){
