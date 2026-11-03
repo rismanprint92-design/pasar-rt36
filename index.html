@@ -1439,7 +1439,7 @@ function batalkanBalasChat(){ pesanBalasanData=null; let c=document.getElementBy
     namaSpan.appendChild(txtNama);
     let aksiWrap=document.createElement('div');
     aksiWrap.className='flex gap-1.5 items-center';
-    if((isMe||isAdmin)&&data.tipe==='teks'){
+    if(isMe||isAdmin){
       let be=document.createElement('button');
       be.className='text-gray-400 hover:text-blue-600 text-[12px]';
       be.textContent='✏️';
