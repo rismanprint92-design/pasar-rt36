@@ -25,6 +25,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
   <style>
     #search-bar-container { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
     .catatan-teks { font-size: 11px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #6b7280; font-style: italic; margin-top: 4px; }
@@ -269,30 +270,19 @@
   if (!firebase.apps.length) { 
     firebase.initializeApp(firebaseConfig); 
   }
-    // === RATE LIMITING + APP CHECK ANTI SPAM BOT - PASAR RT36 ===
-  // Load App Check SDK
-  const appCheckScript = document.createElement('script');
-  appCheckScript.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js";
-  document.head.appendChild(appCheckScript);
-  appCheckScript.onload = () => {
-    const appCheck = firebase.appCheck();
-    appCheck.activate('6Lftjw0uAAAAAK4v0oBhloB2IsAb_SqJOcVYukZJ', true);
-    console.log('App Check RT36 Aktif! Anti Bot!');
-  };
-  
+      // === ANTI SPAM RATE LIMITING - PASAR RT36 (FIXED) ===
   let riwayatKirim = [];
   function cekRateLimit(){
     let now = Date.now();
     riwayatKirim = riwayatKirim.filter(t => now - t < 60000);
     if(riwayatKirim.length >= 5){
       let sisa = Math.ceil((60000 - (now - riwayatKirim[0]))/1000);
-      alert('Sabar bosku! Jangan spam! Tunggu ' + sisa + ' detik lagi 🙏');
+      alert('Sabar bosku! Jangan spam! Tunggu ' + sisa + ' detik 🙏');
       return false;
     }
     riwayatKirim.push(now);
     return true;
   }
-  // === END RATE LIMITING ===
 
   const auth = firebase.auth();
   const database = firebase.database();
