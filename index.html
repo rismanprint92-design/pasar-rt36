@@ -281,18 +281,31 @@ let dataProdukPendingOTP = null;
 function getVerifiedWAList(){
   try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
 }
+function normalisasiWA(wa){
+  let n = String(wa).replace(/\D/g,'');
+  if(n.startsWith('0')) n = '62' + n.slice(1);
+  return n; // selalu jadi 628xxx
+}
+function getVerifiedWAList(){
+  try{ 
+    let data = JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]');
+    // migrasi data lama yang masih 08
+    return data.map(normalisasiWA);
+  }catch(e){ return []; }
+}
 function isWA_SudahVerifikasi(wa){
-  let clean = String(wa).replace(/\D/g,''); // 082299511782 -> jadi 082299511782
+  let list = getVerifiedWAList();
+  let clean = normalisasiWA(wa);
   return list.includes(clean);
 }
 function setWA_SudahVerifikasi(wa){
-  let clean = String(wa).replace(/\D/g,''); // +6282299511782 -> jadi 6282299511782
-  list.push(clean);
-}
-function formatKePlus62(wa){
-  let n = String(wa).replace(/\D/g,'');
-  if(n.startsWith('0')) n = '62'+n.slice(1); // 08 -> 62
-  return '+'+n;
+  let clean = normalisasiWA(wa);
+  let list = getVerifiedWAList();
+  if(!list.includes(clean)){
+    list.push(clean);
+    localStorage.setItem('verified_wa_rt36', JSON.stringify(list));
+    console.log('SIMPAN VERIF BOSKU:', clean, list);
+  }
 }
  function amanFoto(url){
  try{
