@@ -269,6 +269,31 @@
   if (!firebase.apps.length) { 
     firebase.initializeApp(firebaseConfig); 
   }
+    // === RATE LIMITING + APP CHECK ANTI SPAM BOT - PASAR RT36 ===
+  // Load App Check SDK
+  const appCheckScript = document.createElement('script');
+  appCheckScript.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js";
+  document.head.appendChild(appCheckScript);
+  appCheckScript.onload = () => {
+    const appCheck = firebase.appCheck();
+    appCheck.activate('6Lftjw0uAAAAAK4v0oBhloB2IsAb_SqJOcVYukZJ', true);
+    console.log('App Check RT36 Aktif! Anti Bot!');
+  };
+  
+  let riwayatKirim = [];
+  function cekRateLimit(){
+    let now = Date.now();
+    riwayatKirim = riwayatKirim.filter(t => now - t < 60000);
+    if(riwayatKirim.length >= 5){
+      let sisa = Math.ceil((60000 - (now - riwayatKirim[0]))/1000);
+      alert('Sabar bosku! Jangan spam! Tunggu ' + sisa + ' detik lagi 🙏');
+      return false;
+    }
+    riwayatKirim.push(now);
+    return true;
+  }
+  // === END RATE LIMITING ===
+
   const auth = firebase.auth();
   const database = firebase.database();
   // ==== TAMBAHAN OPSI A - PIN MASTER & OTP SELAMANYA BOSKU ====
