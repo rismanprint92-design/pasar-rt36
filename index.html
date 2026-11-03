@@ -281,9 +281,12 @@ let dataProdukPendingOTP = null;
 function getVerifiedWAList(){
   try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
 }
-// HAPUS getVerifiedWAList, isWA_SudahVerifikasi, setWA_SudahVerifikasi YANG LAMA
-// GANTI JADI INI - COPY PASTE PERSIS!
-
+function formatKePlus62(wa){
+  let n = String(wa).replace(/\D/g,'');
+  if(n.startsWith('0')) n = '62'+n.slice(1);
+  if(!n.startsWith('62')) n = '62'+n;
+  return '+'+n;
+}
 function normalisasiWA(wa){
   let n = String(wa).replace(/\D/g,'');
   if(n.startsWith('0')) n = '62' + n.slice(1);
