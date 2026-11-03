@@ -9,7 +9,7 @@
   <meta property="og:type" content="website">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: wss: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: https://*.firebaseio.com https://*.firebaseio.app https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.googleapis.com https://fcm.googleapis.com; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; img-src 'self' https: data: blob:; font-src 'self' https: data:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: wss: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: https://*.firebaseio.com https://*.firebasedatabase.app https://*.googleapis.com https://fcm.googleapis.com wss://*.firebasedatabase.app wss://s-gke-apse1-nssi4-3.asia-southeast1.firebasedatabase.app; script-src 'self' https: 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://www.gstatic.com https://apis.google.com; style-src 'self' https: 'unsafe-inline' https://cdn.tailwindcss.com;">
   <title>Marketplace RT. 36 AR & Metroland</title>
   <script>
     var isOld = /Android [1-8]\./.test(navigator.userAgent);
@@ -1599,20 +1599,21 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
     }
 
     window.aktifkanNotifPasar = function(){
-      if (!("Notification" in window)) { alert("Buka di Chrome bosku!"); return; }
-      Notification.requestPermission().then(p=>{
-        if(p==='granted'){
-          messagingRT36.getToken({vapidKey: VAPID_KEY_RT36}).then(t=>{
-            if(t){
-              localStorage.setItem('notif_pasar_rt36_aktif', 'ya');
-              document.getElementById('btnNotifPasarRT36').style.display = 'none';
-              alert("✅ BERHASIL! Notif Aktif Bosku! Tombol akan hilang otomatis!");
-              const uidTok = firebase.auth().currentUser.uid;
-              fetch(`https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens/${uidTok}/${Date.now()}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t, waktu:new Date().toISOString(), uid: uidTok})});
-          }).catch(e=>alert("Error: "+e.message));
-        } else { alert("Izin ditolak bosku!"); }
-      });
-    };
+  if (!("Notification" in window)) { alert("Buka di Chrome bosku!"); return; }
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      messagingRT36.getToken({vapidKey: VAPID_KEY_RT36}).then(t=>{
+        if(t){
+          localStorage.setItem('notif_pasar_rt36_aktif', 'ya');
+          document.getElementById('btnNotifPasarRT36').style.display = 'none';
+          alert("✅ BERHASIL! Notif Aktif Bosku! Tombol akan hilang otomatis!");
+          const uidTok = firebase.auth().currentUser.uid;
+          fetch(`https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens/${uidTok}/${Date.now()}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t, waktu:new Date().toISOString(), uid: uidTok})}).catch(e=>console.log(e));
+        } else { alert("Gagal dapat token bosku!"); }
+      }).catch(e=>alert("Error: "+e.message));
+    } else { alert("Izin ditolak bosku!"); }
+  });
+};
     messagingRT36.onMessage((payload)=>{ alert((payload.notification?.title||"Pasar RT36")+ "\n" + (payload.notification?.body||"Ada info baru!")); });
     // Cek saat load
     setTimeout(cekStatusNotif, 1500);
