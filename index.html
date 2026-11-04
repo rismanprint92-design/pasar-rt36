@@ -1860,20 +1860,7 @@ function bukaDetailProdukFoto(arr){
           child.ref.remove();
         });
       });
-      database.ref('pesan_pribadi').once('value', snap=>{
-        snap.forEach(room=>{
-          room.forEach(msg=>{
-            let dataP=msg.val();
-            if(dataP && dataP.timestamp && dataP.timestamp < batas){
-              if(dataP.pesan && dataP.pesan.includes && dataP.pesan.includes('firebasestorage.googleapis.com')){
-                try{ firebase.storage().refFromURL(dataP.pesan).delete().catch(()=>{}); }catch(e){}
-              }
-              msg.ref.remove();
-            }
-          });
-        });
-      });
-    }
+      
     setInterval(autoHapus24Jam, 3600000);
     autoHapus24Jam();
     
