@@ -394,8 +394,6 @@ function amanAudio(url){
       return `${Math.floor(hari/30)} bln lalu`;
     }
     function bukaTutupCatatan(id, btn) { const teks = document.getElementById(id); teks.classList.toggle('buka'); btn.innerText = teks.classList.contains('buka') ? 'Sembunyikan ▲' : 'Lihat selengkapnya ▼'; }
-    pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
-    adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
     let produkData = []; let kategoriAktif = 'semua'; let BATAS_TAMPIL = 12; let produkFilteredGlobal = [];
     dbRef.on('value', (snap) => { 
       const data=snap.val(); produkData=[]; 
