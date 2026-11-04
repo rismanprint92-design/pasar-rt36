@@ -1107,56 +1107,42 @@ function bukaModalOTP_WA(wa){
 function tutupModalOTP_WA(){
   let el = document.getElementById('modal-otp-wa-verifikasi');
   if(el) el.classList.add('hidden');
+  if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; }
 }
-  <!-- Taruh di dalam body paling bawah, dekat modal OTP -->
-<div id="recaptcha-container"></div>
-  function kirimOTPVerifikasiWA(wa){
+function kirimOTPVerifikasiWA(wa){
   try{
     let noPlus62 = formatKePlus62(wa);
-    waYangMauDiVerifikasi = noPlus62; // INI KUNCINYA BOSKU, TADI KOSONG!
-    
-    // Buat container kalau belum ada - jangan hidden bosku
+    waYangMauDiVerifikasi = noPlus62;
     let recaptchaEl = document.getElementById('recaptcha-container-toko');
     if(!recaptchaEl){
       recaptchaEl = document.createElement('div');
       recaptchaEl.id = 'recaptcha-container-toko';
       document.body.appendChild(recaptchaEl);
     }
-    
     if(!window.recaptchaVerifierToko){
-      window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {
-        'size': 'invisible',
-        'callback': function(){ console.log('Recaptcha OK bosku'); }
-      });
-      window.recaptchaVerifierToko.render();
+      window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'invisible'});
     }
-    
     bukaModalOTP_WA(noPlus62);
     let infoEl = document.getElementById('info-otp-wa');
     if(infoEl) infoEl.innerHTML = `Mengirim SMS ke ${noPlus62}... Sabar bosku!`;
-    
     auth.signInWithPhoneNumber(noPlus62, window.recaptchaVerifierToko).then(function(result){
       confirmationResultWA = result;
       if(infoEl) infoEl.innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS bosku!`;
     }).catch(function(err){
       console.error('OTP Error:', err);
-      alert('Gagal kirim OTP: '+err.message+'\n\nCek: 1. Billing Firebase sudah Blaze? 2. SMS Region Indonesia di-Allow?');
+      alert('Gagal kirim OTP: '+err.message);
       if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; }
       if(infoEl) infoEl.innerText = 'Gagal: '+err.message;
-      tutupModalOTP_WA();
     });
   }catch(e){ alert('Error OTP: '+e.message); console.error(e); }
 }
-
 function konfirmasiOTP_WA(){
   let inputEl = document.getElementById('input-kode-otp-wa');
   if(!inputEl){ alert('Input OTP tidak ketemu!'); return; }
   let kode = inputEl.value.trim();
   if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
-  if(!confirmationResultWA){ alert('Belum ada OTP! Klik kirim ulang!'); return; }
-  
+  if(!confirmationResultWA){ alert('Belum ada OTP!'); return; }
   confirmationResultWA.confirm(kode).then(function(){
-    // Simpan pakai normalisasi yang kemarin kita fix
     setWA_SudahVerifikasi(waYangMauDiVerifikasi); 
     alert('✅ No WA '+waYangMauDiVerifikasi+' terverifikasi! Ingat selamanya bosku!');
     tutupModalOTP_WA();
@@ -1751,6 +1737,6 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
 <button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
 🔔 Aktifkan Notif Pasar
 </button>
-
+<div id="recaptcha-container"></div>
 </body>
 </html>
