@@ -2046,6 +2046,101 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
 <button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
 🔔 Aktifkan Notif Pasar
 </button>
-// <button onclick="alert(firebase.auth().currentUser.uid)" style="position:fixed;bottom:10px;left:10px;z-index:9999;background:yellow;padding:10px">LIAT UID</button>
+// FIX ANTI HILANG - PIN SAJA BOSKU! TIMPA SEMUA YANG LAMA!
+window.bukaModalTokoSaya = function(){
+  try{
+    // 1. Tutup pilihan dulu
+    const pil = document.getElementById('modal-pilihan-jual');
+    if(pil){ pil.classList.add('hidden'); pil.classList.remove('flex'); pil.style.display='none'; }
+    
+    // 2. Buka Toko Saya paksa tampil
+    const el = document.getElementById('modal-toko-saya');
+    if(!el){ alert('Modal toko tidak ketemu bosku!'); return; }
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+    el.style.display = 'flex';
+    el.style.zIndex = '1150';
+    
+    // 3. Isi awal
+    const cont = document.getElementById('daftar-produk-toko');
+    if(cont) cont.innerHTML = '<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN 6 digit bosku</p>';
+    const st = document.getElementById('status-toko-saya');
+    if(st) st.textContent = '';
+    const inp = document.getElementById('input-pin-toko');
+    if(inp){ inp.value=''; inp.focus(); }
+    
+    console.log('Toko Saya dibuka PIN saja bosku!');
+  }catch(e){
+    alert('Error buka toko: '+e.message);
+    console.log(e);
+  }
+}
+
+window.tutupModalTokoSaya = function(){
+  const el=document.getElementById('modal-toko-saya');
+  if(el){ el.classList.add('hidden'); el.classList.remove('flex'); el.style.display='none'; }
+}
+window.tutupModalPilihanJual = function(){
+  const el=document.getElementById('modal-pilihan-jual');
+  if(el){ el.classList.add('hidden'); el.classList.remove('flex'); el.style.display='none'; }
+}
+
+// PIN SAJA - TANPA WA!
+window.cariTokoSaya_PinSaja = async function(){
+  const pinInput = document.getElementById('input-pin-toko')?.value.trim();
+  const statusEl = document.getElementById('status-toko-saya');
+  if(!pinInput || pinInput.length < 6){ alert('PIN minimal 6 angka bosku! Contoh 123456'); return; }
+  if(statusEl) statusEl.textContent = '⏳ Cek PIN...';
+  
+  try{
+    let waNorm = localStorage.getItem('wa_toko_login') || '';
+    if(!waNorm){
+      let devId = localStorage.getItem('my_device_id_pasar');
+      if(devId){
+        let snapDev = await activeDeviceRef.child(devId).once('value');
+        let mapDev = snapDev.val();
+        if(mapDev){
+          let firstKey = Object.keys(mapDev)[0];
+          if(mapDev[firstKey]?.wa) waNorm = normalisasiWA(mapDev[firstKey].wa);
+        }
+      }
+    }
+    if(!waNorm){
+      let hashInput = await hashPin(pinInput);
+      let snapAll = await pinWARef.once('value');
+      let allMap = snapAll.val()||{};
+      for(let waKey in allMap){
+        let d = allMap[waKey];
+        if(d && ((d.pinHash && d.pinHash===hashInput) || (d.pin && String(d.pin)===String(pinInput)))){
+          waNorm = waKey; break;
+        }
+      }
+    }
+    if(!waNorm){
+      if(statusEl) statusEl.textContent = '❌ PIN tidak ketemu!';
+      alert('PIN tidak ketemu di HP ini bosku! Pakai HP yang pas jualan pertama!');
+      return;
+    }
+    let snap = await pinWARef.child(waNorm).once('value');
+    let data = snap.val();
+    if(!data){ alert('Data toko hilang!'); return; }
+    let hashInput = await hashPin(pinInput);
+    let cocok = (data.pinHash && data.pinHash===hashInput) || (data.pin && String(data.pin)===String(pinInput));
+    if(!cocok){
+      if(statusEl) statusEl.textContent = '❌ PIN salah!';
+      alert('PIN salah bosku! Ingat PIN 6 angka pas jualan pertama!');
+      return;
+    }
+    localStorage.setItem('wa_toko_login', waNorm);
+    if(statusEl) statusEl.textContent = '✅ PIN benar!';
+    tampilkanProdukTokoSaya_ByWA(waNorm);
+  }catch(e){
+    alert('Error: '+e.message);
+    if(statusEl) statusEl.textContent = 'Error: '+e.message;
+  }
+}
+
+// Supaya tombol lama yang masih pakai cariTokoSaya juga jalan ke PIN saja
+window.cariTokoSaya = window.cariTokoSaya_PinSaja;
 </body>
 </html>
