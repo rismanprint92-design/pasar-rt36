@@ -920,7 +920,6 @@ function isOperatorValid(wa){
 let otpPendingDBRef = database.ref('otp_pending');
 let trustedWARef = database.ref('trusted_was');
 let pinWARef = database.ref('pin_wa_map');
-let dataProdukPendingOTP = null;
     async function tambahProduk(e){
   e.preventDefault();
   const pin = document.getElementById('pin-penjual').value.trim();
