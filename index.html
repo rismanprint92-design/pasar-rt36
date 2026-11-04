@@ -1844,7 +1844,7 @@ function bukaDetailProdukFoto(arr){
         box.scrollTop=box.scrollHeight;
         if(!isMe) triggerNotifChat(true, true);
       });
-    }
+       }
      function autoHapus24Jam(){
       let batas = Date.now() - (24*60*60*1000);
       database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{
@@ -1860,7 +1860,8 @@ function bukaDetailProdukFoto(arr){
           child.ref.remove();
         });
       });
-      
+    }
+    
     setInterval(autoHapus24Jam, 3600000);
     autoHapus24Jam();
     
