@@ -1711,8 +1711,7 @@ function bukaDetailProdukFoto(arr){
         if(!isMe) triggerNotifChat(true, true);
       });
     }
-    function kirimPesanPribadi(){ let input=document.getElementById('teksPesanPribadi'); let pesan=input.value.trim(); if(!pesan||!targetPrivId) return; let myId=localStorage.getItem('my_chat_id')||''; let myNama=localStorage.getItem('verified_nama_rt36')||'Warga'; let room=getRoomId(myId, targetPrivId); let jam=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); database.ref('pesan_pribadi/'+room).push({nama:myNama, pesan:pesan, waktu:jam, userId:myId, targetId:targetPrivId, timestamp:Date.now(), tipe:'teks'}); input.value=''; }
-   function autoHapus24Jam(){
+     function autoHapus24Jam(){
       let batas = Date.now() - (24*60*60*1000);
       database.ref('pesan_warga').orderByChild('timestamp').endAt(batas).once('value', snap=>{
         snap.forEach(child=>{
