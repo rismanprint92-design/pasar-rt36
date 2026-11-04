@@ -337,11 +337,14 @@
   }
   const auth = firebase.auth();
   const database = firebase.database();
-  // ==== TAMBAHAN OPSI A - PIN MASTER & OTP SELAMANYA BOSKU ====
-const PIN_MASTER_AR36 = "AR36";
-let confirmationResultWA = null;
-let waYangMauDiVerifikasi = "";
-let dataProdukPendingOTP = null;
+  var PIN_MASTER_AR36 = "AR36";
+  var confirmationResultWA = null;
+  var waYangMauDiVerifikasi = "";
+  var dataProdukPendingOTP = null;
+  var confirmationTokoSaya = null;
+  var otpPendingDBRef = database.ref('otp_pending');
+  var trustedWARef = database.ref('trusted_was');
+  var pinWARef = database.ref('pin_wa_map');
 
 function formatKePlus62(wa){
   let n = String(wa).replace(/\D/g,'');
@@ -917,9 +920,6 @@ function isOperatorValid(wa){
   if(n.startsWith('62')) n = '0' + n.slice(2);
   return PREFIX_VALID.includes(n.substring(0,4));
 }
-let otpPendingDBRef = database.ref('otp_pending');
-let trustedWARef = database.ref('trusted_was');
-let pinWARef = database.ref('pin_wa_map');
     async function tambahProduk(e){
   e.preventDefault();
   const pin = document.getElementById('pin-penjual').value.trim();
