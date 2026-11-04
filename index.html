@@ -2046,6 +2046,7 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
 <button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
 🔔 Aktifkan Notif Pasar
 </button>
+<script>
 // FIX ANTI HILANG - PIN SAJA BOSKU! TIMPA SEMUA YANG LAMA!
 window.bukaModalTokoSaya = function(){
   try{
@@ -2142,5 +2143,6 @@ window.cariTokoSaya_PinSaja = async function(){
 
 // Supaya tombol lama yang masih pakai cariTokoSaya juga jalan ke PIN saja
 window.cariTokoSaya = window.cariTokoSaya_PinSaja;
+</script>
 </body>
 </html>
