@@ -157,7 +157,18 @@
     </div>
   </div>
 </div>
-  <div id="modal-daftar-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl"><div class="flex justify-between items-center p-4 border-b"><h3 class="font-bold text-gray-800 text-[14px] flex items-center gap-2"><i class="ph ph-storefront text-emerald-600"></i> Daftar Toko Terdaftar (Admin)</h3><button onclick="tutupModalDaftarToko()" class="text-gray-400 text-xl px-2">&times;</button></div><div class="p-3 bg-amber-50 border-b text-[11px] text-gray-600"><p>🔒 Hanya admin yang bisa lihat halaman ini bosku.</p></div><div id="daftar-toko-admin" class="flex-1 overflow-y-auto p-3 space-y-2"></div></div></div>
+  <div id="modal-daftar-toko" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-[70] p-0 sm:p-4">
+  <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="font-bold text-gray-800 text-[14px] flex items-center gap-2"><i class="ph ph-storefront text-emerald-600"></i> Daftar Toko Terdaftar (Admin)</h3>
+      <button onclick="tutupModalDaftarToko()" class="text-gray-400 text-xl px-2">&times;</button>
+    </div>
+    <!-- DAFTAR TOKO + TOMBOL ACC AKAN MUNCUL DI SINI BOSKU -->
+    <div id="daftar-toko-admin" class="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
+      <p class="text-center py-10 text-gray-400 text-xs">Memuat toko & produk pending...</p>
+    </div>
+  </div>
+</div>
   <div id="modal-login-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs"><h3 class="font-bold text-gray-800 text-sm mb-2 text-center">Masuk Mode Admin RT</h3><p class="text-gray-500 mb-4 text-center">Masukkan PIN pengurus RT terpusat.</p><input type="password" id="pin-admin" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••"><div class="flex gap-2"><button onclick="tutupModalAdmin()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="verifikasiAdmin()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold">Masuk</button></div></div></div>
   <div id="modal-ganti-pin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3"><h3 class="font-bold text-gray-800 text-sm text-center">Ubah PIN Admin</h3><div><label class="block font-medium mb-1">PIN Lama</label><input type="password" id="pin-lama" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div><label class="block font-medium mb-1">PIN Baru</label><input type="password" id="pin-baru" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div class="flex gap-2 pt-2"><button onclick="tutupModalGantiPin()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button><button onclick="simpanPinBaru()" class="w-1/2 bg-amber-600 text-white py-2 rounded-lg font-bold hover:bg-amber-700">Simpan</button></div></div></div>
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4"><div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3"><div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div><h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2><p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan PIN terdaftar atau buat akun baru di bawah.</p><div class="space-y-3 mt-2"><div><label class="text-[11px] font-bold text-[#075E54]">Masuk dengan PIN Sebelumnya</label><input type="password" id="inputPinSebelumnya" placeholder="••••" class="w-full mt-1 border border-emerald-300 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div><div class="border-t pt-2 space-y-2"><div><label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH (Untuk Daftar Baru)</label><input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-xs focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div><div><label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label><input type="password" id="inputPinDaftarBaru" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-center font-bold tracking-widest text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div></div><button type="button" onclick="prosesLoginAtauDaftarWarga()" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer text-xs">Masuk / Daftar Chat 💬</button><button type="button" onclick="tutupModalLoginPin()" class="w-full bg-gray-100 text-gray-600 font-medium py-2 rounded-xl text-xs">Batal</button></div></div></div>
@@ -635,56 +646,60 @@ function amanAudio(url){
     function bukaModalJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } }
     function tutupModalPilihanJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
     function pilihJualBaru(){ tutupModalPilihanJual(); const el=document.getElementById('modal-jual'); if(el) el.classList.remove('hidden'); }
-  function bukaModalDaftarToko(){
-     // === FIX ADMIN ANTI "Hanya Admin" BOSKU - CEK LOCALSTORAGE JUGA! ===
+ function bukaModalDaftarToko(){
      let cekAdmin = false;
      try{
        if(isAdmin) cekAdmin=true;
-       if(localStorage.getItem('isAdminRT36')==='true') cekAdmin=true;
+       if(localStorage.getItem('isAdminRT36')==='true'){ cekAdmin=true; isAdmin=true; }
      }catch(e){}
      if(!cekAdmin){ alert('Hanya Admin! Aktifkan Mode Admin dulu bosku!'); return; }
 
      const modalEl = document.getElementById('modal-daftar-toko');
      if(modalEl){ modalEl.classList.remove('hidden'); modalEl.style.display='flex'; }
     const container=document.getElementById('daftar-toko-admin');
-    container.textContent=''; 
-    let pLoad=document.createElement('p'); 
-    pLoad.className='text-center py-6 text-gray-400 text-xs'; 
-    pLoad.textContent='Memuat toko & produk pending...'; 
-    container.appendChild(pLoad);
+    if(!container) return;
+    container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat toko & produk pending...</p>';
 
-    // === 1. LOAD PRODUK PENDING DULU BOSKU - INI YANG BUTUH TOMBOL ACC! ===
-    database.ref('produk').orderByChild('status').equalTo('pending_verifikasi').once('value').then(snapPending=>{
+    // === FIX ANTI GAGAL INDEX - JANGAN PAKAI equalTo, PAKAI FILTER MANUAL BOSKU! ===
+    database.ref('produk').once('value').then(snapAll=>{
       let htmlPending='';
       let countPending=0;
-      snapPending.forEach(child=>{
-        countPending++;
-        let d=child.val();
-        let waToko = d.wa||d.waToko||d.ownerPhone||'-';
-        let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : '';
-        htmlPending+=`
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-          <div class="flex gap-3">
-            <img src="${amanFoto(foto)}" class="w-12 h-12 rounded object-cover border">
-            <div class="flex-1">
-              <p class="font-bold text-[13px]">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
-              <p class="text-[11px] text-gray-700">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||'-'}</p>
-              <p class="text-[10px] text-gray-400">ID Produk: ${child.key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
-              <div class="flex gap-2 mt-2">
-                <button onclick="accProdukAdmin('${child.key}','${waToko}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & JADI TRUSTED</button>
-                <button onclick="tolakProdukAdmin('${child.key}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
-                <button onclick="bukaDetailProduk('${child.key}')" class="bg-white border px-3 py-1.5 rounded-lg text-[11px]">👁️ Lihat</button>
+      let allProduk = snapAll.val()||{};
+
+      // Filter manual biar pasti kena bosku!
+      Object.keys(allProduk).forEach(key=>{
+        let d = allProduk[key];
+        if(!d) return;
+        // Deteksi pending - cek semua variasi status
+        if(d.status==='pending_verifikasi' || d.status==='pending'){
+          countPending++;
+          let waToko = d.wa||d.waToko||d.ownerPhone||'-';
+          let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : '';
+          let fotoAman = '';
+          try{ fotoAman = amanFoto(foto); }catch(e){ fotoAman = foto||'https://via.placeholder.com/100'; }
+          
+          htmlPending+=`
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+            <div class="flex gap-3">
+              <img src="${fotoAman}" class="w-12 h-12 rounded object-cover border bg-white" onerror="this.src='https://via.placeholder.com/100'">
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-[13px] truncate">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
+                <p class="text-[11px] text-gray-700 truncate">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||d.namaToko||'-'}</p>
+                <p class="text-[10px] text-gray-400">ID: ${key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="accProdukAdmin('${key}','${waToko}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & TRUSTED</button>
+                  <button onclick="tolakProdukAdmin('${key}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>`;
+          </div>`;
+        }
       });
 
-      // === 2. BARU LOAD DAFTAR TOKO (activeDeviceRef) ===
+      // Baru load daftar toko
       activeDeviceRef.once('value', snap=>{
-        container.textContent='';
+        container.innerHTML='';
         
-        // Tampilkan pending di paling atas!
         if(countPending>0){
           let titlePending=document.createElement('div');
           titlePending.className='bg-yellow-400 text-black font-bold text-xs p-2 rounded-lg mb-3 text-center';
@@ -694,12 +709,12 @@ function amanAudio(url){
           divPending.innerHTML=htmlPending;
           container.appendChild(divPending);
           let hr=document.createElement('hr');
-          hr.className='my-4';
+          hr.className='my-4 border-gray-200';
           container.appendChild(hr);
         } else {
           let ok=document.createElement('div');
-          ok.className='bg-green-50 border border-green-200 text-green-700 text-xs p-2 rounded-lg mb-3 text-center';
-          ok.textContent='✅ Tidak ada pending, semua sudah ACC bosku!';
+          ok.className='bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
+          ok.innerHTML='✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk.</span>';
           container.appendChild(ok);
         }
 
@@ -713,7 +728,7 @@ function amanAudio(url){
         }
         
         let titleToko=document.createElement('p');
-        titleToko.className='font-bold text-xs mb-2';
+        titleToko.className='font-bold text-xs mb-2 text-gray-700';
         titleToko.textContent='📋 Daftar Toko Terdaftar ('+Object.keys(data).length+' Toko)';
         container.appendChild(titleToko);
 
@@ -748,25 +763,27 @@ function amanAudio(url){
             container.appendChild(card);
         });
       });
+    }).catch(e=>{
+      container.innerHTML=`<p class="text-center py-6 text-red-500 text-xs">Gagal load: ${e.message}</p>`;
+      console.error(e);
     });
 }
 
-// === FUNGSI ACC BARU BOSKU! WAJIB TAMBAHKAN INI DI BAWAHNYA! ===
 function accProdukAdmin(idProduk, waToko){
   if(!confirm('ACC produk '+idProduk+' bosku? WA '+waToko+' akan jadi TRUSTED selamanya!')) return;
   let waNorm='';
-  try{ waNorm = normalisasiWA(waToko); }catch(e){ waNorm=waToko; }
+  try{ waNorm = normalisasiWA(waToko); }catch(e){ waNorm=waToko.replace(/[^0-9]/g,''); }
   database.ref('produk/'+idProduk).update({status:'tersedia', approvedAt: Date.now(), approvedBy:'admin'}).then(()=>{
     if(waNorm && waNorm.length>=10){
       try{
-        trustedWARef.child(waNorm).set(true);
+        if(typeof trustedWARef!=='undefined') trustedWARef.child(waNorm).set(true);
         if(typeof pinWARef!=='undefined') pinWARef.child(waNorm).set(true);
-        setWA_SudahVerifikasi(waNorm);
-      }catch(e){}
+        if(typeof setWA_SudahVerifikasi==='function') setWA_SudahVerifikasi(waNorm);
+      }catch(e){ console.log('Trusted gagal:', e); }
     }
     alert('✅ ACC Berhasil! Produk sudah tayang & WA '+waToko+' jadi Trusted selamanya bosku!');
     bukaModalDaftarToko();
-    terapkanFilterDanPencarian();
+    if(typeof terapkanFilterDanPencarian==='function') terapkanFilterDanPencarian();
   }).catch(e=>alert('Gagal ACC: '+e.message));
 }
 
@@ -775,7 +792,7 @@ function tolakProdukAdmin(idProduk){
   database.ref('produk/'+idProduk).remove().then(()=>{
     alert('🗑️ Produk pending dihapus!');
     bukaModalDaftarToko();
-    terapkanFilterDanPencarian();
+    if(typeof terapkanFilterDanPencarian==='function') terapkanFilterDanPencarian();
   }).catch(e=>alert('Gagal hapus: '+e.message));
 }
 function resetPinPenjual(deviceId){
