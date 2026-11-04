@@ -278,9 +278,6 @@ let confirmationResultWA = null;
 let waYangMauDiVerifikasi = "";
 let dataProdukPendingOTP = null;
 
-function getVerifiedWAList(){
-  try{ return JSON.parse(localStorage.getItem('verified_wa_rt36')||'[]'); }catch(e){ return []; }
-}
 function formatKePlus62(wa){
   let n = String(wa).replace(/\D/g,'');
   if(n.startsWith('0')) n = '62'+n.slice(1);
@@ -306,15 +303,13 @@ function setWA_SudahVerifikasi(wa){
     localStorage.setItem('verified_wa_rt36', JSON.stringify(list));
   }
 }
- function amanFoto(url){
+function amanFoto(url){
  try{
   const fallback='https://via.placeholder.com/400x400?text=Produk+RT36';
   if(!url) return fallback;
   const s=String(url).trim(); if(!s) return fallback;
   const u=new URL(s, window.location.origin);
-  if(u.protocol!=='http:' && u.protocol!=='https:' && u.protocol!=='data:' && u.protocol!=='blob:'){
-   return fallback;
-  }
+  if(u.protocol!=='http:' && u.protocol!=='https:' && u.protocol!=='data:' && u.protocol!=='blob:'){ return fallback; }
   return u.href;
  }catch(e){ return 'https://via.placeholder.com/400x400?text=Produk+RT36'; }
 }
@@ -360,16 +355,6 @@ function amanAudio(url){
     return u.href;
   }catch(e){ return ''; }
 }
-function amanLokasi(url){
-  try{
-    const u=new URL(String(url).trim());
-    const hostOk = u.hostname==='google.com' || u.hostname.endsWith('.google.com');
-    const pathOk = u.pathname.startsWith('/maps');
-    if((u.protocol==='http:'||u.protocol==='https:') && hostOk && pathOk) return u.href;
-    return '';
-  }catch(e){ return ''; }
-}
-  function amanUrlWa(no,teks){ try{ let n=String(no).replace(/\D/g,''); if(n.startsWith('0')) n='62'+n.slice(1); if(!/^\d{10,15}$/.test(n)) return null; const href='https://wa.me/'+n+'?text='+encodeURIComponent(teks); const u=new URL(href); if(u.origin!=='https://wa.me') return null; return u.href; }catch(e){ return null; } }
   const dbRef = database.ref('produk_pasar');
   const pinRef = database.ref('pengaturan/admin_pin');
   const adminWaRef = database.ref('pengaturan/admin_wa');
