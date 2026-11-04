@@ -945,86 +945,114 @@ window.editProdukAdmin = async function(pid){
 }
 
     function tutupModalDaftarToko(){ const el=document.getElementById('modal-daftar-toko'); if(el) el.classList.add('hidden'); }
-    function bukaModalTokoSaya(){ tutupModalPilihanJual(); const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } const cont=document.getElementById('daftar-produk-toko'); if(cont) cont.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN + No.WA Toko lalu klik Buka bosku</p>'; }
+    function bukaModalTokoSaya(){ tutupModalPilihanJual(); const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.remove('hidden'); el.classList.add('flex'); } const cont=document.getElementById('daftar-produk-toko'); if(cont) cont.innerHTML='<p class="text-center text-gray-400 text-xs py-6">Masukkan PIN 6 digit bosku</p>'; const st=document.getElementById('status-toko-saya'); if(st) st.textContent=''; }
     function tutupModalTokoSaya(){ const el=document.getElementById('modal-toko-saya'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
-    // TOKO SAYA SEKARANG JADI OTP WA - SESUAI HTML BARU BOSKU
-// TOKO SAYA SEKARANG JADI OTP WA - SESUAI HTML BARU BOSKU
-async function cariTokoSaya(){
-  const waInputRaw = document.getElementById('input-wa-toko').value.trim();
-  const container = document.getElementById('daftar-produk-toko');
-  const statusEl = document.getElementById('status-toko-saya');
-  const boxOtp = document.getElementById('box-otp-toko');
-  const btn = document.getElementById('btn-buka-toko');
-  if(!waInputRaw){ alert('Masukkan No WA Toko bosku!'); return; }
-  let waNorm = normalisasiWA(waInputRaw);
-  let waPlus62 = formatKePlus62(waInputRaw);
 
-  if(isWA_SudahVerifikasi(waNorm)){
-    if(statusEl) statusEl.textContent = '✅ WA sudah terverifikasi, memuat toko...';
-    tampilkanProdukTokoSaya_ByWA(waNorm);
-    return;
-  }
-  let recaptchaEl = document.getElementById('recaptcha-container-toko');
-  if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; recaptchaEl.innerHTML=''; }
-  window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'normal'});
-  if(statusEl) statusEl.textContent = 'Mengirim SMS OTP ke ' + waPlus62 + '...';
-  if(btn) btn.textContent = 'Mengirim...';
-  try{
-    let result = await auth.currentUser.linkWithPhoneNumber(waPlus62, window.recaptchaVerifierToko);
-    confirmationTokoSaya = result;
-    waYangMauDiVerifikasi = waNorm;
-    if(boxOtp) boxOtp.classList.remove('hidden');
-    if(btn){ btn.textContent = 'Verifikasi & Buka'; btn.setAttribute('onclick','verifikasiOTP_TokoSaya()'); }
-    if(statusEl) statusEl.textContent = '✅ Kode OTP dikirim ke ' + waPlus62 + ' - Cek SMS bosku!';
-  }catch(err){
-    alert('Gagal kirim OTP Toko: ' + err.message);
-    if(statusEl) statusEl.textContent = 'Gagal: ' + err.message;
-    if(btn) btn.textContent = 'Kirim OTP / Buka';
-  }
-}
+    // VERSI FINAL: PIN SAJA! WA OTOMATIS BOSKU!
+    async function cariTokoSaya_PinSaja(){
+      const pinInput = document.getElementById('input-pin-toko').value.trim();
+      const container = document.getElementById('daftar-produk-toko');
+      const statusEl = document.getElementById('status-toko-saya');
+      
+      if(!pinInput || pinInput.length < 6){ alert('PIN minimal 6 angka bosku!'); return; }
+      if(statusEl) statusEl.textContent = '⏳ Cek PIN...';
+      
+      // 1. AMBIL WA YANG SUDAH KESIMPAN DI HP INI (dari jualan pertama)
+      let waTersimpan = localStorage.getItem('wa_toko_login') || localStorage.getItem('my_device_id_pasar') || '';
+      // kalau waTersimpan masih deviceId, cari WA aslinya di active_device_pins
+      let waNorm = '';
+      if(waTersimpan.startsWith('62')){
+        waNorm = waTersimpan;
+      } else {
+        // Cari di my_device_id_pasar -> active_device_pins
+        try{
+          let devId = localStorage.getItem('my_device_id_pasar');
+          if(devId){
+            let snapDev = await activeDeviceRef.child(devId).once('value');
+            let mapDev = snapDev.val();
+            if(mapDev){
+              let firstKey = Object.keys(mapDev)[0];
+              if(mapDev[firstKey] && mapDev[firstKey].wa) waNorm = normalisasiWA(mapDev[firstKey].wa);
+            }
+          }
+        }catch(e){}
+      }
+      
+      // Kalau HP baru / belum pernah jualan di HP ini, cari WA berdasarkan PIN saja (scan semua)
+      if(!waNorm){
+        if(statusEl) statusEl.textContent = '🔍 Cari toko dari PIN...';
+        let hashInput = await hashPin(pinInput);
+        let snapAll = await pinWARef.once('value');
+        let allMap = snapAll.val()||{};
+        for(let waKey in allMap){
+          let d = allMap[waKey];
+          if(d && ((d.pinHash && d.pinHash===hashInput) || (d.pin && String(d.pin)===String(pinInput)))){
+            waNorm = waKey;
+            break;
+          }
+        }
+      }
+      
+      if(!waNorm){
+        if(statusEl) statusEl.textContent = '❌ PIN tidak ketemu di HP ini bosku!';
+        alert('PIN tidak ketemu! Ini HP baru ya? Coba pakai HP yang pas jualan pertama, atau hubungi Admin RT36 bosku!');
+        return;
+      }
+      
+      // 2. VERIFIKASI PIN dengan WA yang ketemu tadi
+      try{
+        let snap = await pinWARef.child(waNorm).once('value');
+        let data = snap.val();
+        if(!data){ alert('Data toko tidak ada!'); return; }
+        let hashInput = await hashPin(pinInput);
+        let cocok = false;
+        if(data.pinHash && data.pinHash===hashInput) cocok=true;
+        if(data.pin && String(data.pin)===String(pinInput)) cocok=true;
+        
+        if(!cocok){
+          if(statusEl) statusEl.textContent = '❌ PIN 6 angka salah!';
+          alert('PIN salah bosku! Harus PIN yang pas jualan pertama!');
+          return;
+        }
+        
+        // SUKSES PIN SAJA!
+        localStorage.setItem('wa_toko_login', waNorm);
+        if(statusEl) statusEl.textContent = '✅ PIN benar! WA: '+waNorm;
+        tampilkanProdukTokoSaya_ByWA(waNorm);
+        
+      }catch(e){
+        alert('Error: '+e.message);
+        if(statusEl) statusEl.textContent = 'Error: '+e.message;
+      }
+    }
 
-function verifikasiOTP_TokoSaya(){
-  let kode = document.getElementById('input-otp-toko').value.trim();
-  let statusEl = document.getElementById('status-toko-saya');
-  if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
-  if(!confirmationTokoSaya){ alert('OTP belum dikirim bosku!'); return; }
-  if(statusEl) statusEl.textContent = 'Memverifikasi...';
-  confirmationTokoSaya.confirm(kode).then(()=>{
-    setWA_SudahVerifikasi(waYangMauDiVerifikasi);
-    alert('✅ No WA ' + waYangMauDiVerifikasi + ' terverifikasi! Ingat selamanya bosku! PIN lama tidak dipakai lagi!');
-    document.getElementById('box-otp-toko').classList.add('hidden');
-    document.getElementById('btn-buka-toko').textContent = 'Buka Toko';
-    document.getElementById('btn-buka-toko').setAttribute('onclick','cariTokoSaya()');
-    tampilkanProdukTokoSaya_ByWA(waYangMauDiVerifikasi);
-  }).catch(err=>{ alert('Kode salah bosku: ' + err.message); if(statusEl) statusEl.textContent = 'Kode salah!'; });
-}
-
-function tampilkanProdukTokoSaya_ByWA(waNorm){
-  let container = document.getElementById('daftar-produk-toko');
-  let statusEl = document.getElementById('status-toko-saya');
-  if(!container) return;
-  container.textContent = '';
-  let hasil = produkData.filter(p=> normalisasiWA(p.wa||'') === waNorm);
-  if(hasil.length===0){
-    container.innerHTML = '<p class="text-center py-8 text-gray-400 text-xs">Belum ada produk untuk WA ini bosku</p>';
-    if(statusEl) statusEl.textContent = '✅ Terverifikasi - Belum ada produk';
-    return;
-  }
-  if(statusEl) statusEl.textContent = '✅ ' + hasil.length + ' produk - Verified selamanya bosku!';
-  hasil.forEach(item=>{
-    let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-    let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
-    let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
-    let mid=document.createElement('div'); mid.className='flex-1';
-    let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
-    let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
-    mid.append(pN,pH);
-    let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
-    let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
-    let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
-    aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
-  });
-}
+    function tampilkanProdukTokoSaya_ByWA(waNorm){
+      let container = document.getElementById('daftar-produk-toko');
+      let statusEl = document.getElementById('status-toko-saya');
+      if(!container) return;
+      container.textContent = '';
+      let hasil = produkData.filter(p=> normalisasiWA(p.wa||'') === waNorm);
+      if(hasil.length===0){
+        container.innerHTML = '<p class="text-center py-8 text-gray-400 text-xs">Belum ada produk bosku</p>';
+        if(statusEl) statusEl.textContent = '✅ WA: '+waNorm;
+        return;
+      }
+      if(statusEl) statusEl.textContent = '✅ '+hasil.length+' produk | WA: '+waNorm;
+      hasil.forEach(item=>{
+        let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
+        let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
+        let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
+        let mid=document.createElement('div'); mid.className='flex-1';
+        let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
+        let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
+        mid.append(pN,pH);
+        let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
+        let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
+        let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
+        aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
+      });
+    }
+   
     function hapusProdukDariToko(id){ 
       if(confirm('Yakin hapus produk ini dari toko Anda?')){
         let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
