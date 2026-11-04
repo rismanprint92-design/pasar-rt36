@@ -1109,32 +1109,36 @@ function tutupModalOTP_WA(){
   if(el) el.classList.add('hidden');
   if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; }
 }
-function kirimOTPVerifikasiWA(wa){
+// FIX OTP ANTI ERROR RENDER 2X - TARUH DI BAGIAN 2 NANTI
+async function kirimOTPVerifikasiWA(waInput){
+  let waPlus62 = formatKePlus62(waInput);
+  waYangMauDiVerifikasi = waInput;
+  
+  // HAPUS CAPTCHA LAMA - INI KUNCINYA BOSKU!
+  if(window.recaptchaVerifier){
+    try{ window.recaptchaVerifier.clear(); } catch(e){}
+    window.recaptchaVerifier = null;
+    let el = document.getElementById('recaptcha-container-toko');
+    if(el) el.innerHTML = '';
+  }
+
+  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {
+    'size': 'normal',
+    'callback': () => console.log("Captcha OK")
+  });
+
   try{
-    let noPlus62 = formatKePlus62(wa);
-    waYangMauDiVerifikasi = noPlus62;
-    let recaptchaEl = document.getElementById('recaptcha-container-toko');
-    if(!recaptchaEl){
-      recaptchaEl = document.createElement('div');
-      recaptchaEl.id = 'recaptcha-container-toko';
-      document.body.appendChild(recaptchaEl);
-    }
-    if(!window.recaptchaVerifierToko){
-      window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'invisible'});
-    }
-    bukaModalOTP_WA(noPlus62);
-    let infoEl = document.getElementById('info-otp-wa');
-    if(infoEl) infoEl.innerHTML = `Mengirim SMS ke ${noPlus62}... Sabar bosku!`;
-    auth.signInWithPhoneNumber(noPlus62, window.recaptchaVerifierToko).then(function(result){
-      confirmationResultWA = result;
-      if(infoEl) infoEl.innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS bosku!`;
-    }).catch(function(err){
-      console.error('OTP Error:', err);
-      alert('Gagal kirim OTP: '+err.message);
-      if(window.recaptchaVerifierToko){ try{ window.recaptchaVerifierToko.clear(); }catch(e){} window.recaptchaVerifierToko=null; }
-      if(infoEl) infoEl.innerText = 'Gagal: '+err.message;
-    });
-  }catch(e){ alert('Error OTP: '+e.message); console.error(e); }
+    // Karena user sudah Anonymous (kopi55), pakai linkWithPhoneNumber
+    confirmationResultWA = await auth.currentUser.linkWithPhoneNumber(waPlus62, window.recaptchaVerifier);
+    // tampilkan modal kode OTP
+    document.getElementById('modal-otp-wa').classList.remove('hidden');
+    alert("Kode OTP dikirim ke " + waPlus62 + " bosku!");
+  }catch(err){
+    console.log("OTP Error:", err);
+    alert("Gagal kirim OTP: " + err.message);
+    window.recaptchaVerifier.clear();
+    window.recaptchaVerifier = null;
+  }
 }
 function konfirmasiOTP_WA(){
   let inputEl = document.getElementById('input-kode-otp-wa');
