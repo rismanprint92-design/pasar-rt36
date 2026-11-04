@@ -1207,9 +1207,11 @@ function kirimWA_OTP_KeAdmin(){
   tutupModalReverseOTP();
 }
     async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
-  let hashed=await hashPin(pinInput);
+  // === SUPER AMAN: HASH + SALT ACAK BOSKU ===
+  let {hash: hashed, salt: saltBaru} = await hashPin(pinInput);
   let deviceId=localStorage.getItem('my_device_id_pasar')||'dev_'+Date.now();
   localStorage.setItem('my_device_id_pasar',deviceId);
+  
   let b={
     nama:bersihkanTeks((dataExtra?dataExtra.nama:document.getElementById('nama').value)),
     harga:parseInt((dataExtra?dataExtra.harga:document.getElementById('harga').value))||0,
@@ -1224,13 +1226,36 @@ function kirimWA_OTP_KeAdmin(){
     foto:arr,
     timestamp:Date.now()
   };
-  dbRef.push(b).then((res)=>{
-    activeDeviceRef.child(deviceId).child(res.key).set({pinHash:hashed,wa:waNorm,ownerName:b.penjual});
-    pinWARef.child(waNorm).set({pinHash:hashed,ownerName:b.penjual,timestamp:Date.now()});
-    tutupModalJual(); document.getElementById('form-tambah').reset();
+  
+  dbRef.push(b).then(async (res)=>{
+    // === 1. SIMPAN DI TEMPAT AMAN - ANTI BOCOR BOSKU ===
+    try{
+      // Simpan hash + salt di node privat (cuma owner + admin bisa baca)
+      await database.ref('pin_privat/'+waNorm).set({
+        hash: hashed,
+        salt: saltBaru,
+        attempt: {count:0, last:0},
+        ownerName: b.penjual,
+        timestamp: Date.now()
+      });
+      
+      // Simpan mapping device -> WA (tanpa hash! aman!)
+      await activeDeviceRef.child(deviceId).child(res.key).set({wa:waNorm, ownerName:b.penjual});
+      
+      // Simpan owner WA -> UID (untuk rules)
+      let uidOwner = currentUser ? currentUser.uid : deviceId;
+      await database.ref('wa_owner/'+waNorm+'/'+uidOwner).set(true);
+      
+      // Simpan WA login di HP
+      localStorage.setItem('wa_toko_login', waNorm);
+      
+    }catch(e){ console.log('Simpan privat error:', e); }
+
+    tutupModalJual(); 
+    document.getElementById('form-tambah').reset();
     if(isTrusted) tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key);
     else alert('📦 Produk PENDING 24 jam bosku! Menunggu Admin ACC! Setelah ACC, trusted selamanya!');
-  });
+  }).catch(e=>{ alert('Gagal simpan: '+e.message); });
 }
 function mintaKodeBaruReverse(){
   if(!dataProdukPendingOTP) return;
