@@ -660,41 +660,48 @@ function amanAudio(url){
     if(!container) return;
     container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat toko & produk pending...</p>';
 
-    // === FIX ANTI GAGAL INDEX - JANGAN PAKAI equalTo, PAKAI FILTER MANUAL BOSKU! ===
-    database.ref('produk').once('value').then(snapAll=>{
+    // === FIX FINAL - CEK DUA NODE: produk & produk_pasar BOSKU! ===
+    Promise.all([
+      database.ref('produk').once('value'),
+      database.ref('produk_pasar').once('value')
+    ]).then(([snapProduk, snapPasar])=>{
       let htmlPending='';
       let countPending=0;
-      let allProduk = snapAll.val()||{};
 
-      // Filter manual biar pasti kena bosku!
-      Object.keys(allProduk).forEach(key=>{
-        let d = allProduk[key];
-        if(!d) return;
-        // Deteksi pending - cek semua variasi status
-        if(d.status==='pending_verifikasi' || d.status==='pending'){
-          countPending++;
-          let waToko = d.wa||d.waToko||d.ownerPhone||'-';
-          let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : '';
-          let fotoAman = '';
-          try{ fotoAman = amanFoto(foto); }catch(e){ fotoAman = foto||'https://via.placeholder.com/100'; }
-          
-          htmlPending+=`
-          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-            <div class="flex gap-3">
-              <img src="${fotoAman}" class="w-12 h-12 rounded object-cover border bg-white" onerror="this.src='https://via.placeholder.com/100'">
-              <div class="flex-1 min-w-0">
-                <p class="font-bold text-[13px] truncate">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
-                <p class="text-[11px] text-gray-700 truncate">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||d.namaToko||'-'}</p>
-                <p class="text-[10px] text-gray-400">ID: ${key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
-                <div class="flex gap-2 mt-2">
-                  <button onclick="accProdukAdmin('${key}','${waToko}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & TRUSTED</button>
-                  <button onclick="tolakProdukAdmin('${key}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
+      function prosesPending(snap, pathName){
+        let allProduk = snap.val()||{};
+        Object.keys(allProduk).forEach(key=>{
+          let d = allProduk[key];
+          if(!d) return;
+          if(d.status==='pending_verifikasi' || d.status==='pending'){
+            countPending++;
+            let waToko = d.wa||d.waToko||d.ownerPhone||'-';
+            let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : (d.image||d.fotoUrl||'');
+            let fotoAman = '';
+            try{ fotoAman = typeof amanFoto==='function' ? amanFoto(foto) : foto; }catch(e){ fotoAman = foto||'https://via.placeholder.com/100'; }
+            if(!fotoAman) fotoAman='https://via.placeholder.com/100';
+            
+            htmlPending+=`
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+              <div class="flex gap-3">
+                <img src="${fotoAman}" class="w-12 h-12 rounded object-cover border bg-white" onerror="this.src='https://via.placeholder.com/100'">
+                <div class="flex-1 min-w-0">
+                  <p class="font-bold text-[13px] truncate">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
+                  <p class="text-[11px] text-gray-700 truncate">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||d.namaToko||'-'} | Path: ${pathName}</p>
+                  <p class="text-[10px] text-gray-400">ID: ${key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
+                  <div class="flex gap-2 mt-2">
+                    <button onclick="accProdukAdmin('${key}','${waToko}','${pathName}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & TRUSTED</button>
+                    <button onclick="tolakProdukAdmin('${key}','${pathName}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>`;
-        }
-      });
+            </div>`;
+          }
+        });
+      }
+
+      prosesPending(snapProduk, 'produk');
+      prosesPending(snapPasar, 'produk_pasar');
 
       // Baru load daftar toko
       activeDeviceRef.once('value', snap=>{
@@ -714,7 +721,7 @@ function amanAudio(url){
         } else {
           let ok=document.createElement('div');
           ok.className='bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
-          ok.innerHTML='✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk.</span>';
+          ok.innerHTML='✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk & /produk_pasar.</span>';
           container.appendChild(ok);
         }
 
@@ -769,22 +776,49 @@ function amanAudio(url){
     });
 }
 
-function accProdukAdmin(idProduk, waToko){
-  if(!confirm('ACC produk '+idProduk+' bosku? WA '+waToko+' akan jadi TRUSTED selamanya!')) return;
-  let waNorm='';
-  try{ waNorm = normalisasiWA(waToko); }catch(e){ waNorm=waToko.replace(/[^0-9]/g,''); }
-  database.ref('produk/'+idProduk).update({status:'tersedia', approvedAt: Date.now(), approvedBy:'admin'}).then(()=>{
-    if(waNorm && waNorm.length>=10){
-      try{
-        if(typeof trustedWARef!=='undefined') trustedWARef.child(waNorm).set(true);
-        if(typeof pinWARef!=='undefined') pinWARef.child(waNorm).set(true);
-        if(typeof setWA_SudahVerifikasi==='function') setWA_SudahVerifikasi(waNorm);
-      }catch(e){ console.log('Trusted gagal:', e); }
+// === UPDATE JUGA FUNCTION ACC / TOLAK NYA BOSKU BIAR TAU PATH NYA! ===
+function accProdukAdmin(key, wa, path){
+  let pathFinal = path || 'produk_pasar'; // default ke produk_pasar
+  database.ref(pathFinal+'/'+key+'/status').set('tersedia').then(()=>{
+    // Juga trusted kan WA nya
+    if(wa && wa !== '-'){
+      let waBersih = wa.toString().replace(/[^0-9]/g,'');
+      if(waBersih.startsWith('0')) waBersih = '62'+waBersih.substring(1);
+      database.ref('trusted_was/'+waBersih).set(true);
     }
-    alert('✅ ACC Berhasil! Produk sudah tayang & WA '+waToko+' jadi Trusted selamanya bosku!');
+    alert('Berhasil ACC bosku! Path: '+pathFinal);
     bukaModalDaftarToko();
-    if(typeof terapkanFilterDanPencarian==='function') terapkanFilterDanPencarian();
   }).catch(e=>alert('Gagal ACC: '+e.message));
+}
+
+function tolakProdukAdmin(key, path){
+  if(!confirm('Yakin tolak/hapus produk ini?')) return;
+  let pathFinal = path || 'produk_pasar';
+  database.ref(pathFinal+'/'+key).remove().then(()=>{
+    alert('Produk ditolak & dihapus bosku!');
+    bukaModalDaftarToko();
+  }).catch(e=>alert('Gagal hapus: '+e.message));
+}
+function accProdukAdmin(key, wa, path){
+  let pathFinal = path || 'produk_pasar';
+  database.ref(pathFinal+'/'+key+'/status').set('tersedia').then(()=>{
+    if(wa && wa !== '-'){
+      let waBersih = wa.toString().replace(/[^0-9]/g,'');
+      if(waBersih.startsWith('0')) waBersih = '62'+waBersih.substring(1);
+      database.ref('trusted_was/'+waBersih).set(true);
+    }
+    alert('Berhasil ACC bosku! Path: '+pathFinal);
+    bukaModalDaftarToko();
+  }).catch(e=>alert('Gagal ACC: '+e.message));
+}
+
+function tolakProdukAdmin(key, path){
+  if(!confirm('Yakin tolak/hapus produk ini?')) return;
+  let pathFinal = path || 'produk_pasar';
+  database.ref(pathFinal+'/'+key).remove().then(()=>{
+    alert('Produk ditolak & dihapus bosku!');
+    bukaModalDaftarToko();
+  }).catch(e=>alert('Gagal hapus: '+e.message));
 }
 
 function tolakProdukAdmin(idProduk){
