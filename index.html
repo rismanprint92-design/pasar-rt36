@@ -1215,8 +1215,6 @@ function keluarAdmin(){
 (function(){ try{ if(localStorage.getItem('isAdminRT36')==='true'){ isAdmin=true; const b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); } }catch(e){} })();
 
 // ==== FIX OTP WA ANTI reCAPTCHA ALREADY RENDERED + PIN TOKO TETAP ====
-// ==== FIX FINAL OTP WA - ANTI reCAPTCHA ERROR + TOKO SAYA JADI OTP ====
-let confirmationTokoSaya = null;
 
 function bukaModalOTP_WA(wa){
   waYangMauDiVerifikasi = normalisasiWA(wa);
