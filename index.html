@@ -203,7 +203,72 @@
     </div>
   </div>
 </div>
-  <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50"><div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Pasang Dagangan Baru</h3><button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button></div><form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs"><div><label class="block font-medium mb-1">Nama Produk / Jasa</label><input type="text" id="nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Nasi Uduk Komplit"></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Harga (Rp)</label><input type="number" id="harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="10000"></div><div><label class="block font-medium mb-1">Kategori</label><select id="kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">Dll</option></select></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Status Produk</label><select id="status" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-bold"><option value="tersedia">✅ Tersedia</option><option value="tidak">❌ Tidak Tersedia</option></select></div><div><label class="block font-medium mb-1">Blok / No. Rumah</label><input type="text" id="lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Blok A1 No. 4"></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Nama Penjual / Toko</label><input type="text" id="penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Bu RT / Pak Ahmad"></div><div><label class="block font-medium mb-1">No. WhatsApp</label><input type="number" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="628123456789"></div></div><div><label class="block font-medium mb-1">PIN Rahasia Penjual/Toko (Ingat buat edit nanti!)</label><input type="password" id="pin-penjual" required class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="1234"></div><div><label class="block font-medium mb-1">Catatan / Keterangan (Opsional)</label><textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi."></textarea></div><div><label class="block font-medium mb-1">Foto Produk (Maksimal 3 Foto, Otomatis Kompres)</label><input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"></div><button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">Tayangkan Dagangan</button></form></div></div>
+  <div id="modal-otp-reverse-gratis" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-[1200] p-4">
+  <div class="bg-white w-full max-w-sm p-5 rounded-2xl text-xs text-center space-y-3 shadow-2xl border">
+    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto text-2xl">🔐</div>
+    <h3 class="font-bold text-gray-800 text-sm">Verifikasi WA Gratis - Sekali Selamanya!</h3>
+    <p class="text-gray-500 text-[11px]">WA kamu <b id="label-wa-reverse"></b> belum terverifikasi bosku!</p>
+    <div class="bg-gray-50 border rounded-xl p-3">
+      <p class="text-[10px] text-gray-400">KODE OTP KAMU (Berlaku 24 Jam):</p>
+      <p id="kode-otp-reverse" class="text-3xl font-extrabold tracking-[0.3em] text-emerald-700 mt-1">------</p>
+      <p class="text-[10px] text-gray-400 mt-1">Expired: <span id="expired-otp-reverse"></span></p>
+    </div>
+    <p class="text-[11px] text-gray-600">Klik tombol di bawah, WA Admin akan terbuka otomatis dengan kode ini bosku! Admin ACC, jualanmu tayang & nomor jadi trusted selamanya!</p>
+    <button onclick="kirimWA_OTP_KeAdmin()" class="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">📱 Kirim WA ke Admin RT</button>
+    <button onclick="mintaKodeBaruReverse()" class="w-full bg-gray-100 text-gray-600 py-2.5 rounded-xl font-bold">Minta Kode Baru 1 Klik</button>
+    <button onclick="tutupModalReverseOTP()" class="text-gray-400 text-[11px]">Batal</button>
+  </div>
+</div>
+  <div id="modal-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50">
+<div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+<div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Pasang Dagangan Baru</h3><button onclick="tutupModalJual()" class="text-gray-400 text-xl">&times;</button></div>
+
+<form id="form-tambah" onsubmit="tambahProduk(event)" class="space-y-3 text-xs">
+
+<div><label class="block font-medium mb-1">Nama Produk / Jasa</label>
+<input type="text" id="nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Nasi Uduk Komplit"></div>
+
+<div class="grid grid-cols-2 gap-2">
+<div><label class="block font-medium mb-1">Harga (Rp)</label>
+<input type="number" id="harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="10000"></div>
+<div><label class="block font-medium mb-1">Kategori</label>
+<select id="kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500">
+<option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">Dll</option>
+</select></div>
+</div>
+
+<div class="grid grid-cols-2 gap-2">
+<div><label class="block font-medium mb-1">Status Produk</label>
+<select id="status" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-bold"><option value="tersedia">✅ Tersedia</option><option value="tidak">❌ Tidak Tersedia</option></select></div>
+<div><label class="block font-medium mb-1">Blok / No. Rumah</label>
+<input type="text" id="lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Blok A1 No. 4"></div>
+</div>
+
+<!-- PERBAIKAN FINAL DI SINI BOSKU -->
+<div class="grid grid-cols-2 gap-2">
+<div><label class="block font-medium mb-1">Nama Penjual / Toko</label>
+<input type="text" id="penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Bu RT / Pak Ahmad"></div>
+<div><label class="block font-medium mb-1">No. WA (Bisa 08...)</label>
+<!-- DULU type="number" -> SEKARANG type="text" BIAR 08 TIDAK HILANG BOSKU -->
+<input type="text" inputmode="numeric" id="whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="082299511782" maxlength="15">
+<p id="info-operator-wa" class="text-[10px] mt-1 text-gray-400">Contoh: 082299511782</p>
+</div>
+</div>
+
+<div><label class="block font-medium mb-1">PIN Toko 6 Digit (1 WA = 1 PIN - Ingat!)</label>
+<!-- DULU 1234 -> SEKARANG WAJIB 6 DIGIT BOSKU -->
+<input type="password" id="pin-penjual" required minlength="6" maxlength="6" class="w-full border p-2.5 rounded-lg font-bold tracking-widest text-center focus:outline-emerald-500" placeholder="123456"></div>
+
+<div><label class="block font-medium mb-1">Catatan / Keterangan (Opsional)</label>
+<textarea id="catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500" placeholder="Contoh: Bisa diantar jika beli min. 2 porsi."></textarea></div>
+
+<div><label class="block font-medium mb-1">Foto Produk (Maks 3 Foto, Kompres Otomatis)</label>
+<input type="file" id="input-file-foto" accept="image/*" multiple class="w-full border p-2 rounded-lg bg-gray-50 text-[11px] file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"></div>
+
+<button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">Tayangkan Dagangan</button>
+<p class="text-[10px] text-center text-gray-400 mt-1">Jualan pertama: Verifikasi WA gratis via WA Admin (24 jam) - Setelah itu trusted selamanya bosku!</p>
+
+</form></div></div>
   <div id="modal-login-penjual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs"><h3 class="font-bold text-gray-800 text-sm mb-1 text-center">Verifikasi Penjual</h3><p class="text-gray-500 mb-3 text-center">Masukkan PIN Penjual yang Anda buat saat mendaftarkan produk ini.</p><input type="password" id="input-pin-konfirmasi" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••"><input type="hidden" id="edit-product-id"><div class="flex gap-2"><button onclick="tutupModalLoginPenjual()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="prosesVerifikasiPenjual()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold">Lanjutkan</button></div></div></div>
   <div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-end sm:items-center justify-center z-50"><div class="bg-white w-full max-w-md p-5 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Edit / Perbarui Dagangan</h3><button onclick="tutupModalEdit()" class="text-gray-400 text-xl">&times;</button></div><form id="form-edit" onsubmit="simpanPerubahanProduk(event)" class="space-y-3 text-xs"><input type="hidden" id="edit-id"><div><label class="block font-medium mb-1">Nama Produk / Jasa</label><input type="text" id="edit-nama" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Harga (Rp)</label><input type="number" id="edit-harga" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div><label class="block font-medium mb-1">Kategori</label><select id="edit-kategori" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"><option value="kuliner">Kuliner</option><option value="sembako">Sembako</option><option value="jasa">Jasa</option><option value="bekas">Barang Bekas</option><option value="pakaian">Pakaian</option><option value="aksesoris">Aksesoris</option><option value="elektronik">Elektronik</option><option value="dll">Dll</option></select></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Status Produk</label><select id="edit-status" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-bold"><option value="tersedia">✅ Tersedia</option><option value="tidak">❌ Tidak Tersedia</option></select></div><div><label class="block font-medium mb-1">Blok / No. Rumah</label><input type="text" id="edit-lokasi" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div></div><div class="grid grid-cols-2 gap-2"><div><label class="block font-medium mb-1">Nama Penjual</label><input type="text" id="edit-penjual" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div><div><label class="block font-medium mb-1">No. WhatsApp</label><input type="text" id="edit-whatsapp" required class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></div></div><div><label class="block font-medium mb-1">Catatan / Keterangan</label><textarea id="edit-catatan" rows="2" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500"></textarea></div><button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-emerald-700">Simpan Perubahan</button><button type="button" onclick="hapusOlehPenjual()" class="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-lg font-bold">Hapus Produk Ini</button></form></div></div>
   <div id="modal-share-produk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50 p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl"><div class="text-4xl mb-2">🎉</div><h3 class="font-bold text-lg text-gray-800">Produk Berhasil Diunggah!</h3><p class="text-xs text-gray-500 mt-1 mb-4">Bagikan dagangan Anda sekarang agar cepat laku diserbu pembeli!</p><div class="space-y-2"><button onclick="shareProdukKe('wa_status')" class="w-full bg-emerald-500 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>🟢</span> Buat Status WhatsApp</button><button onclick="shareProdukKe('wa_group')" class="w-full bg-teal-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>👥</span> Bagikan ke Grup WhatsApp</button><button onclick="shareProdukKe('facebook')" class="w-full bg-blue-600 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>📘</span> Bagikan ke Facebook</button><button onclick="shareProdukKe('link')" class="w-full bg-gray-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow"><span>🔗</span> Salin Link Produk</button></div><button onclick="tutupModalShare()" class="w-full mt-3 bg-gray-100 text-gray-600 text-xs font-medium py-2 rounded-xl">Nanti Saja / Tidak</button></div></div>
@@ -845,98 +910,112 @@ function tampilkanProdukTokoSaya_ByWA(waNorm){
         }catch(e){ resolve({boleh:true}); }
       }); 
     }
+    // ==== PERBAIKAN FINAL BOSKU: OPERATOR VALID + REVERSE OTP 24 JAM ====
+const PREFIX_VALID = ["0811","0812","0813","0821","0822","0823","0851","0852","0853","0814","0815","0816","0855","0856","0857","0858","0817","0818","0819","0859","0877","0878","0895","0896","0897","0898","0899","0810","0854"];
+function isOperatorValid(wa){
+  let n = String(wa).replace(/\D/g,'');
+  if(n.startsWith('62')) n = '0' + n.slice(2);
+  return PREFIX_VALID.includes(n.substring(0,4));
+}
+let otpPendingDBRef = database.ref('otp_pending');
+let trustedWARef = database.ref('trusted_was');
+let pinWARef = database.ref('pin_wa_map');
+let dataProdukPendingOTP = null;
     async function tambahProduk(e){
   e.preventDefault();
-  const pin=document.getElementById('pin-penjual').value.trim();
-  const waInputRaw=document.getElementById('whatsapp').value.trim();
-  const waInput = waInputRaw.replace(/\D/g,'');
-  if(pin.length<4){ alert('PIN minimal 4 digit bosku!'); return; }
-  if(waInput.length<10){ alert('WA tidak valid bosku!'); return; }
+  const pin = document.getElementById('pin-penjual').value.trim();
+  const waRaw = document.getElementById('whatsapp').value.trim();
+  let waAngka = waRaw.replace(/\D/g,'');
+  if(waAngka.startsWith('0')) waAngka = '62' + waAngka.slice(1);
+  if(pin.length < 6){ alert('PIN minimal 6 digit bosku!'); return; }
+  if(waAngka.length < 10){ alert('WA tidak valid bosku!'); return; }
+  if(!isOperatorValid(waAngka)){ alert('❌ Prefix WA tidak valid! Pakai nomor asli bosku! Contoh: 0822, 0812'); return; }
 
-  const hashedBaru = await hashPin(pin);
-  const cekWADulu = await new Promise((resolve)=>{
-    activeDeviceRef.once('value').then(snap=>{
-      const all=snap.val();
-      if(!all){ resolve({boleh:true}); return; }
-      for(let devId in all){
-        for(let prodId in all[devId]){
-          let d=all[devId][prodId];
-          if(!d || !d.wa) continue;
-          let waDB = String(d.wa).replace(/\D/g,'');
-          if(waDB===waInput){
-            if(d.pinHash !== hashedBaru){
-              resolve({boleh:false, owner:d.ownerName||'Toko lain'});
-              return;
-            } else { resolve({boleh:true}); return; }
-          }
-        }
-      }
-      resolve({boleh:true});
-    }).catch(()=>resolve({boleh:true}));
+  let hashedBaru = await hashPin(pin);
+  let cekWA_PIN = await new Promise((res)=>{
+    pinWARef.child(waAngka).once('value').then(s=>{
+      let v=s.val();
+      if(!v) res({boleh:true});
+      else if(v.pinHash===hashedBaru) res({boleh:true});
+      else res({boleh:false, owner:v.ownerName});
+    }).catch(()=>res({boleh:true}));
   });
-  if(!cekWADulu.boleh){
-    alert(`❌ Nomor WA ${waInputRaw} sudah dipakai toko "${cekWADulu.owner}" dengan PIN berbeda!`);
-    return;
-  }
+  if(!cekWA_PIN.boleh){ alert(`❌ WA ${waRaw} sudah dipakai toko "${cekWA_PIN.owner}" dengan PIN beda! 1 WA=1 PIN bosku!`); return; }
 
-  // CEK OTP - INI TAMBAHAN BARU BOSKU
-  if(!isWA_SudahVerifikasi(waInput) && !isAdmin){
-    const fileInput=document.getElementById('input-file-foto');
-    let siapkanPending = (arrFoto)=>{
-      dataProdukPendingOTP = {foto: arrFoto, pin: pin};
-      kirimOTPVerifikasiWA(waInput);
-    };
-    if(fileInput.files&&fileInput.files.length>0){
-      if(fileInput.files.length>3){ alert('Maksimal 3 foto!'); return; }
-      let comp=[], proc=0, tot=fileInput.files.length;
-      Array.from(fileInput.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) siapkanPending(comp); }); });
-    } else {
-      siapkanPending(['https://via.placeholder.com/300?text=Produk+RT36']);
-    }
+  let sudahTrusted = false;
+  try{ let snap = await trustedWARef.child(waAngka).once('value'); if(snap.exists()) sudahTrusted=true; }catch(e){}
+  if(isWA_SudahVerifikasi(waAngka)) sudahTrusted=true;
+  if(isAdmin) sudahTrusted=true;
+
+  const fileInput=document.getElementById('input-file-foto');
+  const prosesFoto = (cb)=>{
+    if(fileInput.files && fileInput.files.length>0){
+      if(fileInput.files.length>3){ alert('Max 3 foto!'); return; }
+      let comp=[], p=0, tot=fileInput.files.length;
+      Array.from(fileInput.files).forEach((f,i)=>{ kompresGambar(f,d=>{ comp[i]=d; p++; if(p===tot) cb(comp); }); });
+    } else cb(['https://via.placeholder.com/300?text=Produk+RT36']);
+  };
+
+  if(!sudahTrusted){
+    prosesFoto((arr)=>{
+      let otp = Math.floor(100000+Math.random()*900000);
+      dataProdukPendingOTP={foto:arr,pin:pin,wa:waAngka,waRaw:waRaw,nama:document.getElementById('nama').value,harga:document.getElementById('harga').value,kategori:document.getElementById('kategori').value,status:document.getElementById('status').value,penjual:document.getElementById('penjual').value,lokasi:document.getElementById('lokasi').value,catatan:document.getElementById('catatan').value,otp:otp};
+      otpPendingDBRef.child(waAngka).set({otp:otp,wa:waAngka,waRaw:waRaw,namaPenjual:dataProdukPendingOTP.penjual,namaProduk:dataProdukPendingOTP.nama,timestamp:Date.now(),expired:Date.now()+24*60*60*1000,dipakai:false});
+      document.getElementById('label-wa-reverse').textContent=waRaw;
+      document.getElementById('kode-otp-reverse').textContent=otp;
+      document.getElementById('expired-otp-reverse').textContent=new Date(Date.now()+24*60*60*1000).toLocaleString('id-ID');
+      document.getElementById('modal-otp-reverse-gratis').classList.remove('hidden');
+    });
     return;
   }
-  const cek=await cekPinTokoUnik(pin);
-  if(!cek.boleh){ alert(`❌ PIN ${pin} sudah dipakai toko lain!`); return; }
-  const fileInput2=document.getElementById('input-file-foto');
-  const prosesSimpan=(arrFoto)=>{ simpanKeFirebase(arrFoto, pin); };
-  if(fileInput2.files&&fileInput2.files.length>0){
-    if(fileInput2.files.length>3){ alert('Maksimal 3 foto!'); return; }
-    let comp=[], proc=0, tot=fileInput2.files.length;
-    Array.from(fileInput2.files).forEach((file,idx)=>{ kompresGambar(file,function(d){ comp[idx]=d; proc++; if(proc===tot) prosesSimpan(comp); }); });
-  } else prosesSimpan(['https://via.placeholder.com/300?text=Produk+RT36']);
+  prosesFoto((arr)=>{ simpanKeFirebaseFinal(arr,pin,waAngka,true,null); });
 }
-    async function simpanKeFirebase(arr, pinInput){
-      let pin = pinInput || document.getElementById('pin-penjual').value;
-      try{
-        let hashed = await hashPin(pin);
-        let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
-        if(!deviceId){
-          deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2,9);
-          localStorage.setItem('my_device_id_pasar', deviceId);
-          localStorage.setItem('my_device_uid', deviceId);
-        }
-        let b={
-          nama:bersihkanTeks(document.getElementById('nama').value),
-          harga:parseInt(document.getElementById('harga').value)||0,
-          kategori:document.getElementById('kategori').value,
-          status:document.getElementById('status').value,
-          penjual:bersihkanTeks(document.getElementById('penjual').value),
-          lokasi:bersihkanTeks(document.getElementById('lokasi').value),
-          wa:document.getElementById('whatsapp').value.trim(),
-          ownerId: currentUser ? currentUser.uid : deviceId,
-          catatan:bersihkanTeks(document.getElementById('catatan').value),
-          foto:arr && arr.length ? arr : ['https://via.placeholder.com/300?text=Produk+RT36'],
-          timestamp:Date.now()
-        };
-        dbRef.push(b).then((res)=>{
-          activeDeviceRef.child(deviceId).child(res.key).set({ 
-            pinHash: hashed, wa: b.wa, ownerName: b.penjual, blok: b.lokasi, timestamp: Date.now() 
-          });
-          tutupModalJual(); document.getElementById('form-tambah').reset();
-          tanyakanShareProduk(b.nama, b.harga, b.catatan, res.key);
-        });
-      }catch(e){ alert("Gagal: "+e.message); }
-    } 
+function tutupModalReverseOTP(){ document.getElementById('modal-otp-reverse-gratis').classList.add('hidden'); }
+function kirimWA_OTP_KeAdmin(){
+  if(!dataProdukPendingOTP) return;
+  let d=dataProdukPendingOTP;
+  let pesan=`Halo Admin RT36, OTP saya ${d.otp} - WA ${d.waRaw} - ${d.penjual} - Produk ${d.nama} - ACC ya bosku!`;
+  let url=amanUrlWa(adminWaAktif,pesan);
+  if(!url){ alert('Admin WA tidak valid'); return; }
+  simpanKeFirebaseFinal(d.foto,d.pin,d.wa,false,d);
+  window.open(url,'_blank','noopener');
+  alert('✅ WA Admin terbuka! Kirim ya bosku! Setelah ACC, trusted selamanya!');
+  tutupModalReverseOTP();
+}
+    async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
+  let hashed=await hashPin(pinInput);
+  let deviceId=localStorage.getItem('my_device_id_pasar')||'dev_'+Date.now();
+  localStorage.setItem('my_device_id_pasar',deviceId);
+  let b={
+    nama:bersihkanTeks((dataExtra?dataExtra.nama:document.getElementById('nama').value)),
+    harga:parseInt((dataExtra?dataExtra.harga:document.getElementById('harga').value))||0,
+    kategori:(dataExtra?dataExtra.kategori:document.getElementById('kategori').value),
+    status:isTrusted?(dataExtra?dataExtra.status:document.getElementById('status').value):'pending_verifikasi',
+    penjual:bersihkanTeks((dataExtra?dataExtra.penjual:document.getElementById('penjual').value)),
+    lokasi:bersihkanTeks((dataExtra?dataExtra.lokasi:document.getElementById('lokasi').value)),
+    wa:waNorm,
+    waRaw:(dataExtra?dataExtra.waRaw:document.getElementById('whatsapp').value.trim()),
+    ownerId:currentUser?currentUser.uid:deviceId,
+    catatan:bersihkanTeks((dataExtra?dataExtra.catatan:document.getElementById('catatan').value)),
+    foto:arr,
+    timestamp:Date.now()
+  };
+  dbRef.push(b).then((res)=>{
+    activeDeviceRef.child(deviceId).child(res.key).set({pinHash:hashed,wa:waNorm,ownerName:b.penjual});
+    pinWARef.child(waNorm).set({pinHash:hashed,ownerName:b.penjual,timestamp:Date.now()});
+    tutupModalJual(); document.getElementById('form-tambah').reset();
+    if(isTrusted) tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key);
+    else alert('📦 Produk PENDING 24 jam bosku! Menunggu Admin ACC! Setelah ACC, trusted selamanya!');
+  });
+}
+function mintaKodeBaruReverse(){
+  if(!dataProdukPendingOTP) return;
+  let otpBaru=Math.floor(100000+Math.random()*900000);
+  dataProdukPendingOTP.otp=otpBaru;
+  otpPendingDBRef.child(dataProdukPendingOTP.wa).update({otp:otpBaru,timestamp:Date.now(),expired:Date.now()+24*60*60*1000,dipakai:false});
+  document.getElementById('kode-otp-reverse').textContent=otpBaru;
+  alert('✅ Kode baru: '+otpBaru+' berlaku 24 jam lagi bosku!');
+}
     function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
