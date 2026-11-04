@@ -955,81 +955,95 @@ window.editProdukAdmin = async function(pid){
 
     // VERSI FINAL: PIN SAJA! WA OTOMATIS BOSKU!
     async function cariTokoSaya_PinSaja(){
-      const pinInput = document.getElementById('input-pin-toko').value.trim();
-      const container = document.getElementById('daftar-produk-toko');
-      const statusEl = document.getElementById('status-toko-saya');
-      
-      if(!pinInput || pinInput.length < 6){ alert('PIN minimal 6 angka bosku!'); return; }
-      if(statusEl) statusEl.textContent = '⏳ Cek PIN...';
-      
-      // 1. AMBIL WA YANG SUDAH KESIMPAN DI HP INI (dari jualan pertama)
-      let waTersimpan = localStorage.getItem('wa_toko_login') || localStorage.getItem('my_device_id_pasar') || '';
-      // kalau waTersimpan masih deviceId, cari WA aslinya di active_device_pins
-      let waNorm = '';
-      if(waTersimpan.startsWith('62')){
-        waNorm = waTersimpan;
-      } else {
-        // Cari di my_device_id_pasar -> active_device_pins
-        try{
-          let devId = localStorage.getItem('my_device_id_pasar');
-          if(devId){
-            let snapDev = await activeDeviceRef.child(devId).once('value');
-            let mapDev = snapDev.val();
-            if(mapDev){
-              let firstKey = Object.keys(mapDev)[0];
-              if(mapDev[firstKey] && mapDev[firstKey].wa) waNorm = normalisasiWA(mapDev[firstKey].wa);
-            }
-          }
-        }catch(e){}
-      }
-      
-      // Kalau HP baru / belum pernah jualan di HP ini, cari WA berdasarkan PIN saja (scan semua)
-      if(!waNorm){
-        if(statusEl) statusEl.textContent = '🔍 Cari toko dari PIN...';
-        let hashInput = await hashPin(pinInput);
-        let snapAll = await pinWARef.once('value');
-        let allMap = snapAll.val()||{};
-        for(let waKey in allMap){
-          let d = allMap[waKey];
-          if(d && ((d.pinHash && d.pinHash===hashInput) || (d.pin && String(d.pin)===String(pinInput)))){
-            waNorm = waKey;
-            break;
-          }
+  const pinInput = document.getElementById('input-pin-toko').value.trim();
+  const container = document.getElementById('daftar-produk-toko');
+  const statusEl = document.getElementById('status-toko-saya');
+  
+  if(!pinInput || pinInput.length < 6){ alert('PIN minimal 6 angka bosku!'); return; }
+  if(statusEl) statusEl.textContent = '⏳ Cek PIN...';
+  
+  let waNorm = '';
+  let waTersimpan = localStorage.getItem('wa_toko_login') || '';
+
+  if(waTersimpan.startsWith('62')){
+    waNorm = waTersimpan;
+  } else {
+    try{
+      let devId = localStorage.getItem('my_device_id_pasar');
+      if(devId){
+        let snapDev = await activeDeviceRef.child(devId).once('value');
+        let mapDev = snapDev.val();
+        if(mapDev){
+          let firstKey = Object.keys(mapDev)[0];
+          if(mapDev[firstKey] && mapDev[firstKey].wa) waNorm = normalisasiWA(mapDev[firstKey].wa);
         }
       }
-      
-      if(!waNorm){
-        if(statusEl) statusEl.textContent = '❌ PIN tidak ketemu di HP ini bosku!';
-        alert('PIN tidak ketemu! Ini HP baru ya? Coba pakai HP yang pas jualan pertama, atau hubungi Admin RT36 bosku!');
-        return;
-      }
-      
-      // 2. VERIFIKASI PIN dengan WA yang ketemu tadi
-      try{
-        let snap = await pinWARef.child(waNorm).once('value');
-        let data = snap.val();
-        if(!data){ alert('Data toko tidak ada!'); return; }
-        let hashInput = await hashPin(pinInput);
-        let cocok = false;
-        if(data.pinHash && data.pinHash===hashInput) cocok=true;
-        if(data.pin && String(data.pin)===String(pinInput)) cocok=true;
-        
-        if(!cocok){
-          if(statusEl) statusEl.textContent = '❌ PIN 6 angka salah!';
-          alert('PIN salah bosku! Harus PIN yang pas jualan pertama!');
-          return;
+    }catch(e){}
+  }
+  
+  // --- SCAN JIKA HP BARU - PAKAI pin_privat YANG AMAN BOSKU ---
+  if(!waNorm){
+    if(statusEl) statusEl.textContent = '🔍 Cari toko dari PIN...';
+    try{
+      let snapAll = await database.ref('pin_privat').once('value');
+      let allMap = snapAll.val()||{};
+      for(let waKey in allMap){
+        let d = allMap[waKey];
+        if(d && d.salt){
+          let {hash: hashCoba} = await hashPin(pinInput, d.salt);
+          if(hashCoba === d.hash){ waNorm = waKey; break; }
         }
-        
-        // SUKSES PIN SAJA!
-        localStorage.setItem('wa_toko_login', waNorm);
-        if(statusEl) statusEl.textContent = '✅ PIN benar! WA: '+waNorm;
-        tampilkanProdukTokoSaya_ByWA(waNorm);
-        
-      }catch(e){
-        alert('Error: '+e.message);
-        if(statusEl) statusEl.textContent = 'Error: '+e.message;
       }
+    }catch(e){}
+  }
+  
+  if(!waNorm){
+    if(statusEl) statusEl.textContent = '❌ PIN tidak ketemu di HP ini bosku!';
+    alert('PIN tidak ketemu! Ini HP baru ya? Coba pakai HP yang pas jualan pertama, atau hubungi Admin RT36 bosku!');
+    return;
+  }
+  
+  // === 2. ANTI BRUTE FORCE - KUNCI 5x SALAH BOSKU ===
+  try{
+    let attemptRef = database.ref('pin_privat/'+waNorm+'/attempt');
+    let snapAttempt = await attemptRef.once('value');
+    let dataAttempt = snapAttempt.val() || {count:0, last:0};
+
+    if(dataAttempt.count >= 5 && Date.now() - dataAttempt.last < 15*60*1000){
+      let sisa = Math.ceil((15*60*1000 - (Date.now()-dataAttempt.last))/60000);
+      alert('⛔ PIN salah 5x bosku! Terkunci '+sisa+' menit! Anti bobol!');
+      if(statusEl) statusEl.textContent = '🔒 Terkunci '+sisa+' menit!';
+      return;
     }
+
+    let snap = await database.ref('pin_privat/'+waNorm).once('value');
+    let data = snap.val();
+    if(!data || !data.hash || !data.salt){ alert('Data PIN rusak! Hubungi Admin!'); return; }
+
+    let {hash: hashInput} = await hashPin(pinInput, data.salt);
+    let cocok = (hashInput === data.hash);
+
+    if(!cocok){
+      await attemptRef.set({count: (dataAttempt.count||0)+1, last: Date.now()});
+      if(statusEl) statusEl.textContent = '❌ PIN salah! Sisa '+(5-(dataAttempt.count+1))+'x';
+      alert('PIN salah bosku! Sisa '+(5-(dataAttempt.count+1))+' percobaan!');
+      return;
+    }
+    
+    // SUKSES - RESET COUNTER
+    await attemptRef.set({count:0, last:0});
+    localStorage.setItem('wa_toko_login', waNorm);
+    let uid = currentUser ? currentUser.uid : localStorage.getItem('my_device_id_pasar');
+    if(uid) await database.ref('wa_owner/'+waNorm+'/'+uid).set(true);
+
+    if(statusEl) statusEl.textContent = '✅ PIN benar! WA: '+waNorm;
+    tampilkanProdukTokoSaya_ByWA(waNorm);
+    
+  }catch(e){
+    alert('Error: '+e.message);
+    if(statusEl) statusEl.textContent = 'Error: '+e.message;
+  }
+}
 
     function tampilkanProdukTokoSaya_ByWA(waNorm){
       let container = document.getElementById('daftar-produk-toko');
