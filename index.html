@@ -702,76 +702,85 @@ auth.onAuthStateChanged(function(user){
           }
         });
       }
-      prosesPending(snapPasar, 'produk_pasar');
-      // Baru load daftar toko
-      activeDeviceRef.once('value', snap=>{
-        container.innerHTML='';
-        
-        if(countPending>0){
-          let titlePending=document.createElement('div');
-          titlePending.className='bg-yellow-400 text-black font-bold text-xs p-2 rounded-lg mb-3 text-center';
-          titlePending.textContent=`🔔 ADA ${countPending} PRODUK MENUNGGU ACC ADMIN!`;
-          container.appendChild(titlePending);
-          let divPending=document.createElement('div');
-          divPending.innerHTML=htmlPending;
-          container.appendChild(divPending);
-          let hr=document.createElement('hr');
-          hr.className='my-4 border-gray-200';
-          container.appendChild(hr);
-        } else {
-          let ok=document.createElement('div');
-          ok.className='bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
-          ok.innerHTML='✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk & /produk_pasar.</span>';
-          container.appendChild(ok);
+           prosesPending(snapPasar, 'produk_pasar');
+
+      // === PERBAIKAN BOSKU: Tampilkan PENDING dulu, jangan nunggu active_device_pins ===
+      container.innerHTML = '';
+
+      if (countPending > 0) {
+        let titlePending = document.createElement('div');
+        titlePending.className = 'bg-yellow-400 text-black font-bold text-xs p-2 rounded-lg mb-3 text-center';
+        titlePending.textContent = `🔔 ADA ${countPending} PRODUK MENUNGGU ACC ADMIN!`;
+        container.appendChild(titlePending);
+        let divPending = document.createElement('div');
+        divPending.innerHTML = htmlPending;
+        container.appendChild(divPending);
+        let hr = document.createElement('hr');
+        hr.className = 'my-4 border-gray-200';
+        container.appendChild(hr);
+      } else {
+        let ok = document.createElement('div');
+        ok.className = 'bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
+        ok.innerHTML = '✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk & /produk_pasar.</span>';
+        container.appendChild(ok);
+      }
+
+      // === Baru load daftar toko, kalau gagal, jangan hapus pending yang sudah tampil ===
+      activeDeviceRef.once('value').then(snap => {
+        const data = snap.val();
+        if (!data) {
+          let pEmpty = document.createElement('p');
+          pEmpty.className = 'text-center py-6 text-xs text-gray-400';
+          pEmpty.textContent = 'Belum ada toko terdaftar di active_device_pins';
+          container.appendChild(pEmpty);
+          return;
         }
 
-        const data=snap.val();
-        if(!data){ 
-          let pEmpty=document.createElement('p'); 
-          pEmpty.className='text-center py-6 text-xs text-gray-400'; 
-          pEmpty.textContent='Belum ada toko terdaftar di active_device_pins'; 
-          container.appendChild(pEmpty); 
-          return; 
-        }
-        
-        let titleToko=document.createElement('p');
-        titleToko.className='font-bold text-xs mb-2 text-gray-700';
-        titleToko.textContent='📋 Daftar Toko Terdaftar ('+Object.keys(data).length+' Toko)';
+        let titleToko = document.createElement('p');
+        titleToko.className = 'font-bold text-xs mb-2 text-gray-700';
+        titleToko.textContent = '📋 Daftar Toko Terdaftar (' + Object.keys(data).length + ' Toko)';
         container.appendChild(titleToko);
 
-        Object.keys(data).forEach(deviceId=>{
-          const produkMap=data[deviceId]; 
-          if(!produkMap) return;
-          const ids=Object.keys(produkMap); 
-          if(ids.length==0) return;
+        Object.keys(data).forEach(deviceId => {
+          const produkMap = data[deviceId];
+          if (!produkMap) return;
+          const ids = Object.keys(produkMap);
+          if (ids.length == 0) return;
           const first = produkMap[ids[0]] || {};
-          let card=document.createElement('div');
-            card.className='bg-white border rounded-xl p-3 shadow-sm mb-3';
-            let flex=document.createElement('div');
-            flex.className='flex justify-between items-start gap-2';
-            let kiri=document.createElement('div');
-            kiri.className='flex-1 min-w-0';
-            let p1=document.createElement('p'); p1.className='font-bold text-[13px] truncate'; p1.textContent='🏪 '+(first.ownerName||first.namaToko||'Tanpa Nama');
-            let p2=document.createElement('p'); p2.className='text-[11px] text-gray-600 truncate'; p2.textContent='ID: '+deviceId;
-            let p3=document.createElement('p'); p3.className='text-[11px] text-gray-500'; p3.textContent='Jumlah Produk: '+(ids.length||0);
-            let p4=document.createElement('p'); p4.className='text-[10px] text-gray-400'; p4.textContent='HP: '+(first.ownerPhone||first.wa||'-');
-            let p5=document.createElement('p'); p5.className='text-[11px] text-gray-600'; p5.textContent='Toko: '+(first.namaToko||'-');
-            let p6=document.createElement('p'); p6.className='text-[11px] text-gray-500'; p6.textContent='Alamat: '+(first.alamatToko||'-');
-            kiri.append(p1,p2,p3,p4,p5,p6);
-            let kanan=document.createElement('div'); kanan.className='flex flex-col gap-1';
-            let b1=document.createElement('button'); b1.className='bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent='Lihat Produk'; b1.addEventListener('click', ()=>lihatProdukTokoAdmin(deviceId));
-            let b2=document.createElement('button'); b2.className='bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent='Reset Password'; b2.addEventListener('click', ()=>resetPasswordToko(deviceId));
-            let b3=document.createElement('button'); b3.className='bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent='Hapus Toko'; b3.addEventListener('click', ()=>hapusTokoAdmin(deviceId));
-            let b4=document.createElement('button'); b4.className='bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent='Hapus Semua Produk'; b4.addEventListener('click', ()=>hapusSemuaProdukToko(deviceId));
-            kanan.append(b1,b2,b3,b4);
-            flex.append(kiri,kanan);
-            let listDiv=document.createElement('div'); listDiv.id='list-'+deviceId; listDiv.className='mt-2';
-            card.append(flex,listDiv);
-            container.appendChild(card);
+          let card = document.createElement('div');
+          card.className = 'bg-white border rounded-xl p-3 shadow-sm mb-3';
+          let flex = document.createElement('div');
+          flex.className = 'flex justify-between items-start gap-2';
+          let kiri = document.createElement('div');
+          kiri.className = 'flex-1 min-w-0';
+          let p1 = document.createElement('p'); p1.className = 'font-bold text-[13px] truncate'; p1.textContent = '🏪 ' + (first.ownerName || first.namaToko || 'Tanpa Nama');
+          let p2 = document.createElement('p'); p2.className = 'text-[11px] text-gray-600 truncate'; p2.textContent = 'ID: ' + deviceId;
+          let p3 = document.createElement('p'); p3.className = 'text-[11px] text-gray-500'; p3.textContent = 'Jumlah Produk: ' + (ids.length || 0);
+          let p4 = document.createElement('p'); p4.className = 'text-[10px] text-gray-400'; p4.textContent = 'HP: ' + (first.ownerPhone || first.wa || '-');
+          let p5 = document.createElement('p'); p5.className = 'text-[11px] text-gray-600'; p5.textContent = 'Toko: ' + (first.namaToko || '-');
+          let p6 = document.createElement('p'); p6.className = 'text-[11px] text-gray-500'; p6.textContent = 'Alamat: ' + (first.alamatToko || '-');
+          kiri.append(p1, p2, p3, p4, p5, p6);
+          let kanan = document.createElement('div'); kanan.className = 'flex flex-col gap-1';
+          let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(deviceId));
+          let b2 = document.createElement('button'); b2.className = 'bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent = 'Reset Password'; b2.addEventListener('click', () => resetPasswordToko(deviceId));
+          let b3 = document.createElement('button'); b3.className = 'bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent = 'Hapus Toko'; b3.addEventListener('click', () => hapusTokoAdmin(deviceId));
+          let b4 = document.createElement('button'); b4.className = 'bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent = 'Hapus Semua Produk'; b4.addEventListener('click', () => hapusSemuaProdukToko(deviceId));
+          kanan.append(b1, b2, b3, b4);
+          flex.append(kiri, kanan);
+          let listDiv = document.createElement('div'); listDiv.id = 'list-' + deviceId; listDiv.className = 'mt-2';
+          card.append(flex, listDiv);
+          container.appendChild(card);
         });
+      }).catch(e => {
+        // Kalau active_device_pins ditolak, jangan hapus pending, cuma kasih peringatan saja
+        let warn = document.createElement('div');
+        warn.className = 'bg-amber-50 border border-amber-200 text-amber-700 text-[11px] p-3 rounded-lg mt-3 text-center';
+        warn.textContent = '⚠️ Daftar toko tidak bisa dimuat (permission_denied di /active_device_pins). Tapi produk pending di atas tetap bisa di-ACC.';
+        container.appendChild(warn);
+        console.error('Gagal load active_device_pins:', e);
       });
-    }).catch(e=>{
-      container.innerHTML=`<p class="text-center py-6 text-red-500 text-xs">Gagal load: ${e.message}</p>`;
+    }).catch(e => {
+      container.innerHTML = `<p class="text-center py-6 text-red-500 text-xs">Gagal load: ${e.message}</p>`;
       console.error(e);
     });
 }
