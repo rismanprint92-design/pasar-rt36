@@ -761,13 +761,14 @@ auth.onAuthStateChanged(function(user){
           let p6 = document.createElement('p'); p6.className = 'text-[11px] text-gray-500'; p6.textContent = 'Alamat: ' + (first.alamatToko || '-');
           kiri.append(p1, p2, p3, p4, p5, p6);
           let kanan = document.createElement('div'); kanan.className = 'flex flex-col gap-1';
-          let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(deviceId, ids));
+          let waTokoCard = first.wa || first.ownerPhone || first.hp || '';
+          let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(deviceId, ids, waTokoCard));
           let b2 = document.createElement('button'); b2.className = 'bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent = 'Reset Password'; b2.addEventListener('click', () => resetPasswordToko(deviceId));
           let b3 = document.createElement('button'); b3.className = 'bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent = 'Hapus Toko'; b3.addEventListener('click', () => hapusTokoAdmin(deviceId));
           let b4 = document.createElement('button'); b4.className = 'bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent = 'Hapus Semua Produk'; b4.addEventListener('click', () => hapusSemuaProdukToko(deviceId));
           kanan.append(b1, b2, b3, b4);
           flex.append(kiri, kanan);
-          let listDiv = document.createElement('div'); listDiv.id = 'list-' + deviceId; listDiv.className = 'mt-2';
+          let listDiv = document.createElement('div'); listDiv.id = 'list-' + deviceId; listDiv.className = 'mt-2 hidden';
           card.append(flex, listDiv);
           container.appendChild(card);
         });
@@ -891,28 +892,19 @@ function hapusTokoPermanen(deviceId){
     }, 500);
   });
 }
-function lihatProdukTokoAdmin(deviceId){
+function lihatProdukTokoAdmin(deviceId, idsDariCard, waDariCard){
   const box=document.getElementById('list-'+deviceId); if(!box) return;
   if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML='';
   let btnTutup=document.createElement('button'); btnTutup.className='w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold'; btnTutup.textContent='✕ Tutup'; btnTutup.addEventListener('click', ()=>tutupListToko(deviceId)); box.appendChild(btnTutup);
   let pLoad=document.createElement('p'); pLoad.className='text-[11px] text-gray-400 py-2'; pLoad.textContent='Memuat...'; box.appendChild(pLoad);
 
-  const refToko = (typeof activeDeviceRef !== 'undefined' ? activeDeviceRef : database.ref('active_device_pins')).child(deviceId);
-
-  refToko.once('value').then(async snap=>{
-    const map=snap.val(); pLoad.remove();
-    if(!map){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - tidak ada produk di active_device_pins'; box.appendChild(p); return; }
-    const ids=Object.keys(map);
-    const first = map[ids[0]] || {};
-    // INI KUNCINYA - AMBIL WA DARI active_device_pins
-    // Di kasus Rahman, first ini isinya ownerPhone: 6285236519774
-    const waToko = first.wa || first.ownerPhone || first.hp || first.whatsapp || '';
-    console.log('Lihat Produk - deviceId:', deviceId, 'ids:', ids, 'waToko:', waToko, 'first:', first);
-
+  async function jalanin(ids, waToko){
+    pLoad.remove();
+    if(!ids || ids.length === 0){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong'; box.appendChild(p); return; }
+    console.log('Lihat Produk - deviceId:', deviceId, 'ids:', ids, 'waToko:', waToko);
     let ketemu = 0;
-
-    // JURUS 1: COBA PAKAI ID DULU
+    // JURUS 1: ID
     for(const pid of ids){
       const pSnap=await database.ref('produk_pasar/' + pid).once('value');
       const item=pSnap.val();
@@ -921,36 +913,44 @@ function lihatProdukTokoAdmin(deviceId){
       ketemu++;
       tampilkanRowProduk(box, pid, item, deviceId);
     }
-
-    // JURUS 2: KALAU ID GAGAL SEMUA, CARI PAKAI WA - INI YANG NYELAMETIN RAHMAN!
-    // ID di active_device_pins: -P5a_1bKbqO9zKp6ixjP (SALAH)
-    // ID asli di produk_pasar: -P5bDQienNmexVennkWls (BENAR)
-    // Tapi WA-nya SAMA: 6285236519774, jadi pasti ketemu!
+    // JURUS 2: WA - INI YANG NYELAMETIN RAHMAN!
+    // ID di pins: -P5a_1bKbqO9zKp6ixjP (SALAH)
+    // ID asli: -P5bDQienNmexVennkWls (BENAR)
+    // WA sama: 6285236519774, jadi pasti ketemu!
     if(ketemu === 0 && waToko){
       console.log('ID tidak ketemu, coba cari pakai WA:', waToko);
       const waSnap = await database.ref('produk_pasar').orderByChild('wa').equalTo(String(waToko)).once('value');
       if(waSnap.exists()){
-        waSnap.forEach(child => {
-          ketemu++;
-          tampilkanRowProduk(box, child.key, child.val(), deviceId);
-        });
+        waSnap.forEach(child => { ketemu++; tampilkanRowProduk(box, child.key, child.val(), deviceId); });
       }
     }
-
-    // JURUS 3: KALAU WA JUGA GAGAL, COBA CARI PAKAI ownerPhone (JAGA-JAGA FORMAT WA BEDA)
+    // JURUS 3: ownerPhone (jaga-jaga format WA beda)
     if(ketemu === 0 && waToko){
       const waSnap2 = await database.ref('produk_pasar').orderByChild('ownerPhone').equalTo(String(waToko)).once('value');
       if(waSnap2.exists()){
-        waSnap2.forEach(child => {
-          ketemu++;
-          tampilkanRowProduk(box, child.key, child.val(), deviceId);
-        });
+        waSnap2.forEach(child => { ketemu++; tampilkanRowProduk(box, child.key, child.val(), deviceId); });
       }
     }
-
     if(ketemu === 0){
       let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Produk ' + ids[0] + ' tidak ketemu di produk_pasar. WA toko: ' + (waToko || '-'); box.appendChild(p);
     }
+  }
+
+  // JALUR CEPAT: ids + wa sudah dikirim dari card di bukaModalDaftarToko, langsung pakai!
+  if(idsDariCard && idsDariCard.length > 0){
+    jalanin(idsDariCard, waDariCard).catch(e=>{ pLoad.remove(); let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Gagal load: ' + e.message; box.appendChild(p); });
+    return;
+  }
+
+  // JALUR LAMA: kalau dipanggil cuma pakai deviceId saja
+  const refToko = (typeof activeDeviceRef !== 'undefined' ? activeDeviceRef : database.ref('active_device_pins')).child(deviceId);
+  refToko.once('value').then(async snap=>{
+    const map=snap.val();
+    if(!map){ pLoad.remove(); let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - tidak ada produk di active_device_pins'; box.appendChild(p); return; }
+    const ids=Object.keys(map);
+    const first = map[ids[0]] || {};
+    const waToko = first.wa || first.ownerPhone || first.hp || first.whatsapp || '';
+    jalanin(ids, waToko);
   }).catch(e=>{
     pLoad.remove();
     console.log('Gagal lihat produk admin', e);
@@ -981,16 +981,26 @@ window.tutupListToko = function(deviceId){
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
   if(confirm('Hapus PRODUK ini permanen? Produk + PIN di device ini akan hilang!')){
-    // PERBAIKAN: JANGAN PAKAI dbRef, PAKAI JALUR LANGSUNG!
-    database.ref('produk_pasar/' + id).remove().then(()=>{
-      // Hapus juga PIN yang ID-nya sama, kalau ada
-      database.ref('active_device_pins/' + deviceId + '/' + id).remove().then(()=>{
-        alert('Produk terhapus!');
-        const box=document.getElementById('list-'+deviceId);
-        if(box) box.classList.add('hidden');
-        bukaModalDaftarToko();
-        terapkanFilterDanPencarian();
-      });
+    database.ref('produk_pasar/' + id).remove().then(async ()=>{
+      // Hapus PIN yang ID-nya sama
+      await database.ref('active_device_pins/' + deviceId + '/' + id).remove();
+      // PERBAIKAN TAMBAHAN: Hapus juga PIN yang ID-nya SALAH (kasus Rahman: -P5a_1bK...)
+      // Caranya: cek semua PIN di device ini, kalau WA-nya sama dengan produk yang dihapus, hapus juga
+      // Biar tidak nyisa PIN salah
+      const snapPins = await database.ref('active_device_pins/' + deviceId).once('value');
+      const pins = snapPins.val() || {};
+      for(const pinId of Object.keys(pins)){
+        // Kalau pin ini sudah tidak ada produknya lagi di produk_pasar, hapus
+        const cek = await database.ref('produk_pasar/' + pinId).once('value');
+        if(!cek.exists()){
+          await database.ref('active_device_pins/' + deviceId + '/' + pinId).remove();
+        }
+      }
+      alert('Produk terhapus!');
+      const box=document.getElementById('list-'+deviceId);
+      if(box) box.classList.add('hidden');
+      bukaModalDaftarToko();
+      terapkanFilterDanPencarian();
     }).catch(e=>alert('Gagal hapus: '+e.message));
   }
 }
@@ -1000,7 +1010,6 @@ window.editProdukAdmin = async function(pid){
   if(mToko) mToko.classList.add('hidden');
   let item = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id===pid) : null);
   if(!item){
-    // PERBAIKAN: JANGAN PAKAI dbRef, PAKAI JALUR LANGSUNG!
     const s=await database.ref('produk_pasar/' + pid).once('value');
     item=s.val(); if(item) item.id=pid;
   }
