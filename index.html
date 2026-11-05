@@ -666,9 +666,8 @@ auth.onAuthStateChanged(function(user){
 
     // === FIX FINAL - CEK DUA NODE: produk & produk_pasar BOSKU! ===
     Promise.all([
-      database.ref('produk').once('value'),
-      database.ref('produk_pasar').once('value')
-    ]).then(([snapProduk, snapPasar])=>{
+  database.ref('produk_pasar').once('value')
+]).then(([snapPasar])=>{
       let htmlPending='';
       let countPending=0;
 
