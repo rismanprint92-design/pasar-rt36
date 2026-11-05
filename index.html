@@ -1691,7 +1691,7 @@ function konfirmasiOTP_WA(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
-  // === TAMBAHAN ADMIN MAKSIMUM - BIAR BANNER TETAP MUNCUL PAS REFRESH ===
+ try{ firebase.auth().signInAnonymously().catch(function(e){ console.log("Auth error:", e.message); }); }catch(e){}
   cekStatusAdminSaatLoad();
 
   let el=document.getElementById('inputPinSebelumnya');
