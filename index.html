@@ -347,7 +347,6 @@
   }
   const auth = firebase.auth();
   const database = firebase.database();
-  var PIN_MASTER_AR36 = "AR36";
   var confirmationResultWA = null;
   var waYangMauDiVerifikasi = "";
   var dataProdukPendingOTP = null;
@@ -1427,32 +1426,27 @@ window.editDariTokoSaya = function(id){
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
     // FIX BIAR ADMIN TIDAK HILANG PAS RELOAD
-    // ==== ADMIN MASTER AR36 INGAT SELAMANYA ====
 function verifikasiAdmin(){
   let v=document.getElementById('pin-admin').value.trim();
   if(!v){ alert('Isi PIN dulu bosku!'); return; }
-  if(String(v).toUpperCase() === PIN_MASTER_AR36){
-    isAdmin=true;
-    try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
-    const banner=document.getElementById('banner-admin');
-    if(banner) banner.classList.remove('hidden');
-    tutupModalAdmin();
-    terapkanFilterDanPencarian();
-    alert('✅ ADMIN MASTER AR36 AKTIF - Bisa edit semua toko!');
-    return;
-  }
-  pinRef.once('value').then(s=>{
-    let dbPin = s.val() || "1234";
-    if(String(v)===String(dbPin)){
-      isAdmin=true;
-      try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
-      const banner=document.getElementById('banner-admin');
-      if(banner) banner.classList.remove('hidden');
-      tutupModalAdmin();
-      terapkanFilterDanPencarian();
-    } else {
-      alert('PIN Admin Salah!');
+  pinRef.once('value').then(async s=>{
+    let data = s.val();
+    if(!data){ alert('PIN Admin belum diatur!'); return; }
+    if(typeof data === 'string'){ alert('PIN Admin Salah!'); return; }
+    if(data && data.hash && data.salt){
+      let hasil = await hashPin(v, data.salt);
+      if(hasil.hash === data.hash){
+        isAdmin=true;
+        try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
+        const banner=document.getElementById('banner-admin');
+        if(banner) banner.classList.remove('hidden');
+        tutupModalAdmin();
+        terapkanFilterDanPencarian();
+        alert('✅ ADMIN AKTIF - Bisa edit semua toko!');
+        return;
+      }
     }
+    alert('PIN Admin Salah!');
   });
 }
 function keluarAdmin(){ 
