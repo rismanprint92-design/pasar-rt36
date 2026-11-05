@@ -761,7 +761,7 @@ auth.onAuthStateChanged(function(user){
           let p6 = document.createElement('p'); p6.className = 'text-[11px] text-gray-500'; p6.textContent = 'Alamat: ' + (first.alamatToko || '-');
           kiri.append(p1, p2, p3, p4, p5, p6);
           let kanan = document.createElement('div'); kanan.className = 'flex flex-col gap-1';
-          let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(deviceId));
+          let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(deviceId, ids));
           let b2 = document.createElement('button'); b2.className = 'bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent = 'Reset Password'; b2.addEventListener('click', () => resetPasswordToko(deviceId));
           let b3 = document.createElement('button'); b3.className = 'bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent = 'Hapus Toko'; b3.addEventListener('click', () => hapusTokoAdmin(deviceId));
           let b4 = document.createElement('button'); b4.className = 'bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent = 'Hapus Semua Produk'; b4.addEventListener('click', () => hapusSemuaProdukToko(deviceId));
@@ -893,15 +893,30 @@ function hapusTokoPermanen(deviceId){
 }
 function lihatProdukTokoAdmin(deviceId){
   const box=document.getElementById('list-'+deviceId); if(!box) return;
+  // TOGGLE - kalau sudah kebuka, tutup
   if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML='';
   let btnTutup=document.createElement('button'); btnTutup.className='w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold'; btnTutup.textContent='✕ Tutup'; btnTutup.addEventListener('click', ()=>tutupListToko(deviceId)); box.appendChild(btnTutup);
   let pLoad=document.createElement('p'); pLoad.className='text-[11px] text-gray-400 py-2'; pLoad.textContent='Memuat...'; box.appendChild(pLoad);
-  activeDeviceRef.child(deviceId).once('value').then(async snap=>{
-    const map=snap.val(); pLoad.remove(); if(!map){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong'; box.appendChild(p); return; }
+
+  // PAKAI activeDeviceRef KALAU ADA, KALAU TIDAK PAKAI database LANGSUNG
+  const refToko = (typeof activeDeviceRef !== 'undefined' ? activeDeviceRef : database.ref('active_device_pins')).child(deviceId);
+
+  refToko.once('value').then(async snap=>{
+    const map=snap.val(); pLoad.remove();
+    if(!map){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - tidak ada produk di active_device_pins'; box.appendChild(p); return; }
     const ids=Object.keys(map);
+    console.log('Lihat Produk - deviceId:', deviceId, 'ids:', ids);
+
     for(const pid of ids){
-      const pSnap=await dbRef.child(pid).once('value'); const item=pSnap.val(); if(!item) continue;
+      // PERBAIKAN UTAMA: JANGAN PAKAI dbRef YANG TIDAK PASTI, PAKAI JALUR LANGSUNG!
+      const pSnap=await database.ref('produk_pasar/' + pid).once('value');
+      const item=pSnap.val();
+      console.log('Produk', pid, 'ketemu?', !!item, item);
+      if(!item){
+        let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Produk ' + pid + ' tidak ketemu di produk_pasar'; box.appendChild(p);
+        continue;
+      }
       const foto=(item.foto && item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
       let row=document.createElement('div'); row.className='flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center';
       let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-12 h-12 rounded object-cover bg-white';
@@ -914,6 +929,13 @@ function lihatProdukTokoAdmin(deviceId){
       let bh=document.createElement('button'); bh.className='bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukAdminFull(pid,deviceId));
       aksi.append(be,bh); row.append(img,info,aksi); box.appendChild(row);
     }
+    if(box.querySelectorAll('.flex.gap-2').length === 0 && !box.querySelector('p.text-red-500')){
+      let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Tidak ada produk yang bisa ditampilkan. Cek Console.'; box.appendChild(p);
+    }
+  }).catch(e=>{
+    pLoad.remove();
+    console.log('Gagal lihat produk admin', e);
+    let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Gagal load: ' + e.message; box.appendChild(p);
   });
 }
 // TAMBAH FUNGSI INI DIBAWAHNYA - INI KUNCI X NYA BOSKU
