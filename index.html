@@ -81,7 +81,6 @@
     <span>⚠️ Mode Admin Aktif</span>
     <div class="flex gap-1.5 items-center">
       <button onclick="bukaModalDaftarToko()" class="bg-white text-amber-700 px-2.5 py-1 rounded text-[11px] font-bold hover:bg-amber-50">🏪 Toko</button>
-      <button onclick="bukaModalGantiPin()" class="bg-amber-600 px-2 py-1 rounded text-[11px] hover:bg-amber-700">PIN</button>
       <button onclick="keluarAdmin()" class="underline text-[11px]">Keluar</button>
     </div>
   </div>
@@ -170,7 +169,6 @@
   </div>
 </div>
   <div id="modal-login-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs"><h3 class="font-bold text-gray-800 text-sm mb-2 text-center">Masuk Mode Admin RT</h3><p class="text-gray-500 mb-4 text-center">Masukkan PIN pengurus RT terpusat.</p><input type="password" id="pin-admin" class="w-full border p-2.5 rounded-lg text-center font-bold text-base tracking-widest mb-3 focus:outline-emerald-500" placeholder="••••"><div class="flex gap-2"><button onclick="tutupModalAdmin()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="verifikasiAdmin()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold">Masuk</button></div></div></div>
-  <div id="modal-ganti-pin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3"><h3 class="font-bold text-gray-800 text-sm text-center">Ubah PIN Admin</h3><div><label class="block font-medium mb-1">PIN Lama</label><input type="password" id="pin-lama" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div><label class="block font-medium mb-1">PIN Baru</label><input type="password" id="pin-baru" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest" placeholder="••••"></div><div class="flex gap-2 pt-2"><button onclick="tutupModalGantiPin()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Batal</button><button onclick="simpanPinBaru()" class="w-1/2 bg-amber-600 text-white py-2 rounded-lg font-bold hover:bg-amber-700">Simpan</button></div></div></div>
   <div id="modalVerifWA" class="hidden fixed inset-0 z-[1001] bg-[#075E54]/80 backdrop-blur-md flex items-center justify-center p-4"><div class="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/50 space-y-3"><div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden shadow-md ring-4 ring-[#25D366]/20 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-2xl">RT</div><h2 class="font-bold text-[18px] text-[#075E54] text-center">Masuk Obrolan Warga</h2><p class="text-[11px] text-gray-500 text-center mt-1 leading-snug">Masukkan PIN terdaftar atau buat akun baru di bawah.</p><div class="space-y-3 mt-2"><div><label class="text-[11px] font-bold text-[#075E54]">Masuk dengan PIN Sebelumnya</label><input type="password" id="inputPinSebelumnya" placeholder="••••" class="w-full mt-1 border border-emerald-300 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-center font-bold tracking-widest text-base focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div><div class="border-t pt-2 space-y-2"><div><label class="text-[11px] font-bold text-gray-700">NAMA / BLOK RUMAH (Untuk Daftar Baru)</label><input type="text" id="inputNamaPin" placeholder="Contoh: Bpk Budi (Blok A)" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-xs focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div><div><label class="text-[11px] font-bold text-gray-700">PIN RAHASIA (Contoh: 1234)</label><input type="password" id="inputPinDaftarBaru" placeholder="••••" class="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2 text-center font-bold tracking-widest text-sm focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 outline-none"></div></div><button type="button" onclick="prosesLoginAtauDaftarWarga()" class="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer text-xs">Masuk / Daftar Chat 💬</button><button type="button" onclick="tutupModalLoginPin()" class="w-full bg-gray-100 text-gray-600 font-medium py-2 rounded-xl text-xs">Batal</button></div></div></div>
   <div id="modal-ganti-profil" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[1002] p-4"><div class="bg-white w-full max-w-xs p-5 rounded-2xl text-xs space-y-3 shadow-2xl"><h3 class="font-bold text-gray-800 text-sm text-center">Ganti Profil Chat Anda</h3><div><label class="block font-medium mb-1 text-gray-700">Nama / Blok Rumah Baru</label><input type="text" id="editNamaWarga" class="w-full border p-2.5 rounded-lg focus:outline-emerald-500 font-medium" placeholder="Nama anda"></div><div><label class="block font-medium mb-1 text-gray-700">Foto Profil Baru (Maks 1 Foto, Kompres Otomatis)</label><input type="file" id="editFotoWarga" accept="image/*" class="w-full border p-2 rounded-lg text-[10px] bg-gray-50"></div><div class="flex gap-2 pt-2"><button onclick="tutupModalGantiProfil()" class="w-1/2 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold">Batal</button><button onclick="simpanProfilBaru()" class="w-1/2 bg-emerald-600 text-white py-2.5 rounded-lg font-bold hover:bg-emerald-700">Simpan</button></div></div></div>
 
@@ -437,18 +435,27 @@ function amanAudio(url){
   const adminWaRef = database.ref('pengaturan/admin_wa');
   const activeDeviceRef = database.ref('active_device_pins');
     
-  let currentUser = null;
-  auth.onAuthStateChanged(function(user){ 
-    if(user){ 
-      currentUser = user; 
-      console.log("Auth OK:", user.uid);
-      // BARU BACA PIN SETELAH AUTH JADI - INI KUNCINYA!
-      pinRef.on('value', (s) => { const v=s.val(); if(v) pinAdminAktif=v; else pinRef.set("1234"); });
-      adminWaRef.on('value', (s) => { const v=s.val(); if(v) adminWaAktif=v; else adminWaRef.set("6282299511782"); const el=document.getElementById('admin-whatsapp-nomor'); if(el) el.value=adminWaAktif; });
-    } else {
-      auth.signInAnonymously().catch(function(err){ console.log(err); });
-    }
-  });
+ let currentUser = null;
+let isAdmin = false;
+let adminWaAktif = "6282299511782";
+// pinAdminAktif DIHAPUS TOTAL - Tidak ada lagi PIN teks biasa di HP!
+
+auth.onAuthStateChanged(function(user){ 
+  if(user){ 
+    currentUser = user; 
+    console.log("Auth OK:", user.uid);
+    // CUMA BACA NOMOR WA, TIDAK BOLEH NULIS / BIKIN DEFAULT LAGI
+    adminWaRef.on('value', (s) => { 
+      const v = s.val(); 
+      if(v) adminWaAktif = v; 
+      const el = document.getElementById('admin-whatsapp-nomor'); 
+      if(el) el.value = adminWaAktif; 
+    });
+    // PIN TIDAK DIBACA DI SINI LAGI! PIN cuma dibaca pas verifikasiAdmin() aja, dan yang dibaca itu HASH, bukan PIN asli
+  } else {
+    auth.signInAnonymously().catch(function(err){ console.log(err); });
+  }
+});
     let isAdmin = false; let pinAdminAktif = null; let adminWaAktif = "6282299511782";
     let pesanBalasanData = null; let isProsesHapus = false; let menuSubAktif = null; let isChatInitialized = false;
     let mediaRecorder = null, micStream = null, audioChunks = [], isRekam = false; let chatPertamaLoad = true;
@@ -1526,9 +1533,6 @@ function konfirmasiOTP_WA(){
     }
   }).catch(function(err){ alert('Kode salah bosku: '+err.message); });
 }
-    function bukaModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.remove('hidden'); }
-    function tutupModalGantiPin(){ document.getElementById('modal-ganti-pin').classList.add('hidden'); }
-    function simpanPinBaru(){ const lama=document.getElementById('pin-lama').value; const baru=document.getElementById('pin-baru').value; if(lama!==pinAdminAktif){ alert('PIN Lama salah!'); return; } pinRef.set(baru).then(()=>{ alert('PIN Admin berhasil diubah!'); pinAdminAktif=baru; tutupModalGantiPin(); }); }
     function bukaModalGantiProfil(){ tutupMenuHeaderChat(); let n=localStorage.getItem('verified_nama_rt36')||''; document.getElementById('editNamaWarga').value=n; document.getElementById('modal-ganti-profil').classList.remove('hidden'); }
     function tutupModalGantiProfil(){ document.getElementById('modal-ganti-profil').classList.add('hidden'); }
     function simpanProfilBaru(){ let nb=document.getElementById('editNamaWarga').value.trim(); if(nb.length<2){ alert('Isi nama minimal 2 karakter!'); return; } let file=document.getElementById('editFotoWarga').files[0]; if(file){ kompresGambar(file,function(b64){ localStorage.setItem('verified_nama_rt36',nb); localStorage.setItem('verified_foto_rt36',b64); tutupModalGantiProfil(); alert('Profil berhasil diperbarui!'); }); } else { localStorage.setItem('verified_nama_rt36',nb); tutupModalGantiProfil(); alert('Nama profil berhasil diperbarui!'); } }
