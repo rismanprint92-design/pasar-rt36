@@ -893,44 +893,63 @@ function hapusTokoPermanen(deviceId){
 }
 function lihatProdukTokoAdmin(deviceId){
   const box=document.getElementById('list-'+deviceId); if(!box) return;
-  // TOGGLE - kalau sudah kebuka, tutup
   if(!box.classList.contains('hidden')){ box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML='';
   let btnTutup=document.createElement('button'); btnTutup.className='w-full bg-gray-100 hover:bg-gray-200 text-[11px] py-2 rounded-lg mb-2 font-bold'; btnTutup.textContent='✕ Tutup'; btnTutup.addEventListener('click', ()=>tutupListToko(deviceId)); box.appendChild(btnTutup);
   let pLoad=document.createElement('p'); pLoad.className='text-[11px] text-gray-400 py-2'; pLoad.textContent='Memuat...'; box.appendChild(pLoad);
 
-  // PAKAI activeDeviceRef KALAU ADA, KALAU TIDAK PAKAI database LANGSUNG
   const refToko = (typeof activeDeviceRef !== 'undefined' ? activeDeviceRef : database.ref('active_device_pins')).child(deviceId);
 
   refToko.once('value').then(async snap=>{
     const map=snap.val(); pLoad.remove();
     if(!map){ let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - tidak ada produk di active_device_pins'; box.appendChild(p); return; }
     const ids=Object.keys(map);
-    console.log('Lihat Produk - deviceId:', deviceId, 'ids:', ids);
+    const first = map[ids[0]] || {};
+    // INI KUNCINYA - AMBIL WA DARI active_device_pins
+    // Di kasus Rahman, first ini isinya ownerPhone: 6285236519774
+    const waToko = first.wa || first.ownerPhone || first.hp || first.whatsapp || '';
+    console.log('Lihat Produk - deviceId:', deviceId, 'ids:', ids, 'waToko:', waToko, 'first:', first);
 
+    let ketemu = 0;
+
+    // JURUS 1: COBA PAKAI ID DULU
     for(const pid of ids){
-      // PERBAIKAN UTAMA: JANGAN PAKAI dbRef YANG TIDAK PASTI, PAKAI JALUR LANGSUNG!
       const pSnap=await database.ref('produk_pasar/' + pid).once('value');
       const item=pSnap.val();
-      console.log('Produk', pid, 'ketemu?', !!item, item);
-      if(!item){
-        let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Produk ' + pid + ' tidak ketemu di produk_pasar'; box.appendChild(p);
-        continue;
-      }
-      const foto=(item.foto && item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
-      let row=document.createElement('div'); row.className='flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center';
-      let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-12 h-12 rounded object-cover bg-white';
-      let info=document.createElement('div'); info.className='flex-1 min-w-0';
-      let pNama=document.createElement('p'); pNama.className='font-bold text-[11px] truncate'; pNama.textContent=item.nama||'';
-      let pHarga=document.createElement('p'); pHarga.className='text-[11px] text-emerald-700'; pHarga.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
-      info.append(pNama,pHarga);
-      let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
-      let be=document.createElement('button'); be.className='bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editProdukAdmin(pid));
-      let bh=document.createElement('button'); bh.className='bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukAdminFull(pid,deviceId));
-      aksi.append(be,bh); row.append(img,info,aksi); box.appendChild(row);
+      console.log('Produk', pid, 'ketemu?', !!item);
+      if(!item) continue;
+      ketemu++;
+      tampilkanRowProduk(box, pid, item, deviceId);
     }
-    if(box.querySelectorAll('.flex.gap-2').length === 0 && !box.querySelector('p.text-red-500')){
-      let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Tidak ada produk yang bisa ditampilkan. Cek Console.'; box.appendChild(p);
+
+    // JURUS 2: KALAU ID GAGAL SEMUA, CARI PAKAI WA - INI YANG NYELAMETIN RAHMAN!
+    // ID di active_device_pins: -P5a_1bKbqO9zKp6ixjP (SALAH)
+    // ID asli di produk_pasar: -P5bDQienNmexVennkWls (BENAR)
+    // Tapi WA-nya SAMA: 6285236519774, jadi pasti ketemu!
+    if(ketemu === 0 && waToko){
+      console.log('ID tidak ketemu, coba cari pakai WA:', waToko);
+      const waSnap = await database.ref('produk_pasar').orderByChild('wa').equalTo(String(waToko)).once('value');
+      if(waSnap.exists()){
+        waSnap.forEach(child => {
+          ketemu++;
+          tampilkanRowProduk(box, child.key, child.val(), deviceId);
+        });
+      }
+    }
+
+    // JURUS 3: KALAU WA JUGA GAGAL, COBA CARI PAKAI ownerPhone (JAGA-JAGA FORMAT WA BEDA)
+    if(ketemu === 0 && waToko){
+      const waSnap2 = await database.ref('produk_pasar').orderByChild('ownerPhone').equalTo(String(waToko)).once('value');
+      if(waSnap2.exists()){
+        waSnap2.forEach(child => {
+          ketemu++;
+          tampilkanRowProduk(box, child.key, child.val(), deviceId);
+        });
+      }
+    }
+
+    if(ketemu === 0){
+      let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Produk ' + ids[0] + ' tidak ketemu di produk_pasar. WA toko: ' + (waToko || '-'); box.appendChild(p);
     }
   }).catch(e=>{
     pLoad.remove();
@@ -938,7 +957,22 @@ function lihatProdukTokoAdmin(deviceId){
     let p=document.createElement('p'); p.className='text-[11px] text-red-500'; p.textContent='Gagal load: ' + e.message; box.appendChild(p);
   });
 }
-// TAMBAH FUNGSI INI DIBAWAHNYA - INI KUNCI X NYA BOSKU
+
+function tampilkanRowProduk(box, pid, item, deviceId){
+  const foto=(item.foto && item.foto[0])?item.foto[0]:'https://via.placeholder.com/100';
+  let row=document.createElement('div'); row.className='flex gap-2 bg-gray-50 border rounded-lg p-2 mb-2 items-center';
+  let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-12 h-12 rounded object-cover bg-white';
+  let info=document.createElement('div'); info.className='flex-1 min-w-0';
+  let pNama=document.createElement('p'); pNama.className='font-bold text-[11px] truncate'; pNama.textContent=item.nama||'';
+  let pHarga=document.createElement('p'); pHarga.className='text-[11px] text-emerald-700'; pHarga.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
+  let pWa=document.createElement('p'); pWa.className='text-[10px] text-gray-400'; pWa.textContent='WA: ' + (item.wa || '-') + ' | Key asli: ' + pid;
+  info.append(pNama,pHarga,pWa);
+  let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
+  let be=document.createElement('button'); be.className='bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editProdukAdmin(pid));
+  let bh=document.createElement('button'); bh.className='bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukAdminFull(pid,deviceId));
+  aksi.append(be,bh); row.append(img,info,aksi); box.appendChild(row);
+}
+
 window.tutupListToko = function(deviceId){
   const el = document.getElementById('list-'+deviceId);
   if(el) el.classList.add('hidden');
@@ -947,8 +981,10 @@ window.tutupListToko = function(deviceId){
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
   if(confirm('Hapus PRODUK ini permanen? Produk + PIN di device ini akan hilang!')){
-    dbRef.child(id).remove().then(()=>{
-      activeDeviceRef.child(deviceId).child(id).remove().then(()=>{
+    // PERBAIKAN: JANGAN PAKAI dbRef, PAKAI JALUR LANGSUNG!
+    database.ref('produk_pasar/' + id).remove().then(()=>{
+      // Hapus juga PIN yang ID-nya sama, kalau ada
+      database.ref('active_device_pins/' + deviceId + '/' + id).remove().then(()=>{
         alert('Produk terhapus!');
         const box=document.getElementById('list-'+deviceId);
         if(box) box.classList.add('hidden');
@@ -962,9 +998,10 @@ function hapusProdukAdminFull(id, deviceId){
 window.editProdukAdmin = async function(pid){
   const mToko=document.getElementById('modal-daftar-toko');
   if(mToko) mToko.classList.add('hidden');
-  let item = produkData.find(x=>x.id===pid);
+  let item = (typeof produkData !== 'undefined' ? produkData.find(x=>x.id===pid) : null);
   if(!item){
-    const s=await dbRef.child(pid).once('value');
+    // PERBAIKAN: JANGAN PAKAI dbRef, PAKAI JALUR LANGSUNG!
+    const s=await database.ref('produk_pasar/' + pid).once('value');
     item=s.val(); if(item) item.id=pid;
   }
   if(!item){ alert('Produk tidak ketemu'); return; }
