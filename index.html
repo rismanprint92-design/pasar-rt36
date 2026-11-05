@@ -1432,18 +1432,36 @@ window.editDariTokoSaya = function(id){
     function toggleModeAdmin(){ if(isAdmin){ keluarAdmin(); } else { let m=document.getElementById('modal-login-admin'); if(m){ m.classList.remove('hidden'); setTimeout(()=>{ let i=document.getElementById('pin-admin'); if(i) i.focus(); },100); } } }
     function tutupModalAdmin(){ document.getElementById('modal-login-admin').classList.add('hidden'); document.getElementById('pin-admin').value=''; }
     // FIX BIAR ADMIN TIDAK HILANG PAS RELOAD
+// ===== ADMIN LOGIN - VERSI MAKSIMUM (PBKDF2 + KUNCI 5x) =====
 function verifikasiAdmin(){
+  // 1. CEK APAKAH MASIH TERKUNCI 15 MENIT
+  let lockUntil = 0;
+  try{ lockUntil = parseInt(localStorage.getItem('adminLockUntilRT36') || '0'); }catch(e){}
+  let sisa = lockUntil - Date.now();
+  if(sisa > 0){
+    let menit = Math.ceil(sisa / 60000);
+    alert('⛔ TERKUNCI! Terlalu banyak salah PIN.\nCoba lagi dalam ' + menit + ' menit bosku!');
+    return;
+  }
+
   let v=document.getElementById('pin-admin').value.trim();
   if(!v){ alert('Isi PIN dulu bosku!'); return; }
+
   pinRef.once('value').then(async s=>{
     let data = s.val();
     if(!data){ alert('PIN Admin belum diatur!'); return; }
     if(typeof data === 'string'){ alert('PIN Admin Salah!'); return; }
+
     if(data && data.hash && data.salt){
       let hasil = await hashPin(v, data.salt);
       if(hasil.hash === data.hash){
+        // BERHASIL - RESET SEMUA KUNCIAN
         isAdmin=true;
-        try{ localStorage.setItem('isAdminRT36','true'); }catch(e){}
+        try{
+          localStorage.setItem('isAdminRT36','true');
+          localStorage.removeItem('adminGagalRT36');
+          localStorage.removeItem('adminLockUntilRT36');
+        }catch(e){}
         const banner=document.getElementById('banner-admin');
         if(banner) banner.classList.remove('hidden');
         tutupModalAdmin();
@@ -1452,8 +1470,43 @@ function verifikasiAdmin(){
         return;
       }
     }
-    alert('PIN Admin Salah!');
+
+    // GAGAL - HITUNG PERCOBAAN
+    let gagal = 0;
+    try{ gagal = parseInt(localStorage.getItem('adminGagalRT36') || '0') + 1; }catch(e){ gagal = 1; }
+    try{ localStorage.setItem('adminGagalRT36', String(gagal)); }catch(e){}
+
+    if(gagal >= 5){
+      let kunciSampai = Date.now() + (15 * 60 * 1000);
+      try{ localStorage.setItem('adminLockUntilRT36', String(kunciSampai)); }catch(e){}
+      alert('⛔ PIN Salah 5x! Admin terkunci 15 menit demi keamanan!');
+    } else {
+      alert('PIN Admin Salah! (Percobaan ' + gagal + '/5)');
+    }
+  }).catch(function(err){
+    alert('Gagal baca PIN dari Firebase! Cek Rules Firebase bosku. Error: ' + err.message);
   });
+}
+
+// ===== FUNGSI BANTU - JANGAN DIHAPUS =====
+// Buat buka kunci manual pas bosku mau tes, ketik di Console: bukaKunciAdmin()
+function bukaKunciAdmin(){
+  try{
+    localStorage.removeItem('adminGagalRT36');
+    localStorage.removeItem('adminLockUntilRT36');
+    alert('Kunci dibuka! Silahkan login lagi bosku.');
+  }catch(e){ alert('Gagal buka kunci'); }
+}
+
+// Buat cek status pas halaman dibuka, biar banner Admin tetap muncul setelah refresh
+function cekStatusAdminSaatLoad(){
+  try{
+    if(localStorage.getItem('isAdminRT36') === 'true'){
+      isAdmin = true;
+      const banner = document.getElementById('banner-admin');
+      if(banner) banner.classList.remove('hidden');
+    }
+  }catch(e){}
 }
 function keluarAdmin(){ 
   isAdmin=false; 
@@ -1624,8 +1677,33 @@ function konfirmasiOTP_WA(){
     loginSukses(pinBaru, namaBaru);
   } else { alert('Isi PIN lama ATAU Nama + PIN Baru!'); }
 }
-    function bukaPanelChatLangsung(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p){ p.classList.remove('hidden'); setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },150); } if(b) b.classList.add('hidden'); }
-    document.addEventListener('DOMContentLoaded',function(){ let el=document.getElementById('inputPinSebelumnya'); if(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); prosesLoginAtauDaftarWarga(); } }); } });
+    function bukaPanelChatLangsung(){
+  let p=document.getElementById('panelChatWarga');
+  let b=document.getElementById('btnBukaChat');
+  if(p){
+    p.classList.remove('hidden');
+    setTimeout(()=>{
+      let box=document.getElementById('boxChatWarga');
+      if(box) box.scrollTop=box.scrollHeight;
+    },150);
+  }
+  if(b) b.classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  // === TAMBAHAN ADMIN MAKSIMUM - BIAR BANNER TETAP MUNCUL PAS REFRESH ===
+  cekStatusAdminSaatLoad();
+
+  let el=document.getElementById('inputPinSebelumnya');
+  if(el){
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){
+        e.preventDefault();
+        prosesLoginAtauDaftarWarga();
+      }
+    });
+  }
+});
     function toggleBoxChat(){ if(!cekVerifikasiChat()) return; let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p.classList.contains('hidden')){ p.classList.remove('hidden'); if(b){ b.classList.add('hidden'); b.classList.remove('shake-icon','bg-red-500'); b.classList.add('bg-[#25D366]'); } setTimeout(()=>{ let box=document.getElementById('boxChatWarga'); if(box) box.scrollTop=box.scrollHeight; },100); try{ history.pushState({chatOpen:true},''); }catch(e){} } else { p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } }
     window.addEventListener('popstate',function(){ let p=document.getElementById('panelChatWarga'); let b=document.getElementById('btnBukaChat'); if(p&&!p.classList.contains('hidden')){ p.classList.add('hidden'); if(b) b.classList.remove('hidden'); tutupMenuHeaderChat(); } });
     function cekKetik(){ let t=document.getElementById('teksPesanWarga'); if(!t) return; let ada=t.value.trim()!==''; let mic=document.getElementById('iconMic'); let send=document.getElementById('iconSend'); let ic=document.getElementById('iconDalamKotak'); if(isRekam) return; if(mic) mic.classList.toggle('hidden',ada); if(send) send.classList.toggle('hidden',!ada); if(ic) ic.classList.toggle('hidden',ada); }
