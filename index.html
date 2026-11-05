@@ -702,10 +702,7 @@ auth.onAuthStateChanged(function(user){
           }
         });
       }
-
-      prosesPending(snapProduk, 'produk');
       prosesPending(snapPasar, 'produk_pasar');
-
       // Baru load daftar toko
       activeDeviceRef.once('value', snap=>{
         container.innerHTML='';
