@@ -1320,7 +1320,9 @@ async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
         timestamp: Date.now()
       });
     }catch(e){ console.log('pin_privat gagal:', e.message); alert('PIN gagal disimpan: '+e.message); }
-
+      try{
+      if(isTrusted) await database.ref('trusted_was/'+waNorm).set(true);
+    }catch(e){}
     // 2. ACTIVE_WA_PINS - GABUNGAN A+B, TETAP DIISI DI BELAKANG
     // Daftar Toko baca dari produk_pasar, tapi ini tetap diisi biar di Data ada daftar toko spesifik
     try{
