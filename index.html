@@ -783,28 +783,47 @@ activeWAPinsRef.once('value').then(snap => {
     });
 }
 
-// === UPDATE JUGA FUNCTION ACC / TOLAK NYA BOSKU BIAR TAU PATH NYA! ===
-function accProdukAdmin(key, wa, path){
-  let pathFinal = path || 'produk_pasar'; // default ke produk_pasar
-  database.ref(pathFinal+'/'+key+'/status').set('tersedia').then(()=>{
-    // Juga trusted kan WA nya
-    if(wa && wa !== '-'){
-      let waBersih = wa.toString().replace(/[^0-9]/g,'');
-      if(waBersih.startsWith('0')) waBersih = '62'+waBersih.substring(1);
-      database.ref('trusted_was/'+waBersih).set(true);
+async function accProduk(prodId){
+  if(!isAdmin){ alert('Hanya admin!'); return; }
+  try{
+    let snap = await dbRef.child(prodId).once('value');
+    let p = snap.val();
+    if(!p){ alert('Produk tidak ketemu!'); return; }
+
+    let waNorm = p.wa;
+    let ownerId = p.ownerId;
+
+    // 1. Ubah status pending -> tersedia
+    await dbRef.child(prodId).child('status').set('tersedia');
+
+    // 2. JADIKAN TRUSTED - INI YANG KEMARIN HILANG
+    if(waNorm){
+      await database.ref('trusted_was/'+waNorm).set(true);
+      // 3. VERIFIKASI PEMILIKNYA - BIAR BISA BUKA TOKO SAYA
+      if(ownerId){
+        await database.ref('wa_owner_verified/'+waNorm+'/'+ownerId).set(true);
+      }
+      // 4. PASTIKAN MASUK DAFTAR TOKO ADMIN
+      await database.ref('active_wa_pins/'+waNorm+'/'+prodId).set({wa: waNorm, ownerName: p.penjual || 'Tanpa Nama'});
+      // 5. HAPUS OTP - BIAR TIDAK NYANGKUT TERUS DI otp_pending
+      await database.ref('otp_pending/'+waNorm).remove();
     }
-    alert('Berhasil ACC bosku! Path: '+pathFinal);
+    alert('✅ ACC Berhasil! Toko sudah trusted, bisa langsung jualan tersedia!');
     bukaModalDaftarToko();
-  }).catch(e=>alert('Gagal ACC: '+e.message));
+    terapkanFilterDanPencarian();
+  }catch(e){ alert('Gagal ACC: '+e.message); }
 }
 
-function tolakProdukAdmin(key, path){
-  if(!confirm('Yakin tolak/hapus produk ini?')) return;
-  let pathFinal = path || 'produk_pasar';
-  database.ref(pathFinal+'/'+key).remove().then(()=>{
-    alert('Produk ditolak & dihapus bosku!');
+async function tolakProduk(prodId){
+  if(!isAdmin) return;
+  try{
+    let snap = await dbRef.child(prodId).once('value');
+    let p = snap.val();
+    await dbRef.child(prodId).child('status').set('ditolak');
+    if(p && p.wa) await database.ref('otp_pending/'+p.wa).remove();
+    alert('Produk ditolak');
     bukaModalDaftarToko();
-  }).catch(e=>alert('Gagal hapus: '+e.message));
+  }catch(e){ alert(e.message); }
 }
 function accProdukAdmin(key, wa, path){
   let pathFinal = path || 'produk_pasar';
