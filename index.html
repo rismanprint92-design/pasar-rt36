@@ -1155,6 +1155,17 @@ window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
     if(statusEl) statusEl.textContent = 'Error: '+e.message;
   }
 }
+    function hapusProdukDariToko(id){ 
+      if(confirm('Yakin hapus produk ini dari toko Anda?')){
+        let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
+        dbRef.child(id).remove().then(()=>{
+          if(deviceId){ activeDeviceRef.child(deviceId).child(id).remove().catch(e=>console.log(e.message)); }
+          alert('Produk berhasil dihapus!');
+          cariTokoSaya(); 
+          terapkanFilterDanPencarian();
+        });
+      } 
+    }
     function tutupModalJual(){ const el=document.getElementById('modal-jual'); if(el) el.classList.add('hidden'); }
     // === TEMPEL DISINI - GANTI HASH LAMA JADI SUPER AMAN BOSKU ===
 async function hashPin(pin, saltB64){
@@ -1347,7 +1358,57 @@ function kirimWA_OTP_KeAdmin(){
   alert('✅ WA Admin terbuka! Kirim ya bosku! Setelah ACC, trusted selamanya!');
   tutupModalReverseOTP();
 }
+    async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
+  // === SUPER AMAN: HASH + SALT ACAK BOSKU ===
+  let {hash: hashed, salt: saltBaru} = await hashPin(pinInput);
+  let deviceId=localStorage.getItem('my_device_id_pasar')||'dev_'+Date.now();
+  localStorage.setItem('my_device_id_pasar',deviceId);
   
+  let b={
+    nama:bersihkanTeks((dataExtra?dataExtra.nama:document.getElementById('nama').value)),
+    harga:parseInt((dataExtra?dataExtra.harga:document.getElementById('harga').value))||0,
+    kategori:(dataExtra?dataExtra.kategori:document.getElementById('kategori').value),
+    status:isTrusted?(dataExtra?dataExtra.status:document.getElementById('status').value):'pending_verifikasi',
+    penjual:bersihkanTeks((dataExtra?dataExtra.penjual:document.getElementById('penjual').value)),
+    lokasi:bersihkanTeks((dataExtra?dataExtra.lokasi:document.getElementById('lokasi').value)),
+    wa:waNorm,
+    waRaw:(dataExtra?dataExtra.waRaw:document.getElementById('whatsapp').value.trim()),
+    ownerId:currentUser?currentUser.uid:deviceId,
+    catatan:bersihkanTeks((dataExtra?dataExtra.catatan:document.getElementById('catatan').value)),
+    foto:arr,
+    timestamp:Date.now()
+  };
+  
+  dbRef.push(b).then(async (res)=>{
+    // === 1. SIMPAN DI TEMPAT AMAN - ANTI BOCOR BOSKU ===
+    try{
+      // Simpan hash + salt di node privat (cuma owner + admin bisa baca)
+      await database.ref('pin_privat/'+waNorm).set({
+        hash: hashed,
+        salt: saltBaru,
+        attempt: {count:0, last:0},
+        ownerName: b.penjual,
+        timestamp: Date.now()
+      });
+      
+      // Simpan mapping device -> WA (tanpa hash! aman!)
+      await activeDeviceRef.child(deviceId).child(res.key).set({wa:waNorm, ownerName:b.penjual});
+      
+      // Simpan owner WA -> UID (untuk rules)
+      let uidOwner = currentUser ? currentUser.uid : deviceId;
+      await database.ref('wa_owner/'+waNorm+'/'+uidOwner).set(true);
+      
+      // Simpan WA login di HP
+      localStorage.setItem('wa_toko_login', waNorm);
+      
+    }catch(e){ console.log('Simpan privat error:', e); }
+
+    tutupModalJual(); 
+    document.getElementById('form-tambah').reset();
+    if(isTrusted) tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key);
+    else alert('📦 Produk PENDING 24 jam bosku! Menunggu Admin ACC! Setelah ACC, trusted selamanya!');
+  }).catch(e=>{ alert('Gagal simpan: '+e.message); });
+}
 function mintaKodeBaruReverse(){
   if(!dataProdukPendingOTP) return;
   let otpBaru=Math.floor(100000+Math.random()*900000);
@@ -1430,7 +1491,7 @@ window.editDariTokoSaya = function(id){
         if(all){
           for(let dev in all){
             if(all[dev] && all[dev][id]){
-              if(p && p.wa) await database.ref('active_wa_pins/'+p.wa+'/'+id).remove();
+              activeDeviceRef.child(dev).child(id).remove();
             }
           }
         }
@@ -1452,7 +1513,7 @@ window.editDariTokoSaya = function(id){
       document.getElementById('detail-nama').innerText=item.nama; 
       document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
       document.getElementById('detail-waktu-text').innerText = hitungUmurProduk(item.timestamp);
-      let isT = item.status === 'tersedia';
+      let isT = item.status!=='tidak';
       let statusEl = document.getElementById('detail-status');
       statusEl.innerText = isT ? 'Tersedia' : 'Habis';
       statusEl.style.color = isT ? '#075E54' : '#ef4444';
@@ -1667,7 +1728,7 @@ function konfirmasiOTP_WA(){
     if(dataProdukPendingOTP){
       let data = dataProdukPendingOTP;
       dataProdukPendingOTP = null;
-      simpanKeFirebaseFinal(data.foto, data.pin, data.wa, false, data);
+      simpanKeFirebase(data.foto, data.pin);
     }
   }).catch(function(err){ alert('Kode salah bosku: '+err.message); });
 }
