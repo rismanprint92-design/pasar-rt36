@@ -651,138 +651,130 @@ auth.onAuthStateChanged(function(user){
     function tutupModalPilihanJual(){ const el=document.getElementById('modal-pilihan-jual'); if(el){ el.classList.add('hidden'); el.classList.remove('flex'); } }
     function pilihJualBaru(){ tutupModalPilihanJual(); const el=document.getElementById('modal-jual'); if(el) el.classList.remove('hidden'); }
  function bukaModalDaftarToko(){
-     let cekAdmin = false;
-     try{
-       if(isAdmin) cekAdmin=true;
-       if(localStorage.getItem('isAdminRT36')==='true'){ cekAdmin=true; isAdmin=true; }
-     }catch(e){}
-     if(!cekAdmin){ alert('Hanya Admin! Aktifkan Mode Admin dulu bosku!'); return; }
+  let cekAdmin = false;
+  try{
+    if(isAdmin) cekAdmin=true;
+    if(localStorage.getItem('isAdminRT36')==='true'){ cekAdmin=true; isAdmin=true; }
+  }catch(e){}
+  if(!cekAdmin){ alert('Hanya Admin! Aktifkan Mode Admin dulu bosku!'); return; }
 
-     const modalEl = document.getElementById('modal-daftar-toko');
-     if(modalEl){ modalEl.classList.remove('hidden'); modalEl.style.display='flex'; }
-    const container=document.getElementById('daftar-toko-admin');
-    if(!container) return;
-    container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat toko & produk pending...</p>';
+  const modalEl = document.getElementById('modal-daftar-toko');
+  if(modalEl){ modalEl.classList.remove('hidden'); modalEl.style.display='flex'; }
+  const container=document.getElementById('daftar-toko-admin');
+  if(!container) return;
+  container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat toko & produk pending...</p>';
 
-    // === FIX FINAL - CEK DUA NODE: produk & produk_pasar BOSKU! ===
-    Promise.all([
-  database.ref('produk_pasar').once('value')
-]).then(([snapPasar])=>{
-      let htmlPending='';
-      let countPending=0;
+  // === GABUNGAN A+B - BACA SEKALI DARI produk_pasar, BUAT PENDING + DAFTAR TOKO ===
+  database.ref('produk_pasar').once('value').then((snapPasar)=>{
+    let allProduk = snapPasar.val()||{};
+    let htmlPending='';
+    let countPending=0;
+    let tokoMap = {}; // waKey -> {ownerName, produkIds: [], total: 0, alamat, namaToko}
 
-      function prosesPending(snap, pathName){
-        let allProduk = snap.val()||{};
-        Object.keys(allProduk).forEach(key=>{
-          let d = allProduk[key];
-          if(!d) return;
-          if(d.status==='pending_verifikasi' || d.status==='pending'){
-            countPending++;
-            let waToko = d.wa||d.waToko||d.ownerPhone||'-';
-            let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : (d.image||d.fotoUrl||'');
-            let fotoAman = '';
-            try{ fotoAman = typeof amanFoto==='function' ? amanFoto(foto) : foto; }catch(e){ fotoAman = foto||'https://via.placeholder.com/100'; }
-            if(!fotoAman) fotoAman='https://via.placeholder.com/100';
-            
-            htmlPending+=`
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-              <div class="flex gap-3">
-                <img src="${fotoAman}" class="w-12 h-12 rounded object-cover border bg-white" onerror="this.src='https://via.placeholder.com/100'">
-                <div class="flex-1 min-w-0">
-                  <p class="font-bold text-[13px] truncate">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
-                  <p class="text-[11px] text-gray-700 truncate">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||d.namaToko||'-'} | Path: ${pathName}</p>
-                  <p class="text-[10px] text-gray-400">ID: ${key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
-                  <div class="flex gap-2 mt-2">
-                    <button onclick="accProdukAdmin('${key}','${waToko}','${pathName}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & TRUSTED</button>
-                    <button onclick="tolakProdukAdmin('${key}','${pathName}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
-                  </div>
+    function prosesPending(snap){
+      Object.keys(snap).forEach(key=>{
+        let d = snap[key];
+        if(!d) return;
+        // BIKIN TOKO MAP DARI SEMUA PRODUK YANG MASIH AKTIF - INI KUNCINYA
+        // Daftar Toko jangan baca active_wa_pins, baca dari sini biar tidak pernah kosong
+        if(d.wa && (d.status==='tersedia' || d.status==='pending_verifikasi' || d.status==='pending')){
+          let waToko = d.wa;
+          if(!tokoMap[waToko]) tokoMap[waToko] = {ownerName: d.penjual||d.ownerName||'Tanpa Nama', produkIds: [], namaToko: d.namaToko||d.tokoName||'-', alamat: d.lokasi||d.alamatToko||'-', wa: waToko};
+          tokoMap[waToko].produkIds.push(key);
+        }
+        if(d.status==='pending_verifikasi' || d.status==='pending'){
+          countPending++;
+          let waToko = d.wa||d.waToko||d.ownerPhone||'-';
+          let foto = d.foto? (Array.isArray(d.foto)?d.foto[0]:d.foto) : (d.image||d.fotoUrl||'');
+          let fotoAman = '';
+          try{ fotoAman = typeof amanFoto==='function' ? amanFoto(foto) : foto; }catch(e){ fotoAman = foto||'https://via.placeholder.com/100'; }
+          if(!fotoAman) fotoAman='https://via.placeholder.com/100';
+          htmlPending+=`
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+            <div class="flex gap-3">
+              <img src="${fotoAman}" class="w-12 h-12 rounded object-cover border bg-white" onerror="this.src='https://via.placeholder.com/100'">
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-[13px] truncate">⏳ ${d.nama||'Tanpa Nama'} - Rp ${parseInt(d.harga||0).toLocaleString('id-ID')}</p>
+                <p class="text-[11px] text-gray-700 truncate">WA: ${waToko} | Toko: ${d.tokoName||d.ownerName||d.namaToko||'-'} | Path: produk_pasar</p>
+                <p class="text-[10px] text-gray-400">ID: ${key} | ${d.timestamp?new Date(d.timestamp).toLocaleString('id-ID'):''}</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="accProduk('${key}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ ACC & TRUSTED</button>
+                  <button onclick="tolakProdukAdmin('${key}','produk_pasar')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">❌ Tolak/Hapus</button>
                 </div>
               </div>
-            </div>`;
-          }
-        });
-      }
-           prosesPending(snapPasar, 'produk_pasar');
+            </div>
+          </div>`;
+        }
+      });
+    }
+    prosesPending(allProduk);
 
-      // === PERBAIKAN BOSKU: Tampilkan PENDING dulu, jangan nunggu active_device_pins ===
-      container.innerHTML = '';
+    container.innerHTML = '';
+    if (countPending > 0) {
+      let titlePending = document.createElement('div');
+      titlePending.className = 'bg-yellow-400 text-black font-bold text-xs p-2 rounded-lg mb-3 text-center';
+      titlePending.textContent = `🔔 ADA ${countPending} PRODUK MENUNGGU ACC ADMIN!`;
+      container.appendChild(titlePending);
+      let divPending = document.createElement('div');
+      divPending.innerHTML = htmlPending;
+      container.appendChild(divPending);
+      let hr = document.createElement('hr');
+      hr.className = 'my-4 border-gray-200';
+      container.appendChild(hr);
+    } else {
+      let ok = document.createElement('div');
+      ok.className = 'bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
+      ok.innerHTML = '✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk_pasar.</span>';
+      container.appendChild(ok);
+    }
 
-      if (countPending > 0) {
-        let titlePending = document.createElement('div');
-        titlePending.className = 'bg-yellow-400 text-black font-bold text-xs p-2 rounded-lg mb-3 text-center';
-        titlePending.textContent = `🔔 ADA ${countPending} PRODUK MENUNGGU ACC ADMIN!`;
-        container.appendChild(titlePending);
-        let divPending = document.createElement('div');
-        divPending.innerHTML = htmlPending;
-        container.appendChild(divPending);
-        let hr = document.createElement('hr');
-        hr.className = 'my-4 border-gray-200';
-        container.appendChild(hr);
-      } else {
-        let ok = document.createElement('div');
-        ok.className = 'bg-green-50 border border-green-200 text-green-700 text-xs p-3 rounded-lg mb-3 text-center';
-        ok.innerHTML = '✅ Tidak ada pending bosku!<br><span class="text-[10px] text-gray-500">Kalau di pasar masih ada Tes yang muncul, itu artinya statusnya sudah "tersedia" bukan pending. Cek di Firebase /produk & /produk_pasar.</span>';
-        container.appendChild(ok);
-      }
+    // === DAFTAR TOKO - DARI tokoMap (produk_pasar), BUKAN DARI activeWAPinsRef LAGI ===
+    let listWA = Object.keys(tokoMap);
+    if (listWA.length === 0) {
+      let pEmpty = document.createElement('p');
+      pEmpty.className = 'text-center py-6 text-xs text-gray-400';
+      pEmpty.textContent = 'Belum ada toko terdaftar';
+      container.appendChild(pEmpty);
+      return;
+    }
+    let titleToko = document.createElement('p');
+    titleToko.className = 'font-bold text-xs mb-2 text-gray-700';
+    titleToko.textContent = '📋 Daftar Toko Terdaftar (' + listWA.length + ' Toko)';
+    container.appendChild(titleToko);
 
-      // GANTI activeDeviceRef -> activeWAPinsRef, deviceId -> waKey
-activeWAPinsRef.once('value').then(snap => {
-  const data = snap.val();
-  if (!data) {
-    let pEmpty = document.createElement('p');
-    pEmpty.className = 'text-center py-6 text-xs text-gray-400';
-    pEmpty.textContent = 'Belum ada toko terdaftar di active_wa_pins';
-    container.appendChild(pEmpty);
-    return;
-  }
-  let titleToko = document.createElement('p');
-  titleToko.className = 'font-bold text-xs mb-2 text-gray-700';
-  titleToko.textContent = '📋 Daftar Toko Terdaftar (' + Object.keys(data).length + ' Toko)';
-  container.appendChild(titleToko);
-
-  Object.keys(data).forEach(waKey => {
-    const produkMap = data[waKey];
-    if (!produkMap) return;
-    const ids = Object.keys(produkMap);
-    if (ids.length == 0) return;
-    const first = produkMap[ids[0]] || {};
-    let card = document.createElement('div');
-    card.className = 'bg-white border rounded-xl p-3 shadow-sm mb-3';
-    let flex = document.createElement('div');
-    flex.className = 'flex justify-between items-start gap-2';
-    let kiri = document.createElement('div');
-    kiri.className = 'flex-1 min-w-0';
-    let p1 = document.createElement('p'); p1.className = 'font-bold text-[13px] truncate'; p1.textContent = '🏪 ' + (first.ownerName || first.namaToko || 'Tanpa Nama');
-    let p2 = document.createElement('p'); p2.className = 'text-[11px] text-gray-600 truncate'; p2.textContent = 'WA: ' + waKey;
-    let p3 = document.createElement('p'); p3.className = 'text-[11px] text-gray-500'; p3.textContent = 'Jumlah Produk: ' + (ids.length || 0);
-    let p4 = document.createElement('p'); p4.className = 'text-[10px] text-gray-400'; p4.textContent = 'HP: ' + (first.ownerPhone || first.wa || waKey);
-    let p5 = document.createElement('p'); p5.className = 'text-[11px] text-gray-600'; p5.textContent = 'Toko: ' + (first.namaToko || '-');
-    let p6 = document.createElement('p'); p6.className = 'text-[11px] text-gray-500'; p6.textContent = 'Alamat: ' + (first.alamatToko || '-');
-    kiri.append(p1, p2, p3, p4, p5, p6);
-    let kanan = document.createElement('div'); kanan.className = 'flex flex-col gap-1';
-    let waTokoCard = first.wa || first.ownerPhone || waKey;
-    let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(waKey, ids, waTokoCard));
-    let b2 = document.createElement('button'); b2.className = 'bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent = 'Reset PIN'; b2.addEventListener('click', () => resetPinPenjual(waKey));
-    let b3 = document.createElement('button'); b3.className = 'bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent = 'Hapus Toko'; b3.addEventListener('click', () => hapusTokoAdmin(waKey));
-    let b4 = document.createElement('button'); b4.className = 'bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent = 'Hapus Semua Produk'; b4.addEventListener('click', () => hapusSemuaProdukToko(waKey));
-    kanan.append(b1, b2, b3, b4);
-    flex.append(kiri, kanan);
-    let listDiv = document.createElement('div'); listDiv.id = 'list-' + waKey; listDiv.className = 'mt-2 hidden';
-    card.append(flex, listDiv);
-    container.appendChild(card);
-  });
-}).catch(e => {
-  let warn = document.createElement('div');
-  warn.className = 'bg-amber-50 border border-amber-200 text-amber-700 text-[11px] p-3 rounded-lg mt-3 text-center';
-  warn.textContent = '⚠️ Daftar toko tidak bisa dimuat. Tapi produk pending di atas tetap bisa di-ACC.';
-  container.appendChild(warn);
-});
-    }).catch(e => {
-      container.innerHTML = `<p class="text-center py-6 text-red-500 text-xs">Gagal load: ${e.message}</p>`;
-      console.error(e);
+    listWA.forEach(waKey => {
+      const t = tokoMap[waKey];
+      const ids = t.produkIds;
+      if (ids.length == 0) return;
+      let card = document.createElement('div');
+      card.className = 'bg-white border rounded-xl p-3 shadow-sm mb-3';
+      let flex = document.createElement('div');
+      flex.className = 'flex justify-between items-start gap-2';
+      let kiri = document.createElement('div');
+      kiri.className = 'flex-1 min-w-0';
+      let p1 = document.createElement('p'); p1.className = 'font-bold text-[13px] truncate'; p1.textContent = '🏪 ' + (t.ownerName || 'Tanpa Nama');
+      let p2 = document.createElement('p'); p2.className = 'text-[11px] text-gray-600 truncate'; p2.textContent = 'WA: ' + waKey;
+      let p3 = document.createElement('p'); p3.className = 'text-[11px] text-gray-500'; p3.textContent = 'Jumlah Produk: ' + (ids.length || 0);
+      let p4 = document.createElement('p'); p4.className = 'text-[10px] text-gray-400'; p4.textContent = 'HP: ' + waKey;
+      let p5 = document.createElement('p'); p5.className = 'text-[11px] text-gray-600'; p5.textContent = 'Toko: ' + (t.namaToko || '-');
+      let p6 = document.createElement('p'); p6.className = 'text-[11px] text-gray-500'; p6.textContent = 'Alamat: ' + (t.alamat || '-');
+      kiri.append(p1, p2, p3, p4, p5, p6);
+      let kanan = document.createElement('div'); kanan.className = 'flex flex-col gap-1';
+      let b1 = document.createElement('button'); b1.className = 'bg-emerald-50 text-emerald-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b1.textContent = 'Lihat Produk'; b1.addEventListener('click', () => lihatProdukTokoAdmin(waKey, ids, waKey));
+      let b2 = document.createElement('button'); b2.className = 'bg-blue-50 text-blue-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b2.textContent = 'Reset PIN'; b2.addEventListener('click', () => resetPinPenjual(waKey));
+      let b3 = document.createElement('button'); b3.className = 'bg-red-50 text-red-600 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b3.textContent = 'Hapus Toko'; b3.addEventListener('click', () => hapusTokoAdmin(waKey));
+      let b4 = document.createElement('button'); b4.className = 'bg-gray-100 text-gray-700 border text-[10px] font-bold px-3 py-1.5 rounded-lg'; b4.textContent = 'Hapus Semua Produk'; b4.addEventListener('click', () => hapusSemuaProdukToko(waKey));
+      kanan.append(b1, b2, b3, b4);
+      flex.append(kiri, kanan);
+      let listDiv = document.createElement('div'); listDiv.id = 'list-' + waKey; listDiv.className = 'mt-2 hidden';
+      card.append(flex, listDiv);
+      container.appendChild(card);
     });
+  }).catch(e => {
+    container.innerHTML = `<p class="text-center py-6 text-red-500 text-xs">Gagal load: ${e.message}</p>`;
+    console.error(e);
+  });
 }
-
 async function accProduk(prodId){
   if(!isAdmin){ alert('Hanya admin!'); return; }
   try{
@@ -794,26 +786,32 @@ async function accProduk(prodId){
     let ownerId = p.ownerId;
 
     // 1. Ubah status pending -> tersedia
-    await dbRef.child(prodId).child('status').set('tersedia');
+    try{ await dbRef.child(prodId).child('status').set('tersedia'); }
+    catch(e){ alert('Gagal ubah status: '+e.message); return; }
 
     // 2. JADIKAN TRUSTED - INI YANG KEMARIN HILANG
     if(waNorm){
-      await database.ref('trusted_was/'+waNorm).set(true);
+      try{ await database.ref('trusted_was/'+waNorm).set(true); }
+      catch(e){ console.log('trusted_was gagal:', e.message); }
+
       // 3. VERIFIKASI PEMILIKNYA - BIAR BISA BUKA TOKO SAYA
-      if(ownerId){
-        await database.ref('wa_owner_verified/'+waNorm+'/'+ownerId).set(true);
-      }
-      // 4. PASTIKAN MASUK DAFTAR TOKO ADMIN
-      await database.ref('active_wa_pins/'+waNorm+'/'+prodId).set({wa: waNorm, ownerName: p.penjual || 'Tanpa Nama'});
+      try{ if(ownerId) await database.ref('wa_owner_verified/'+waNorm+'/'+ownerId).set(true); }
+      catch(e){ console.log('wa_owner_verified gagal:', e.message); }
+
+      // 4. PASTIKAN MASUK DAFTAR TOKO ADMIN - GABUNGAN A+B
+      // Daftar Toko baca dari produk_pasar, tapi ini tetap diisi biar di Data ada daftar toko spesifik
+      try{ await database.ref('active_wa_pins/'+waNorm+'/'+prodId).set({wa: waNorm, ownerName: p.penjual || 'Tanpa Nama'}); }
+      catch(e){ console.log('active_wa_pins gagal:', e.message); }
+
       // 5. HAPUS OTP - BIAR TIDAK NYANGKUT TERUS DI otp_pending
-      await database.ref('otp_pending/'+waNorm).remove();
+      try{ await database.ref('otp_pending/'+waNorm).remove(); }
+      catch(e){}
     }
     alert('✅ ACC Berhasil! Toko sudah trusted, bisa langsung jualan tersedia!');
     bukaModalDaftarToko();
     terapkanFilterDanPencarian();
   }catch(e){ alert('Gagal ACC: '+e.message); }
 }
-
 async function tolakProduk(prodId){
   if(!isAdmin) return;
   try{
@@ -861,32 +859,76 @@ function resetPinPenjual(waKey){
   if(!pinBaru || pinBaru.length<6){ alert('Batal, minimal 6 digit bosku'); return; }
   if(!confirm('Yakin reset PIN toko '+waKey+' jadi '+pinBaru+' ?')) return;
   hashPin(pinBaru).then(async hashBaru=>{
-    // Simpan hash baru ke pin_privat, PIN tetap di-hash
-    await database.ref('pin_privat/'+waKey).update({hash: hashBaru.hash, salt: hashBaru.salt, attempt:{count:0,last:0}});
-    alert('✅ BERHASIL!\nPIN baru: '+pinBaru+'\n\nKasih tau penjualnya ya bosku!');
-    bukaModalDaftarToko();
+    try{
+      // PAKAI set, JANGAN update - KALAU pin_privat BELUM ADA, update GAGAL KARENA VALIDATE MINTA wa
+      // Ini yang bikin kemarin Reset PIN tidak muncul di Data
+      let snapToko = await database.ref('produk_pasar').orderByChild('wa').equalTo(waKey).once('value');
+      let ownerName = 'Tanpa Nama';
+      snapToko.forEach(c=>{ if(c.val().penjual) ownerName = c.val().penjual; });
+      await database.ref('pin_privat/'+waKey).set({
+        hash: hashBaru.hash,
+        salt: hashBaru.salt,
+        attempt: {count:0, last:0},
+        ownerName: ownerName,
+        wa: waKey,
+        timestamp: Date.now()
+      });
+      alert('✅ BERHASIL!\nPIN baru: '+pinBaru+'\n\nKasih tau penjualnya ya bosku!');
+      bukaModalDaftarToko();
+    }catch(e){ alert('Gagal reset PIN: '+e.message); }
   });
 }
-function hapusTokoAdmin(waKey){
+async function hapusTokoAdmin(waKey){
   if(!isAdmin) return;
-  if(confirm('Hapus PIN toko WA '+waKey+' saja? Produk tetap ada tapi jadi Tanpa Nama bosku!')){
-    activeWAPinsRef.child(waKey).remove().then(()=>{
-      database.ref('pin_privat/'+waKey).remove();
-      alert('PIN toko dihapus!');
-      bukaModalDaftarToko();
-    });
+  if(!confirm('HAPUS TOTAL Toko WA '+waKey+'?\n\nIni hapus SEMUA:\n- PIN\n- Daftar Toko\n- SEMUA Produk WA ini\n\nTidak bisa dibalikin lagi bosku!')){
+    return;
   }
+  // KONFIRMASI 2X BIAR TIDAK KEPIJET
+  if(!confirm('Yakin 100% hapus total WA '+waKey+'?')){
+    return;
+  }
+  try{
+    // 1. HAPUS SEMUA PRODUK WA INI DARI produk_pasar - INI KUNCINYA
+    // Kalau tidak ada ini, Daftar Toko baca dari produk_pasar, tokonya muncul lagi!
+    let snap = await dbRef.orderByChild('wa').equalTo(waKey).once('value');
+    let hapusProduk = [];
+    snap.forEach(child=>{
+      hapusProduk.push(dbRef.child(child.key).remove());
+    });
+    await Promise.all(hapusProduk);
+
+    // 2. HAPUS DARI active_wa_pins - PAKAI database.ref LANGSUNG
+    await database.ref('active_wa_pins/'+waKey).remove();
+
+    // 3. HAPUS PIN PRIVAT
+    await database.ref('pin_privat/'+waKey).remove();
+
+    // 4. HAPUS TRUSTED + VERIFIKASI + OTP BIAR BISA DAFTAR ULANG DARI NOL
+    await database.ref('trusted_was/'+waKey).remove();
+    await database.ref('wa_owner_verified/'+waKey).remove();
+    await database.ref('otp_pending/'+waKey).remove();
+
+    alert('✅ HAPUS TOTAL Berhasil! Toko WA '+waKey+' + '+hapusProduk.length+' produk sudah hilang semua dari Data.');
+    bukaModalDaftarToko();
+    terapkanFilterDanPencarian();
+  }catch(e){ alert('Gagal hapus total: '+e.message); }
 }
 function hapusProdukDariToko(id){
-  if(confirm('Yakin hapus produk ini dari toko Anda?')){
-    dbRef.child(id).remove().then(()=>{
-      let waLogin = localStorage.getItem('wa_toko_login') || '';
-      if(waLogin) activeWAPinsRef.child(waLogin).child(id).remove().catch(e=>console.log(e.message));
+  if(!confirm('Yakin hapus produk ini dari toko Anda?')) return;
+  // AMBIL WA DULU SEBELUM DIHAPUS, BIAR TAU MAU HAPUS DARI active_wa_pins YANG MANA
+  dbRef.child(id).once('value').then(snap=>{
+    let p = snap.val();
+    let waHapus = p ? p.wa : (localStorage.getItem('wa_toko_login') || '');
+    return dbRef.child(id).remove().then(async ()=>{
+      try{
+        // PAKAI database.ref LANGSUNG, JANGAN activeWAPinsRef
+        if(waHapus) await database.ref('active_wa_pins/'+waHapus+'/'+id).remove();
+      }catch(e){ console.log('active_wa_pins gagal dihapus:', e.message); }
       alert('Produk berhasil dihapus!');
       cariTokoSaya_WA_PIN();
       terapkanFilterDanPencarian();
     });
-  }
+  }).catch(e=>{ alert('Gagal hapus produk: '+e.message); });
 }
 function lihatProdukTokoAdmin(deviceId, idsDariCard, waDariCard){
   const box=document.getElementById('list-'+deviceId); if(!box) return;
@@ -1065,16 +1107,18 @@ async function cariTokoSaya_WA_PIN(){
     // 3. BANDINGKAN HASH - PIN TETAP DI-HASH, TIDAK POLOS
     let {hash: hashInput} = await hashPin(pinInput, data.salt);
     if(hashInput !== data.hash){
-      await attemptRef.set({count: (dataAttempt.count||0)+1, last: Date.now()});
+      try{ await attemptRef.set({count: (dataAttempt.count||0)+1, last: Date.now()}); }catch(e){ console.log('attempt gagal dicatat:', e.message); }
       if(statusEl) statusEl.textContent = '❌ PIN salah! Sisa '+(5-(dataAttempt.count+1))+'x';
       alert('PIN salah bosku! Sisa '+(5-(dataAttempt.count+1))+' percobaan!');
       return;
     }
 
-    // 4. SUKSES
-    await attemptRef.set({count:0, last:0});
+    // 4. SUKSES - JANGAN GAGAL CUMA KARENA attempt / wa_owner_verified
+    try{ await attemptRef.set({count:0, last:0}); }catch(e){ console.log('reset attempt gagal, tapi login tetap jalan:', e.message); }
     localStorage.setItem('wa_toko_login', waNorm);
-    if(currentUser) await database.ref('wa_owner_verified/'+waNorm+'/'+currentUser.uid).set(true);
+    try{
+      if(currentUser) await database.ref('wa_owner_verified/'+waNorm+'/'+currentUser.uid).set(true);
+    }catch(e){ console.log('wa_owner_verified gagal, tapi login tetap jalan:', e.message); }
 
     if(statusEl) statusEl.textContent = '✅ PIN benar! WA: '+waNorm;
     tampilkanProdukTokoSaya_ByWA(waNorm);
@@ -1085,34 +1129,55 @@ async function cariTokoSaya_WA_PIN(){
 }
 // Biar tombol lama tetap jalan
 window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
+    async function tampilkanProdukTokoSaya_ByWA(waNorm){
+  let container = document.getElementById('daftar-produk-toko');
+  let statusEl = document.getElementById('status-toko-saya');
+  if(!container) return;
+  container.innerHTML = '<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat produk toko...</p>';
+  if(statusEl) statusEl.textContent = '⏳ Memuat produk... WA: '+waNorm;
 
-    function tampilkanProdukTokoSaya_ByWA(waNorm){
-      let container = document.getElementById('daftar-produk-toko');
-      let statusEl = document.getElementById('status-toko-saya');
-      if(!container) return;
-      container.textContent = '';
-      let hasil = produkData.filter(p=> normalisasiWA(p.wa||'') === waNorm);
-      if(hasil.length===0){
-        container.innerHTML = '<p class="text-center py-8 text-gray-400 text-xs">Belum ada produk bosku</p>';
-        if(statusEl) statusEl.textContent = '✅ WA: '+waNorm;
-        return;
-      }
-      if(statusEl) statusEl.textContent = '✅ '+hasil.length+' produk | WA: '+waNorm;
-      hasil.forEach(item=>{
-        let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
-        let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
-        let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
-        let mid=document.createElement('div'); mid.className='flex-1';
-        let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
-        let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
-        mid.append(pN,pH);
-        let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
-        let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
-        let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
-        aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
-      });
+  try{
+    // BACA LANGSUNG DARI Firebase, JANGAN DARI produkData - INI KUNCINYA
+    // produkData cuma isi yang tersedia, jadi yang pending tidak pernah muncul
+    let snap = await dbRef.orderByChild('wa').equalTo(waNorm).once('value');
+    let hasil = [];
+    snap.forEach(child=>{
+      let p = child.val();
+      if(!p) return;
+      // Jangan tampilkan yang sudah dihapus_admin / dihapus
+      if(p.status === 'dihapus_admin' || p.status === 'dihapus') return;
+      hasil.push({id: child.key, ...p});
+    });
+
+    if(hasil.length===0){
+      container.innerHTML = '<p class="text-center py-8 text-gray-400 text-xs">Belum ada produk bosku</p>';
+      if(statusEl) statusEl.textContent = '✅ WA: '+waNorm;
+      return;
     }
-   
+    if(statusEl) statusEl.textContent = '✅ '+hasil.length+' produk | WA: '+waNorm;
+    container.textContent = '';
+
+    hasil.forEach(item=>{
+      let foto=(item.foto&&item.foto[0])?item.foto[0]:'https://via.placeholder.com/200?text=Produk';
+      let row=document.createElement('div'); row.className='flex gap-3 bg-white border rounded-xl p-2.5 shadow-sm mb-2';
+      let img=document.createElement('img'); img.src=amanFoto(foto); img.className='w-14 h-14 rounded-lg object-cover';
+      let mid=document.createElement('div'); mid.className='flex-1';
+      let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
+      let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
+      // TAMBAH STATUS BIAR WARGA TAU PENDING / TERSEDIA
+      let pS=document.createElement('p'); pS.className='text-[10px] font-bold '+(item.status==='pending_verifikasi'||item.status==='pending' ? 'text-amber-600' : 'text-green-600');
+      pS.textContent = (item.status==='pending_verifikasi'||item.status==='pending') ? '⏳ Menunggu ACC Admin' : '✅ Tersedia di Pasar';
+      mid.append(pN,pH,pS);
+      let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
+      let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
+      let bh=document.createElement('button'); bh.className='bg-red-50 text-red-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; bh.textContent='Hapus'; bh.addEventListener('click', ()=>hapusProdukDariToko(item.id));
+      aksi.append(be,bh); row.append(img,mid,aksi); container.appendChild(row);
+    });
+  }catch(e){
+    container.innerHTML = '<p class="text-center py-6 text-red-500 text-xs">Gagal memuat produk: '+e.message+'</p>';
+    if(statusEl) statusEl.textContent = 'Error: '+e.message;
+  }
+}
     function hapusProdukDariToko(id){ 
       if(confirm('Yakin hapus produk ini dari toko Anda?')){
         let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
@@ -1266,6 +1331,8 @@ async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
   };
 
   dbRef.push(b).then(async (res)=>{
+    // BARU BOSKU - JANGAN PAKAI activeWAPinsRef LAGI, PAKAI database.ref LANGSUNG BIAR TIDAK NYASAR
+    // 1. PIN PRIVAT - WAJIB ADA, KALAU GAGAL KASIH TAU
     try{
       await database.ref('pin_privat/'+waNorm).set({
         hash: hashed,
@@ -1275,12 +1342,25 @@ async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
         wa: waNorm,
         timestamp: Date.now()
       });
-      // SIMPAN KE active_wa_pins PAKAI WA, BUKAN deviceId
-      await activeWAPinsRef.child(waNorm).child(res.key).set({wa:waNorm, ownerName:b.penjual});
-      if(currentUser) await database.ref('wa_owner_verified/'+waNorm+'/'+currentUser.uid).set(true);
-      localStorage.setItem('wa_toko_login', waNorm);
-    }catch(e){ console.log('Simpan privat error:', e); }
+    }catch(e){ console.log('pin_privat gagal:', e.message); alert('PIN gagal disimpan: '+e.message); }
 
+    // 2. ACTIVE_WA_PINS - GABUNGAN A+B, TETAP DIISI DI BELAKANG
+    // Daftar Toko baca dari produk_pasar, tapi ini tetap diisi biar di Data ada daftar toko spesifik
+    try{
+      await database.ref('active_wa_pins/'+waNorm+'/'+res.key).set({wa:waNorm, ownerName:b.penjual});
+    }catch(e){ console.log('active_wa_pins gagal:', e.message); }
+
+    // 3. VERIFIKASI PEMILIK
+    try{
+      if(currentUser) await database.ref('wa_owner_verified/'+waNorm+'/'+currentUser.uid).set(true);
+    }catch(e){ console.log('wa_owner_verified gagal:', e.message); }
+
+    // 4. HAPUS OTP BIAR TIDAK NYANGKUT TERUS DI DATA
+    try{
+      await database.ref('otp_pending/'+waNorm).remove();
+    }catch(e){}
+
+    localStorage.setItem('wa_toko_login', waNorm);
     tutupModalJual();
     document.getElementById('form-tambah').reset();
     if(isTrusted) tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key);
