@@ -778,40 +778,25 @@ auth.onAuthStateChanged(function(user){
 async function accProduk(prodId){
   if(!isAdmin){ alert('Hanya admin!'); return; }
   try{
-    let snap = await dbRef.child(prodId).once('value');
+    let snap = await database.ref('produk_pasar/'+prodId).once('value');
     let p = snap.val();
-    if(!p){ alert('Produk tidak ketemu!'); return; }
-
+    if(!p){ alert('Produk tidak ketemu di produk_pasar!'); return; }
     let waNorm = p.wa;
     let ownerId = p.ownerId;
 
-    // 1. Ubah status pending -> tersedia
-    try{ await dbRef.child(prodId).child('status').set('tersedia'); }
-    catch(e){ alert('Gagal ubah status: '+e.message); return; }
-
-    // 2. JADIKAN TRUSTED - INI YANG KEMARIN HILANG
+    await database.ref('produk_pasar/'+prodId+'/status').set('tersedia');
     if(waNorm){
-      try{ await database.ref('trusted_was/'+waNorm).set(true); }
-      catch(e){ console.log('trusted_was gagal:', e.message); }
-
-      // 3. VERIFIKASI PEMILIKNYA - BIAR BISA BUKA TOKO SAYA
-      try{ if(ownerId) await database.ref('wa_owner_verified/'+waNorm+'/'+ownerId).set(true); }
-      catch(e){ console.log('wa_owner_verified gagal:', e.message); }
-
-      // 4. PASTIKAN MASUK DAFTAR TOKO ADMIN - GABUNGAN A+B
-      // Daftar Toko baca dari produk_pasar, tapi ini tetap diisi biar di Data ada daftar toko spesifik
-      try{ await database.ref('active_wa_pins/'+waNorm+'/'+prodId).set({wa: waNorm, ownerName: p.penjual || 'Tanpa Nama'}); }
-      catch(e){ console.log('active_wa_pins gagal:', e.message); }
-
-      // 5. HAPUS OTP - BIAR TIDAK NYANGKUT TERUS DI otp_pending
-      try{ await database.ref('otp_pending/'+waNorm).remove(); }
-      catch(e){}
+      try{ await database.ref('trusted_was/'+waNorm).set(true); }catch(e){}
+      try{ if(ownerId) await database.ref('wa_owner_verified/'+waNorm+'/'+ownerId).set(true); }catch(e){}
+      try{ await database.ref('active_wa_pins/'+waNorm+'/'+prodId).set({wa: waNorm, ownerName: p.penjual || 'Tanpa Nama'}); }catch(e){}
+      try{ await database.ref('otp_pending/'+waNorm).remove(); }catch(e){}
     }
-    alert('✅ ACC Berhasil! Toko sudah trusted, bisa langsung jualan tersedia!');
+    alert('✅ ACC Berhasil! Toko sudah trusted!');
     bukaModalDaftarToko();
     terapkanFilterDanPencarian();
   }catch(e){ alert('Gagal ACC: '+e.message); }
 }
+// HAPUS accProdukAdmin YANG DIBAWAH - TIDAK DIPAKAI, BIKIN BINGUNG SAJA
 async function tolakProduk(prodId){
   if(!isAdmin) return;
   try{
@@ -842,15 +827,6 @@ function tolakProdukAdmin(key, path){
   database.ref(pathFinal+'/'+key).remove().then(()=>{
     alert('Produk ditolak & dihapus bosku!');
     bukaModalDaftarToko();
-  }).catch(e=>alert('Gagal hapus: '+e.message));
-}
-
-function tolakProdukAdmin(idProduk){
-  if(!confirm('Yakin HAPUS produk pending '+idProduk+' permanen bosku?')) return;
-  database.ref('produk/'+idProduk).remove().then(()=>{
-    alert('🗑️ Produk pending dihapus!');
-    bukaModalDaftarToko();
-    if(typeof terapkanFilterDanPencarian==='function') terapkanFilterDanPencarian();
   }).catch(e=>alert('Gagal hapus: '+e.message));
 }
 function resetPinPenjual(waKey){
@@ -925,7 +901,8 @@ function hapusProdukDariToko(id){
         if(waHapus) await database.ref('active_wa_pins/'+waHapus+'/'+id).remove();
       }catch(e){ console.log('active_wa_pins gagal dihapus:', e.message); }
       alert('Produk berhasil dihapus!');
-      cariTokoSaya_WA_PIN();
+      let waLogin = localStorage.getItem('wa_toko_login') || '';
+      if(waLogin) tampilkanProdukTokoSaya_ByWA(waLogin);
       terapkanFilterDanPencarian();
     });
   }).catch(e=>{ alert('Gagal hapus produk: '+e.message); });
