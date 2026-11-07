@@ -431,7 +431,16 @@ function amanAudio(url){
   const dbRef = database.ref('produk_pasar');
   const pinRef = database.ref('pengaturan/admin_pin_hash');
   const adminWaRef = database.ref('pengaturan/admin_wa');
-  const activeDeviceRef = database.ref('active_device_pins');
+  // MATIKAN active_device_pins - BIAR TIDAK NYISAIN WARNING, TAPI TIDAK BIKIN ERROR
+const activeDeviceRef = {
+  child: function(){ return {
+    set: function(){ return Promise.resolve(); },
+    remove: function(){ return Promise.resolve(); },
+    update: function(){ return Promise.resolve(); },
+    once: function(){ return Promise.resolve({ val: function(){ return null; } }); }
+  }; },
+  once: function(){ return Promise.resolve({ val: function(){ return null; } }); }
+};
     
  let currentUser = null;
 
@@ -943,15 +952,22 @@ function lihatProdukTokoAdmin(deviceId, idsDariCard, waDariCard){
     return;
   }
 
-  // JALUR LAMA: kalau dipanggil cuma pakai deviceId saja
-  const refToko = (typeof activeDeviceRef !== 'undefined' ? activeDeviceRef : database.ref('active_device_pins')).child(deviceId);
+ // JALUR BARU: baca dari active_wa_pins, kalau kosong baca dari produk_pasar pakai WA
+  const refToko = database.ref('active_wa_pins').child(deviceId);
   refToko.once('value').then(async snap=>{
     const map=snap.val();
-    if(!map){ pLoad.remove(); let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - tidak ada produk di active_device_pins'; box.appendChild(p); return; }
+    if(!map){
+      // FALLBACK: kalau active_wa_pins kosong, cari langsung di produk_pasar pakai WA
+      dbRef.orderByChild('wa').equalTo(deviceId).once('value').then(snap2=>{
+        const map2 = snap2.val();
+        if(!map2){ pLoad.remove(); let p=document.createElement('p'); p.className='text-[11px]'; p.textContent='Kosong - belum ada produk'; box.appendChild(p); return; }
+        const ids=Object.keys(map2);
+        jalanin(ids, deviceId);
+      });
+      return;
+    }
     const ids=Object.keys(map);
-    const first = map[ids[0]] || {};
-    const waToko = first.wa || first.ownerPhone || first.hp || first.whatsapp || '';
-    jalanin(ids, waToko);
+    jalanin(ids, deviceId);
   }).catch(e=>{
     pLoad.remove();
     console.log('Gagal lihat produk admin', e);
@@ -983,10 +999,8 @@ function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
   if(confirm('Hapus PRODUK ini permanen?')){
     database.ref('produk_pasar/' + id).remove().then(async ()=>{
-      // BERSIHKAN SAMPAH - KALAU GAGAL, DIAMKAN SAJA, JANGAN MUNCULKAN ALERT
-      // Karena produknya sudah terhapus, ini cuma bersih-bersih
+      // BERSIHKAN SAMPAH DI JALUR BARU SAJA, JALUR LAMA SUDAH MATI, JANGAN DIHAPUS LAGI
       try{ await database.ref('active_wa_pins/' + deviceId + '/' + id).remove(); }catch(e){}
-      try{ await database.ref('active_device_pins/' + deviceId + '/' + id).remove(); }catch(e){}
 
       alert('Produk terhapus!');
       const box=document.getElementById('list-'+deviceId);
