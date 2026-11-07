@@ -981,22 +981,13 @@ window.tutupListToko = function(deviceId){
 
 function hapusProdukAdminFull(id, deviceId){
   if(!isAdmin) return;
-  if(confirm('Hapus PRODUK ini permanen? Produk + PIN di device ini akan hilang!')){
+  if(confirm('Hapus PRODUK ini permanen?')){
     database.ref('produk_pasar/' + id).remove().then(async ()=>{
-      // Hapus PIN yang ID-nya sama
-      await database.ref('active_device_pins/' + deviceId + '/' + id).remove();
-      // PERBAIKAN TAMBAHAN: Hapus juga PIN yang ID-nya SALAH (kasus Rahman: -P5a_1bK...)
-      // Caranya: cek semua PIN di device ini, kalau WA-nya sama dengan produk yang dihapus, hapus juga
-      // Biar tidak nyisa PIN salah
-      const snapPins = await database.ref('active_device_pins/' + deviceId).once('value');
-      const pins = snapPins.val() || {};
-      for(const pinId of Object.keys(pins)){
-        // Kalau pin ini sudah tidak ada produknya lagi di produk_pasar, hapus
-        const cek = await database.ref('produk_pasar/' + pinId).once('value');
-        if(!cek.exists()){
-          await database.ref('active_device_pins/' + deviceId + '/' + pinId).remove();
-        }
-      }
+      // BERSIHKAN SAMPAH - KALAU GAGAL, DIAMKAN SAJA, JANGAN MUNCULKAN ALERT
+      // Karena produknya sudah terhapus, ini cuma bersih-bersih
+      try{ await database.ref('active_wa_pins/' + deviceId + '/' + id).remove(); }catch(e){}
+      try{ await database.ref('active_device_pins/' + deviceId + '/' + id).remove(); }catch(e){}
+
       alert('Produk terhapus!');
       const box=document.getElementById('list-'+deviceId);
       if(box) box.classList.add('hidden');
