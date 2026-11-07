@@ -783,8 +783,9 @@ auth.onAuthStateChanged(function(user){
 
     listWA.forEach(waKey => {
       const t = tokoMap[waKey];
-      const ids = t.produkIds;
-      if (ids.length == 0) return;
+      const ids = t.produkIds || [];
+      // JANGAN DI-SKIP KALAU 0 PRODUK - TETAP TAMPILKAN KARTUNYA, BIAR TOKO TIDAK HILANG
+      // Kalau ids kosong, tetap bikin card dengan tulisan 0 produk
       let card = document.createElement('div');
       card.className = 'bg-white border rounded-xl p-3 shadow-sm mb-3';
       let flex = document.createElement('div');
