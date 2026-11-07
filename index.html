@@ -177,7 +177,7 @@
 
   <div id="modal-pilihan-jual" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[60] p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl"><h3 class="font-bold text-center text-gray-800 mb-1">Mau Jual Apa Bosku?</h3><p class="text-[11px] text-gray-400 text-center mb-4">Pilih salah satu bosku</p><button onclick="pilihJualBaru()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl mb-2.5 hover:bg-emerald-700 flex items-center justify-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Jual Barang Baru</button><button onclick="bukaModalTokoSaya()" class="w-full bg-amber-50 text-amber-700 font-bold py-3.5 rounded-xl border border-amber-200 hover:bg-amber-100 flex items-center justify-center gap-2"><i class="ph ph-storefront text-lg"></i> Toko Saya / Edit Jualan</button><button onclick="tutupModalPilihanJual()" class="w-full mt-3 text-gray-400 text-xs py-2">Batal</button></div></div>
 
-  <<!-- MODAL TOKO SAYA - BARU WA + PIN BOSKU -->
+<!-- MODAL TOKO SAYA - BARU WA + PIN BOSKU -->
 <div id="modal-toko-saya" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[1150] p-4">
   <div class="bg-white w-full max-w-md rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border">
     <div class="flex justify-between items-center p-4 border-b bg-gray-50 rounded-t-2xl">
@@ -293,7 +293,6 @@
       <div class="flex justify-between items-center mb-3">
         <div class="flex gap-1.5">
           <span id="detail-kategori" class="bg-gray-100 text-gray-600 text-[10px] px-3 py-1 rounded-full font-medium uppercase"></span>
-          <span id="detail-kategori2" class="bg-gray-100 text-gray-600 text-[10px] px-3 py-1 rounded-full font-medium hidden"></span>
         </div>
         <span id="detail-status" class="text-[11px] px-3 py-1 rounded-full font-bold"></span>
       </div>
@@ -348,7 +347,6 @@
   var confirmationResultWA = null;
   var waYangMauDiVerifikasi = "";
   var dataProdukPendingOTP = null;
-  var confirmationTokoSaya = null;
   var otpPendingDBRef = database.ref('otp_pending');
   var trustedWARef = database.ref('trusted_was');
   const activeWAPinsRef = database.ref('active_wa_pins');
@@ -808,18 +806,6 @@ async function tolakProduk(prodId){
     bukaModalDaftarToko();
   }catch(e){ alert(e.message); }
 }
-function accProdukAdmin(key, wa, path){
-  let pathFinal = path || 'produk_pasar';
-  database.ref(pathFinal+'/'+key+'/status').set('tersedia').then(()=>{
-    if(wa && wa !== '-'){
-      let waBersih = wa.toString().replace(/[^0-9]/g,'');
-      if(waBersih.startsWith('0')) waBersih = '62'+waBersih.substring(1);
-      database.ref('trusted_was/'+waBersih).set(true);
-    }
-    alert('Berhasil ACC bosku! Path: '+pathFinal);
-    bukaModalDaftarToko();
-  }).catch(e=>alert('Gagal ACC: '+e.message));
-}
 
 function tolakProdukAdmin(key, path){
   if(!confirm('Yakin tolak/hapus produk ini?')) return;
@@ -1155,17 +1141,7 @@ window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
     if(statusEl) statusEl.textContent = 'Error: '+e.message;
   }
 }
-    function hapusProdukDariToko(id){ 
-      if(confirm('Yakin hapus produk ini dari toko Anda?')){
-        let deviceId = localStorage.getItem('my_device_id_pasar') || localStorage.getItem('my_device_uid');
-        dbRef.child(id).remove().then(()=>{
-          if(deviceId){ activeDeviceRef.child(deviceId).child(id).remove().catch(e=>console.log(e.message)); }
-          alert('Produk berhasil dihapus!');
-          cariTokoSaya(); 
-          terapkanFilterDanPencarian();
-        });
-      } 
-    }
+    
     function tutupModalJual(){ const el=document.getElementById('modal-jual'); if(el) el.classList.add('hidden'); }
     // === TEMPEL DISINI - GANTI HASH LAMA JADI SUPER AMAN BOSKU ===
 async function hashPin(pin, saltB64){
@@ -1191,36 +1167,7 @@ async function hashPin(pin, saltB64){
     return {hash: btoa("rt36_"+pin+"_"+saltFallback).replace(/=/g,''), salt: saltFallback};
   }
 }
-    async function cekPinTokoUnik(pin){ 
-      return new Promise(async (resolve)=>{
-        try{
-          let hashed = await hashPin(pin);
-          activeDeviceRef.once('value').then(snap=>{
-            let allData=snap.val();
-            let sudahAda = null;
-            if(allData){
-              for(let devId in allData){
-                let produk2 = allData[devId];
-                if(!produk2) continue;
-                for(let prodId in produk2){
-                  let d = produk2[prodId];
-                  if(d && d.pinHash && d.pinHash===hashed){ sudahAda = d; break; }
-                }
-                if(sudahAda) break;
-              }
-            }
-            if(!sudahAda){ resolve({boleh:true}); }
-            else {
-              let waInput = document.getElementById('whatsapp').value.trim().replace(/\D/g,'');
-              let waTerdaftar = (sudahAda.wa||'').replace(/\D/g,'');
-              if(waTerdaftar && waTerdaftar===waInput) resolve({boleh:true, tokoLama:true});
-              else if(!waTerdaftar) resolve({boleh:true, tokoLama:true});
-              else resolve({boleh:false, data:sudahAda});
-            }
-          }).catch(()=>resolve({boleh:true}));
-        }catch(e){ resolve({boleh:true}); }
-      }); 
-    }
+    
     // ==== PERBAIKAN FINAL BOSKU: OPERATOR VALID + REVERSE OTP 24 JAM ====
 const PREFIX_VALID = ["0811","0812","0813","0821","0822","0823","0851","0852","0853","0814","0815","0816","0855","0856","0857","0858","0817","0818","0819","0859","0877","0878","0895","0896","0897","0898","0899","0810","0854"];
 function isOperatorValid(wa){
@@ -1358,57 +1305,7 @@ function kirimWA_OTP_KeAdmin(){
   alert('✅ WA Admin terbuka! Kirim ya bosku! Setelah ACC, trusted selamanya!');
   tutupModalReverseOTP();
 }
-    async function simpanKeFirebaseFinal(arr,pinInput,waNorm,isTrusted,dataExtra){
-  // === SUPER AMAN: HASH + SALT ACAK BOSKU ===
-  let {hash: hashed, salt: saltBaru} = await hashPin(pinInput);
-  let deviceId=localStorage.getItem('my_device_id_pasar')||'dev_'+Date.now();
-  localStorage.setItem('my_device_id_pasar',deviceId);
   
-  let b={
-    nama:bersihkanTeks((dataExtra?dataExtra.nama:document.getElementById('nama').value)),
-    harga:parseInt((dataExtra?dataExtra.harga:document.getElementById('harga').value))||0,
-    kategori:(dataExtra?dataExtra.kategori:document.getElementById('kategori').value),
-    status:isTrusted?(dataExtra?dataExtra.status:document.getElementById('status').value):'pending_verifikasi',
-    penjual:bersihkanTeks((dataExtra?dataExtra.penjual:document.getElementById('penjual').value)),
-    lokasi:bersihkanTeks((dataExtra?dataExtra.lokasi:document.getElementById('lokasi').value)),
-    wa:waNorm,
-    waRaw:(dataExtra?dataExtra.waRaw:document.getElementById('whatsapp').value.trim()),
-    ownerId:currentUser?currentUser.uid:deviceId,
-    catatan:bersihkanTeks((dataExtra?dataExtra.catatan:document.getElementById('catatan').value)),
-    foto:arr,
-    timestamp:Date.now()
-  };
-  
-  dbRef.push(b).then(async (res)=>{
-    // === 1. SIMPAN DI TEMPAT AMAN - ANTI BOCOR BOSKU ===
-    try{
-      // Simpan hash + salt di node privat (cuma owner + admin bisa baca)
-      await database.ref('pin_privat/'+waNorm).set({
-        hash: hashed,
-        salt: saltBaru,
-        attempt: {count:0, last:0},
-        ownerName: b.penjual,
-        timestamp: Date.now()
-      });
-      
-      // Simpan mapping device -> WA (tanpa hash! aman!)
-      await activeDeviceRef.child(deviceId).child(res.key).set({wa:waNorm, ownerName:b.penjual});
-      
-      // Simpan owner WA -> UID (untuk rules)
-      let uidOwner = currentUser ? currentUser.uid : deviceId;
-      await database.ref('wa_owner/'+waNorm+'/'+uidOwner).set(true);
-      
-      // Simpan WA login di HP
-      localStorage.setItem('wa_toko_login', waNorm);
-      
-    }catch(e){ console.log('Simpan privat error:', e); }
-
-    tutupModalJual(); 
-    document.getElementById('form-tambah').reset();
-    if(isTrusted) tanyakanShareProduk(b.nama,b.harga,b.catatan,res.key);
-    else alert('📦 Produk PENDING 24 jam bosku! Menunggu Admin ACC! Setelah ACC, trusted selamanya!');
-  }).catch(e=>{ alert('Gagal simpan: '+e.message); });
-}
 function mintaKodeBaruReverse(){
   if(!dataProdukPendingOTP) return;
   let otpBaru=Math.floor(100000+Math.random()*900000);
@@ -1664,74 +1561,6 @@ function keluarAdmin(){
 }
 (function(){ try{ if(localStorage.getItem('isAdminRT36')==='true'){ isAdmin=true; const b=document.getElementById('banner-admin'); if(b) b.classList.remove('hidden'); } }catch(e){} })();
 
-// ==== FIX OTP WA ANTI reCAPTCHA ALREADY RENDERED + PIN TOKO TETAP ====
-
-function bukaModalOTP_WA(wa){
-  waYangMauDiVerifikasi = normalisasiWA(wa);
-  let elModal = document.getElementById('modal-otp-wa-verifikasi');
-  let elLabel = document.getElementById('label-wa-otp');
-  if(elLabel) elLabel.innerText = wa;
-  if(elModal) elModal.classList.remove('hidden');
-}
-function tutupModalOTP_WA(){
-  let el = document.getElementById('modal-otp-wa-verifikasi');
-  if(el) el.classList.add('hidden');
-  if(window.recaptchaVerifierToko){ 
-    try{ window.recaptchaVerifierToko.clear(); }catch(e){} 
-    window.recaptchaVerifierToko=null; 
-    let recEl = document.getElementById('recaptcha-container-toko');
-    if(recEl) recEl.innerHTML = '';
-  }
-}
-
-function kirimOTPVerifikasiWA(wa){
-  try{
-    let noPlus62 = formatKePlus62(wa);
-    waYangMauDiVerifikasi = normalisasiWA(wa);
-    let recaptchaEl = document.getElementById('recaptcha-container-toko');
-    if(!recaptchaEl){
-      recaptchaEl = document.createElement('div');
-      recaptchaEl.id = 'recaptcha-container-toko';
-      document.body.appendChild(recaptchaEl);
-    }
-    if(window.recaptchaVerifierToko){
-      try{ window.recaptchaVerifierToko.clear(); }catch(e){}
-      window.recaptchaVerifierToko = null;
-      recaptchaEl.innerHTML = '';
-    }
-    window.recaptchaVerifierToko = new firebase.auth.RecaptchaVerifier('recaptcha-container-toko', {size:'normal'});
-    bukaModalOTP_WA(noPlus62);
-    let infoEl = document.getElementById('info-otp-wa');
-    if(infoEl) infoEl.innerHTML = `Mengirim SMS ke ${noPlus62}... Sabar bosku!`;
-    if(auth.currentUser && !auth.currentUser.phoneNumber){
-      auth.currentUser.linkWithPhoneNumber(noPlus62, window.recaptchaVerifierToko).then(function(result){
-        confirmationResultWA = result;
-        if(infoEl) infoEl.innerHTML = `Kode OTP dikirim ke <b>${noPlus62}</b><br>Cek SMS bosku! OTP Sekali Ingat Selamanya!`;
-      }).catch(function(err){
-        alert('Gagal kirim OTP: '+err.message);
-        tutupModalOTP_WA();
-      });
-    }
-  }catch(e){ alert('Error OTP: '+e.message); }
-}
-
-function konfirmasiOTP_WA(){
-  let inputEl = document.getElementById('input-kode-otp-wa');
-  if(!inputEl) return;
-  let kode = inputEl.value.trim();
-  if(kode.length < 6){ alert('Kode 6 digit bosku!'); return; }
-  if(!confirmationResultWA){ alert('Belum ada OTP!'); return; }
-  confirmationResultWA.confirm(kode).then(function(){
-    setWA_SudahVerifikasi(waYangMauDiVerifikasi); 
-    alert('✅ No WA '+waYangMauDiVerifikasi+' terverifikasi! Ingat selamanya bosku!');
-    tutupModalOTP_WA();
-    if(dataProdukPendingOTP){
-      let data = dataProdukPendingOTP;
-      dataProdukPendingOTP = null;
-      simpanKeFirebase(data.foto, data.pin);
-    }
-  }).catch(function(err){ alert('Kode salah bosku: '+err.message); });
-}
     function bukaModalGantiProfil(){ tutupMenuHeaderChat(); let n=localStorage.getItem('verified_nama_rt36')||''; document.getElementById('editNamaWarga').value=n; document.getElementById('modal-ganti-profil').classList.remove('hidden'); }
     function tutupModalGantiProfil(){ document.getElementById('modal-ganti-profil').classList.add('hidden'); }
     function simpanProfilBaru(){ let nb=document.getElementById('editNamaWarga').value.trim(); if(nb.length<2){ alert('Isi nama minimal 2 karakter!'); return; } let file=document.getElementById('editFotoWarga').files[0]; if(file){ kompresGambar(file,function(b64){ localStorage.setItem('verified_nama_rt36',nb); localStorage.setItem('verified_foto_rt36',b64); tutupModalGantiProfil(); alert('Profil berhasil diperbarui!'); }); } else { localStorage.setItem('verified_nama_rt36',nb); tutupModalGantiProfil(); alert('Nama profil berhasil diperbarui!'); } }
@@ -1780,21 +1609,6 @@ function konfirmasiOTP_WA(){
       localStorage.setItem('my_chat_id','user_pin_'+pin);
     }catch(e){}
     
-    // --- UPGRADE AMAN RT36 - 4 BARIS INI WAJIB ---
-    try {
-      firebase.auth().signInAnonymously().then(cred => {
-        let anonUid = cred.user.uid;
-        localStorage.setItem('firebase_anon_uid', anonUid);
-        // Simpan mapping anonUid -> user_pin_O987 biar Rules bisa cek pemilik!
-        firebase.database().ref('active_device_pins/' + anonUid).set({
-          userId: 'user_pin_' + pin,
-          nama: nama,
-          pin: pin,
-          timestamp: Date.now()
-        });
-      }).catch(e => console.log("Auth error:", e.message));
-    } catch(e) { console.log("Firebase Auth belum load", e); }
-    // --- AKHIR UPGRADE ---
 
     tutupModalLoginPin(); inisialisasiChatLive(); bukaPanelChatLangsung();
   }
@@ -2275,52 +2089,6 @@ document.getElementById('modal-daftar-toko')?.addEventListener('click', function
   }
 });
  </script>
-<!-- NOTIF PASAR RT36 - VERSI AUTO HILANG BOSKU -->
-<script>
-  function initNotifPasarRT36(){
-    if(typeof firebase === 'undefined' || !firebase.messaging){
-      setTimeout(initNotifPasarRT36, 1000); return;
-    }
-    const messagingRT36 = firebase.messaging();
-    const VAPID_KEY_RT36 = "BAPNwsukPDyxT1g5E8PhvPZWnt0sAAu7eR0LxgG-RTqUAF2MMIqsWnpe9UFoA4BvdErn6WZ9JXuDukft2KU4-no";
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/firebase-messaging-sw.js').catch(()=>{});
-    }
-
-    // CEK: Kalau sudah aktif, sembunyikan tombol
-    function cekStatusNotif(){
-      const btn = document.getElementById('btnNotifPasarRT36');
-      if(!btn) return;
-      if(Notification.permission === 'granted' || localStorage.getItem('notif_pasar_rt36_aktif') === 'ya'){
-        btn.style.display = 'none';
-      } else {
-        btn.style.display = 'flex';
-      }
-    }
-
-    window.aktifkanNotifPasar = function(){
-  if (!("Notification" in window)) { alert("Buka di Chrome bosku!"); return; }
-  Notification.requestPermission().then(p=>{
-    if(p==='granted'){
-      messagingRT36.getToken({vapidKey: VAPID_KEY_RT36}).then(t=>{
-        if(t){
-          localStorage.setItem('notif_pasar_rt36_aktif', 'ya');
-          document.getElementById('btnNotifPasarRT36').style.display = 'none';
-          alert("✅ BERHASIL! Notif Aktif Bosku! Tombol akan hilang otomatis!");
-          const uidTok = firebase.auth().currentUser.uid;
-          fetch(`https://pasar-rt36-default-rtdb.asia-southeast1.firebasedatabase.app/tokens/${uidTok}/${Date.now()}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t, waktu:new Date().toISOString(), uid: uidTok})}).catch(e=>console.log(e));
-        } else { alert("Gagal dapat token bosku!"); }
-      }).catch(e=>alert("Error: "+e.message));
-    } else { alert("Izin ditolak bosku!"); }
-  });
-};
-    messagingRT36.onMessage((payload)=>{ alert((payload.notification?.title||"Pasar RT36")+ "\n" + (payload.notification?.body||"Ada info baru!")); });
-    // Cek saat load
-    setTimeout(cekStatusNotif, 1500);
-    console.log("Notifikasi Pasar RT36 Siap!");
-  }
-  if(document.readyState === 'complete'){ initNotifPasarRT36(); } else { window.addEventListener('load', initNotifPasarRT36); }
-</script>
 
  <script>
 // === FIX ANTI JUAL MATI SETELAH X - VERSI FINAL BOSKU ===
@@ -2378,9 +2146,5 @@ window.tutupModalTokoSaya = function(){
 window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
 </script>
               
-
-<button id="btnNotifPasarRT36" onclick="aktifkanNotifPasar()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;background:#0f9d58;color:white;padding:12px 20px;border-radius:25px;border:none;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;gap:8px">
-🔔 Aktifkan Notif Pasar
-</button>
 </body>
 </html>
