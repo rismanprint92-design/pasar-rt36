@@ -671,9 +671,17 @@ auth.onAuthStateChanged(function(user){
   if(!container) return;
   container.innerHTML='<p class="text-center py-6 text-gray-400 text-xs">⏳ Memuat toko & produk pending...</p>';
 
-  // === GABUNGAN A+B - BACA SEKALI DARI produk_pasar, BUAT PENDING + DAFTAR TOKO ===
-  database.ref('produk_pasar').once('value').then((snapPasar)=>{
+    // === GABUNGAN A+B - BACA DARI produk_pasar + trusted_was + wa_owner, BIAR TOKO TIDAK HILANG PAS PRODUK HABIS ===
+  Promise.all([
+    database.ref('produk_pasar').once('value'),
+    database.ref('trusted_was').once('value').catch(()=>({val:()=>null})),
+    database.ref('wa_owner').once('value').catch(()=>({val:()=>null})),
+    database.ref('active_wa_pins').once('value').catch(()=>({val:()=>null}))
+  ]).then(([snapPasar, snapTrusted, snapOwner, snapPins])=>{
     let allProduk = snapPasar.val()||{};
+    let trusted = snapTrusted.val()||{};
+    let owners = snapOwner.val()||{};
+    let pins = snapPins.val()||{};
     let htmlPending='';
     let countPending=0;
     let tokoMap = {}; // waKey -> {ownerName, produkIds: [], total: 0, alamat, namaToko}
@@ -715,7 +723,31 @@ auth.onAuthStateChanged(function(user){
       });
     }
     prosesPending(allProduk);
+    // === TAMBAHAN PENTING: PASTIKAN SEMUA WA YANG PERNAH DAFTAR TETAP MUNCUL, WALAU PRODUK 0 ===
+    let semuaWA = new Set();
+    // Dari trusted_was - ini induknya
+    Object.keys(trusted).forEach(wa => semuaWA.add(String(wa)));
+    // Dari wa_owner
+    Object.keys(owners).forEach(wa => semuaWA.add(String(wa)));
+    // Dari active_wa_pins
+    Object.keys(pins).forEach(wa => semuaWA.add(String(wa)));
+    // Dari produk yang masih ada
+    Object.keys(tokoMap).forEach(wa => semuaWA.add(String(wa)));
 
+    semuaWA.forEach(wa => {
+      if(!tokoMap[wa]){
+        // Buat toko kosong, jangan di-skip. Ini yang bikin toko tetap tampil pas produk habis
+        let info = (trusted[wa] && typeof trusted[wa] === 'object' ? trusted[wa] : null) || (owners[wa] && typeof owners[wa] === 'object' ? owners[wa] : null) || {};
+        tokoMap[wa] = {
+          ownerName: info.nama || info.name || info.namaToko || wa,
+          namaToko: info.namaToko || info.nama || wa,
+          alamat: info.alamat || '',
+          produkIds: [],
+          total: 0,
+          wa: wa
+        };
+      }
+    });
     container.innerHTML = '';
     if (countPending > 0) {
       let titlePending = document.createElement('div');
