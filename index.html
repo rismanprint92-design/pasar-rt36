@@ -887,34 +887,44 @@ async function hapusTokoAdmin(waKey){
   if(!confirm('HAPUS TOTAL Toko WA '+waKey+'?\n\nIni hapus SEMUA:\n- PIN\n- Daftar Toko\n- SEMUA Produk WA ini\n\nTidak bisa dibalikin lagi bosku!')){
     return;
   }
-  // KONFIRMASI 2X BIAR TIDAK KEPIJET
   if(!confirm('Yakin 100% hapus total WA '+waKey+'?')){
     return;
   }
+  waKey = String(waKey);
   try{
-    // 1. HAPUS SEMUA PRODUK WA INI DARI produk_pasar - INI KUNCINYA
-    // Kalau tidak ada ini, Daftar Toko baca dari produk_pasar, tokonya muncul lagi!
+    // 1. HAPUS SEMUA PRODUK WA INI DARI produk_pasar
     let snap = await dbRef.orderByChild('wa').equalTo(waKey).once('value');
     let hapusProduk = [];
     snap.forEach(child=>{
-      hapusProduk.push(dbRef.child(child.key).remove());
+      hapusProduk.push(dbRef.child(child.key).remove().catch(e=>console.warn('Gagal hapus produk', child.key, e.message)));
     });
     await Promise.all(hapusProduk);
 
-    // 2. HAPUS DARI active_wa_pins - PAKAI database.ref LANGSUNG
-    await database.ref('active_wa_pins/'+waKey).remove();
+    // 2. HAPUS DARI SEMUA TEMPAT SEKALIGUS, PAKAI allSettled BIAR KALAU 1 DITOLAK, YANG LAIN TETAP JALAN
+    // INI KUNCINYA: JANGAN PAKAI await SATU-SATU LAGI!
+    let paths = [
+      'active_wa_pins/'+waKey,
+      'active_device_pins/'+waKey,
+      'pin_privat/'+waKey,
+      'trusted_was/'+waKey,
+      'wa_owner/'+waKey, // <-- INI YANG KEMARIN KELUPAAN, MAKANYA TOKO MUNCUL LAGI!
+      'wa_owner_verified/'+waKey,
+      'otp_pending/'+waKey,
+      'toko/'+waKey
+    ];
+    let results = await Promise.allSettled(paths.map(p => database.ref(p).remove()));
+    results.forEach((r, i)=>{
+      if(r.status === 'rejected') console.warn('Gagal hapus ' + paths[i] + ' : ' + r.reason.message + ' -> Cek Rules Firebase untuk path ini!');
+    });
 
-    // 3. HAPUS PIN PRIVAT
-    await database.ref('pin_privat/'+waKey).remove();
-
-    // 4. HAPUS TRUSTED + VERIFIKASI + OTP BIAR BISA DAFTAR ULANG DARI NOL
-    await database.ref('trusted_was/'+waKey).remove();
-    await database.ref('wa_owner_verified/'+waKey).remove();
-    await database.ref('otp_pending/'+waKey).remove();
-
-    alert('✅ HAPUS TOTAL Berhasil! Toko WA '+waKey+' + '+hapusProduk.length+' produk sudah hilang semua dari Data.');
+    let gagal = results.filter(r=>r.status==='rejected');
+    if(gagal.length > 0){
+      alert('⚠️ Sebagian kehapus, tapi ada ' + gagal.length + ' path yang ditolak Rules (biasanya wa_owner_verified).\n\nToko sudah kehapus dari tempat lain, tapi buka Firebase > Rules, ubah wa_owner_verified jadi ".write": "auth != null" biar besok bisa kehapus total.\n\nCek Console untuk detailnya.');
+    } else {
+      alert('✅ HAPUS TOTAL Berhasil! Toko WA '+waKey+' + '+hapusProduk.length+' produk sudah hilang semua dari Data.');
+    }
     bukaModalDaftarToko();
-    terapkanFilterDanPencarian();
+    if(typeof terapkanFilterDanPencarian === 'function') terapkanFilterDanPencarian();
   }catch(e){ alert('Gagal hapus total: '+e.message); }
 }
 function hapusProdukDariToko(id){
