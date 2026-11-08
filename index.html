@@ -1412,7 +1412,7 @@ window.editDariTokoSaya = function(id){
   if(!isAdminUser && statusBaru === 'ditolak'){
     statusBaru = lama.status || 'tersedia';
   }
-
+alert('DEBUG STATUS: dropdown=' + (document.querySelector('#modal-edit #edit-status')||{}).value + ' | statusBaru=' + statusBaru + ' | lama=' + lama.status);
   const dataBaru = {
     nama:bersihkanTeks(document.getElementById('edit-nama').value),
     harga:parseInt(document.getElementById('edit-harga').value)||0,
