@@ -1046,8 +1046,9 @@ function hapusProdukAdminFull(id, deviceId){
       try{ await database.ref('active_wa_pins/' + deviceId + '/' + id).remove(); }catch(e){}
 
       alert('Produk terhapus!');
-      const box=document.getElementById('list-'+deviceId);
-      if(box) box.classList.add('hidden');
+      // JANGAN sembunyikan list-deviceId, itu 1 TOKO, bukan 1 produk.
+      // Buang cuma produk ini dari produkData, biar bukaModalDaftarToko() bangun ulang daftarnya dengan benar.
+      if(typeof produkData !== 'undefined') produkData = produkData.filter(x=>x.id!==id);
       bukaModalDaftarToko();
       terapkanFilterDanPencarian();
     }).catch(e=>alert('Gagal hapus: '+e.message));
@@ -1067,7 +1068,9 @@ window.editProdukAdmin = async function(pid){
   document.getElementById('edit-nama').value=item.nama||'';
   document.getElementById('edit-harga').value=item.harga||0;
   document.getElementById('edit-kategori').value=item.kategori||'kuliner';
-  (document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value=item.status||'tersedia';
+  let _s2 = (item.status||'tersedia').toString().toLowerCase();
+  if(_s2==='tidak') _s2='tidak_tersedia';
+  (document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value=_s2;
   document.getElementById('edit-penjual').value=item.penjual||'';
   document.getElementById('edit-lokasi').value=item.lokasi||'';
   document.getElementById('edit-whatsapp').value=item.wa||'';
