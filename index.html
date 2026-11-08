@@ -1477,12 +1477,12 @@ alert('DEBUG STATUS: dropdown=' + (document.querySelector('#modal-edit #edit-sta
       document.getElementById('detail-nama').innerText=item.nama; 
       document.getElementById('detail-penjual-text').innerText = item.penjual + ' ('+item.lokasi+')';
       document.getElementById('detail-waktu-text').innerText = hitungUmurProduk(item.timestamp);
-      let isT = item.status!=='tidak';
+      let _st = (item.status||'tersedia').toString().toLowerCase();
+      let isT = _st === 'tersedia';
       let statusEl = document.getElementById('detail-status');
-      statusEl.innerText = isT ? 'Tersedia' : 'Habis';
+      statusEl.innerText = isT ? 'Tersedia' : 'Tidak Tersedia';
       statusEl.style.color = isT ? '#075E54' : '#ef4444';
       statusEl.style.background = isT ? '#f0fdf4' : '#fef2f2';
-
       let cat=item.catatan||'';
       let catatanEl=document.getElementById('detail-catatan');
       catatanEl.innerHTML='';
