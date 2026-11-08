@@ -692,8 +692,10 @@ auth.onAuthStateChanged(function(user){
         if(!d) return;
         // BIKIN TOKO MAP DARI SEMUA PRODUK YANG MASIH AKTIF - INI KUNCINYA
         // Daftar Toko jangan baca active_wa_pins, baca dari sini biar tidak pernah kosong
-        if(d.wa && (d.status==='tersedia' || d.status==='pending_verifikasi' || d.status==='pending')){
-          let waToko = d.wa;
+       // JANGAN filter pakai status - toko tetap tampil walau produk tidak_tersedia / ditolak / 0 produk
+      if(d.wa){
+      let waToko = String(d.wa).replace(/\D/g,'');
+       if(waToko.startsWith('0')) waToko = '62' + waToko.slice(1);
           if(!tokoMap[waToko]) tokoMap[waToko] = {ownerName: d.penjual||d.ownerName||'Tanpa Nama', produkIds: [], namaToko: d.namaToko||d.tokoName||'-', alamat: d.lokasi||d.alamatToko||'-', wa: waToko};
           tokoMap[waToko].produkIds.push(key);
         }
@@ -725,14 +727,11 @@ auth.onAuthStateChanged(function(user){
     prosesPending(allProduk);
     // === TAMBAHAN PENTING: PASTIKAN SEMUA WA YANG PERNAH DAFTAR TETAP MUNCUL, WALAU PRODUK 0 ===
     let semuaWA = new Set();
-    // Dari trusted_was - ini induknya
-    Object.keys(trusted).forEach(wa => semuaWA.add(String(wa)));
-    // Dari wa_owner
-    Object.keys(owners).forEach(wa => semuaWA.add(String(wa)));
-    // Dari active_wa_pins
-    Object.keys(pins).forEach(wa => semuaWA.add(String(wa)));
-    // Dari produk yang masih ada
-    Object.keys(tokoMap).forEach(wa => semuaWA.add(String(wa)));
+    let normWA = w => { let s = String(w||'').replace(/\D/g,''); if(s.startsWith('0')) s = '62' + s.slice(1); return s; };
+    Object.keys(trusted).forEach(wa => semuaWA.add(normWA(wa)));
+    Object.keys(owners).forEach(wa => semuaWA.add(normWA(wa)));
+    Object.keys(pins).forEach(wa => semuaWA.add(normWA(wa)));
+   Object.keys(tokoMap).forEach(wa => semuaWA.add(normWA(wa)));
 
     semuaWA.forEach(wa => {
       if(!tokoMap[wa]){
