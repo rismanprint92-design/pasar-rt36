@@ -1392,34 +1392,53 @@ window.editDariTokoSaya = function(id){
     el.style.zIndex=''; 
   }
 }
-  function simpanPerubahanProduk(e){ 
-  e.preventDefault(); 
-  const id=document.getElementById('edit-id').value; 
+ function simpanPerubahanProduk(e){
+  e.preventDefault();
+  const id=document.getElementById('edit-id').value;
   const lama=produkData.find(p=>p.id===id) || {};
+  const isAdminUser = (typeof isAdmin !== 'undefined' && isAdmin);
+
+  // Normalisasi status dari dropdown: "Tidak Tersedia" -> "tidak_tersedia"
+  let statusBaru = (document.getElementById('edit-status').value || lama.status || 'tersedia').toString().trim().toLowerCase().replace(/ /g,'_');
+  if(statusBaru === 'tidak_tersedia' || statusBaru === 'tersedia' || statusBaru === 'ditolak'){ /* ok */ }
+  else if(statusBaru === 'pending_verifikasi'){ statusBaru = 'pending_verifikasi'; }
+  else { statusBaru = lama.status || 'tersedia'; }
+
+  // KUNCI: Penjual tidak boleh ACC sendiri. Kalau produk masih pending, status dikunci pending.
+  if(!isAdminUser && lama.status === 'pending_verifikasi'){
+    statusBaru = 'pending_verifikasi';
+  }
+  // Penjual tidak boleh ubah status jadi ditolak, itu hak Admin.
+  if(!isAdminUser && statusBaru === 'ditolak'){
+    statusBaru = lama.status || 'tersedia';
+  }
+
   const dataBaru = {
     nama:bersihkanTeks(document.getElementById('edit-nama').value),
     harga:parseInt(document.getElementById('edit-harga').value)||0,
     kategori:document.getElementById('edit-kategori').value,
-    status:document.getElementById('edit-status').value,
+    status:statusBaru,
     penjual:bersihkanTeks(document.getElementById('edit-penjual').value),
     lokasi:bersihkanTeks(document.getElementById('edit-lokasi').value),
-    wa:document.getElementById('edit-whatsapp').value.trim(),
+    wa: isAdminUser ? document.getElementById('edit-whatsapp').value.trim() : (lama.wa || ''),
     catatan:bersihkanTeks(document.getElementById('edit-catatan').value),
     foto:lama.foto||['https://via.placeholder.com/300?text=Produk+RT36'],
     timestamp:lama.timestamp||Date.now(),
     ownerId: lama.ownerId || null
   };
   dbRef.child(id).update(dataBaru).then(()=>{
-    activeDeviceRef.once('value').then(snap=>{
-      const all=snap.val();
-      if(all){
-        for(let dev in all){
-          if(all[dev] && all[dev][id]){
-            activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual});
+    try{
+      activeDeviceRef.once('value').then(snap=>{
+        const all=snap.val();
+        if(all){
+          for(let dev in all){
+            if(all[dev] && all[dev][id]){
+              activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual}).catch(()=>{});
+            }
           }
         }
-      }
-    });
+      }).catch(()=>{});
+    }catch(err){}
     tutupModalEdit();
     setTimeout(function(){ alert('Berhasil diperbarui bosku!'); }, 200);
   }).catch(err=>alert('Gagal: '+err.message));
