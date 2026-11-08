@@ -1067,7 +1067,7 @@ window.editProdukAdmin = async function(pid){
   document.getElementById('edit-nama').value=item.nama||'';
   document.getElementById('edit-harga').value=item.harga||0;
   document.getElementById('edit-kategori').value=item.kategori||'kuliner';
-  document.getElementById('edit-status').value=item.status||'tersedia';
+  (document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value=item.status||'tersedia';
   document.getElementById('edit-penjual').value=item.penjual||'';
   document.getElementById('edit-lokasi').value=item.lokasi||'';
   document.getElementById('edit-whatsapp').value=item.wa||'';
@@ -1372,7 +1372,7 @@ function mintaKodeBaruReverse(){
   document.getElementById('edit-nama').value=p.nama;
   document.getElementById('edit-harga').value=p.harga;
   document.getElementById('edit-kategori').value=p.kategori;
-  document.getElementById('edit-status').value=p.status||'tersedia';
+  (document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value=p.status||'tersedia';
   document.getElementById('edit-penjual').value=p.penjual;
   document.getElementById('edit-lokasi').value=p.lokasi;
   document.getElementById('edit-whatsapp').value=p.wa;
@@ -1399,7 +1399,7 @@ window.editDariTokoSaya = function(id){
   const isAdminUser = (typeof isAdmin !== 'undefined' && isAdmin);
 
   // Normalisasi status dari dropdown: "Tidak Tersedia" -> "tidak_tersedia"
-  let statusBaru = (document.getElementById('edit-status').value || lama.status || 'tersedia').toString().trim().toLowerCase().replace(/ /g,'_');
+  let statusBaru = ((document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value || lama.status || 'tersedia').toString().trim().toLowerCase().replace(/ /g,'_');
   if(statusBaru === 'tidak_tersedia' || statusBaru === 'tersedia' || statusBaru === 'ditolak'){ /* ok */ }
   else if(statusBaru === 'pending_verifikasi'){ statusBaru = 'pending_verifikasi'; }
   else { statusBaru = lama.status || 'tersedia'; }
