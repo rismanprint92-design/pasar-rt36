@@ -693,8 +693,9 @@ auth.onAuthStateChanged(function(user){
         // BIKIN TOKO MAP DARI SEMUA PRODUK YANG MASIH AKTIF - INI KUNCINYA
         // Daftar Toko jangan baca active_wa_pins, baca dari sini biar tidak pernah kosong
        // JANGAN filter pakai status - toko tetap tampil walau produk tidak_tersedia / ditolak / 0 produk
-      if(d.wa){
-      let waToko = String(d.wa).replace(/\D/g,'');
+      let waMentah = d.wa || d.waToko || d.ownerPhone || d.waRaw || '';
+       if(waMentah){
+       let waToko = String(waMentah).replace(/\D/g,'');
        if(waToko.startsWith('0')) waToko = '62' + waToko.slice(1);
           if(!tokoMap[waToko]) tokoMap[waToko] = {ownerName: d.penjual||d.ownerName||'Tanpa Nama', produkIds: [], namaToko: d.namaToko||d.tokoName||'-', alamat: d.lokasi||d.alamatToko||'-', wa: waToko};
           tokoMap[waToko].produkIds.push(key);
@@ -1414,7 +1415,6 @@ window.editDariTokoSaya = function(id){
   if(!isAdminUser && statusBaru === 'ditolak'){
     statusBaru = lama.status || 'tersedia';
   }
-alert('DEBUG STATUS: dropdown=' + (document.querySelector('#modal-edit #edit-status')||{}).value + ' | statusBaru=' + statusBaru + ' | lama=' + lama.status);
   const dataBaru = {
     nama:bersihkanTeks(document.getElementById('edit-nama').value),
     harga:parseInt(document.getElementById('edit-harga').value)||0,
