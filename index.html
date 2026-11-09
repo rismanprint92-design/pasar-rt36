@@ -685,6 +685,12 @@ auth.onAuthStateChanged(function(user){
     let htmlPending='';
     let countPending=0;
     let tokoMap = {}; // waKey -> {ownerName, produkIds: [], total: 0, alamat, namaToko}
+    const escapeHTML = (s) => String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     function prosesPending(snap){
       Object.keys(snap).forEach(key=>{
@@ -755,7 +761,7 @@ auth.onAuthStateChanged(function(user){
       titlePending.textContent = `🔔 ADA ${countPending} PRODUK MENUNGGU ACC ADMIN!`;
       container.appendChild(titlePending);
       let divPending = document.createElement('div');
-      divPending.innerHTML = htmlPending;
+      divPending.innerHTML = escapeHTML(htmlPending);
       container.appendChild(divPending);
       let hr = document.createElement('hr');
       hr.className = 'my-4 border-gray-200';
