@@ -1179,9 +1179,22 @@ window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
       let mid=document.createElement('div'); mid.className='flex-1';
       let pN=document.createElement('p'); pN.className='font-bold text-[12px]'; pN.textContent=item.nama||'';
       let pH=document.createElement('p'); pH.className='text-orange-500 font-bold text-[12px]'; pH.textContent='Rp '+parseInt(item.harga||0).toLocaleString('id-ID');
-      // TAMBAH STATUS BIAR WARGA TAU PENDING / TERSEDIA
-      let pS=document.createElement('p'); pS.className='text-[10px] font-bold '+(item.status==='pending_verifikasi'||item.status==='pending' ? 'text-amber-600' : 'text-green-600');
-      pS.textContent = (item.status==='pending_verifikasi'||item.status==='pending') ? '⏳ Menunggu ACC Admin' : '✅ Tersedia di Pasar';
+      // TAMBAH STATUS BIAR WARGA TAU PENDING / TERSEDIA / TIDAK TERSEDIA - 3 PILIHAN, JANGAN 2 LAGI
+let pS=document.createElement('p');
+let _stToko = String(item.status||'tersedia').toLowerCase();
+if(_stToko==='pending_verifikasi' || _stToko==='pending'){
+  pS.className='text-[10px] font-bold text-amber-600';
+  pS.textContent='⏳ Menunggu ACC Admin';
+} else if(_stToko==='tersedia'){
+  pS.className='text-[10px] font-bold text-green-600';
+  pS.textContent='✅ Tersedia di Pasar';
+} else if(_stToko==='ditolak'){
+  pS.className='text-[10px] font-bold text-red-600';
+  pS.textContent='❌ Ditolak Admin';
+} else {
+  pS.className='text-[10px] font-bold text-gray-500';
+  pS.textContent='⛔ Tidak Tersedia di Pasar';
+}
       mid.append(pN,pH,pS);
       let aksi=document.createElement('div'); aksi.className='flex flex-col gap-1';
       let be=document.createElement('button'); be.className='bg-blue-50 text-blue-600 border text-[10px] px-2.5 py-1.5 rounded-lg'; be.textContent='Edit'; be.addEventListener('click', ()=>editDariTokoSaya(item.id));
