@@ -903,15 +903,16 @@ async function hapusTokoAdmin(waKey){
     // 2. HAPUS DARI SEMUA TEMPAT SEKALIGUS, PAKAI allSettled BIAR KALAU 1 DITOLAK, YANG LAIN TETAP JALAN
     // INI KUNCINYA: JANGAN PAKAI await SATU-SATU LAGI!
     let paths = [
-      'active_wa_pins/'+waKey,
-      'active_device_pins/'+waKey,
-      'pin_privat/'+waKey,
-      'trusted_was/'+waKey,
-      'wa_owner/'+waKey, // <-- INI YANG KEMARIN KELUPAAN, MAKANYA TOKO MUNCUL LAGI!
-      'wa_owner_verified/'+waKey,
-      'otp_pending/'+waKey,
-      'toko/'+waKey
-    ];
+  'active_wa_pins/'+waKey,
+  'active_device_pins/'+waKey,
+  'pin_privat/'+waKey,
+  'trusted_was/'+waKey,
+  'wa_owner/'+waKey,
+  'wa_owner_verified/'+waKey,
+  'otp_pending/'+waKey,
+  'toko/'+waKey,
+  'toko_terdaftar/'+waKey
+   ];
     let results = await Promise.allSettled(paths.map(p => database.ref(p).remove()));
     results.forEach((r, i)=>{
       if(r.status === 'rejected') console.warn('Gagal hapus ' + paths[i] + ' : ' + r.reason.message + ' -> Cek Rules Firebase untuk path ini!');
