@@ -1442,23 +1442,40 @@ window.editDariTokoSaya = function(id){
     timestamp:lama.timestamp||Date.now(),
     ownerId: lama.ownerId || null
   };
-  dbRef.child(id).update(dataBaru).then(()=>{
-    try{
-      activeDeviceRef.once('value').then(snap=>{
-        const all=snap.val();
-        if(all){
-          for(let dev in all){
-            if(all[dev] && all[dev][id]){
-              activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual}).catch(()=>{});
-            }
+ dbRef.child(id).update(dataBaru).then(()=>{
+  try{
+    activeDeviceRef.once('value').then(snap=>{
+      const all=snap.val();
+      if(all){
+        for(let dev in all){
+          if(all[dev] && all[dev][id]){
+            activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual}).catch(()=>{});
           }
         }
-      }).catch(()=>{});
-    }catch(err){}
-    tutupModalEdit();
+      }
+    }).catch(()=>{});
+  }catch(err){}
+  // === FIX BIAR TIDAK PERLU REFRESH - UPDATE LANGSUNG DI MEMORI + GAMBAR ULANG ===
+  try{
+    let idx = produkData.findIndex(p=>p.id===id);
+    if(idx>=0) produkData[idx] = {...produkData[idx], ...dataBaru};
+  }catch(e){}
+  try{ terapkanFilterDanPencarian(); }catch(e){}
+  let waLogin = '';
+  try{ waLogin = localStorage.getItem('wa_toko_login')||''; }catch(e){}
+  tutupModalEdit();
+  // Kalau editnya dari Toko Saya, buka lagi Toko Saya-nya dengan data baru, jangan suruh refresh
+  if(waLogin){
+    try{ tampilkanProdukTokoSaya_ByWA(waLogin); }catch(e){}
+    setTimeout(function(){
+      let mT = document.getElementById('modal-toko-saya');
+      if(mT){ mT.classList.remove('hidden'); mT.classList.add('flex'); mT.style.display='flex'; }
+      alert('Berhasil diperbarui bosku!');
+    }, 200);
+  } else {
     setTimeout(function(){ alert('Berhasil diperbarui bosku!'); }, 200);
-  }).catch(err=>alert('Gagal: '+err.message));
-}
+  }
+}).catch(err=>alert('Gagal: '+err.message));
     function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
     function hapusProdukAdmin(id){ 
   if(!isAdmin){ alert('Harus mode admin!'); return; }
