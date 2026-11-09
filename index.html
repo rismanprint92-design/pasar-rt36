@@ -2224,6 +2224,47 @@ window.tutupModalTokoSaya = function(){
 }
 // Supaya Buka Toko lama tetap jalan ke PIN saja
 window.cariTokoSaya = window.cariTokoSaya_WA_PIN;
+
+// === HAPUS SEMUA PRODUK 1 TOKO (ADMIN) - FUNGSI INI YANG HILANG TADI ===
+window.hapusSemuaProdukToko = async function(waKey){
+  if(!(typeof isAdmin !== 'undefined' && isAdmin)){
+    alert('Hanya admin bosku!');
+    return;
+  }
+  let wa = String(waKey||'').replace(/\D/g,'');
+  if(wa.startsWith('0')) wa = '62' + wa.slice(1);
+  if(!wa) return;
+
+  if(!confirm('Hapus SEMUA produk toko WA '+wa+' ?\nToko-nya TIDAK dihapus, PIN-nya TIDAK dihapus, cuma produknya saja.')){
+    return;
+  }
+
+  try{
+    let snap = await dbRef.orderByChild('wa').equalTo(wa).once('value');
+    let data = snap.val();
+    if(!data){
+      alert('Tidak ada produk untuk WA '+wa);
+      return;
+    }
+    let ids = Object.keys(data);
+    let ok = 0, gagal = 0;
+    for(let id of ids){
+      try{
+        await dbRef.child(id).remove();
+        ok++;
+      }catch(e){
+        console.warn('Gagal hapus produk '+id, e);
+        gagal++;
+      }
+    }
+    // Refresh pasar + daftar toko biar tidak perlu refresh browser
+    try{ terapkanFilterDanPencarian(); }catch(e){}
+    try{ bukaModalDaftarToko(); }catch(e){}
+    alert('Berhasil! '+ok+' produk dihapus.' + (gagal ? '\nGagal: '+gagal+' (cek Rules admins)' : ''));
+  }catch(err){
+    alert('Gagal hapus semua produk: '+err.message);
+  }
+};
 </script>
               
 </body>
