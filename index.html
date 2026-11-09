@@ -1415,20 +1415,18 @@ window.editDariTokoSaya = function(id){
   const lama=produkData.find(p=>p.id===id) || {};
   const isAdminUser = (typeof isAdmin !== 'undefined' && isAdmin);
 
-  // Normalisasi status dari dropdown: "Tidak Tersedia" -> "tidak_tersedia"
   let statusBaru = ((document.querySelector('#modal-edit #edit-status') || document.getElementById('edit-status')).value || lama.status || 'tersedia').toString().trim().toLowerCase().replace(/ /g,'_');
   if(statusBaru === 'tidak_tersedia' || statusBaru === 'tersedia' || statusBaru === 'ditolak'){ /* ok */ }
   else if(statusBaru === 'pending_verifikasi'){ statusBaru = 'pending_verifikasi'; }
   else { statusBaru = lama.status || 'tersedia'; }
 
-  // KUNCI: Penjual tidak boleh ACC sendiri. Kalau produk masih pending, status dikunci pending.
   if(!isAdminUser && lama.status === 'pending_verifikasi'){
     statusBaru = 'pending_verifikasi';
   }
-  // Penjual tidak boleh ubah status jadi ditolak, itu hak Admin.
   if(!isAdminUser && statusBaru === 'ditolak'){
     statusBaru = lama.status || 'tersedia';
   }
+
   const dataBaru = {
     nama:bersihkanTeks(document.getElementById('edit-nama').value),
     harga:parseInt(document.getElementById('edit-harga').value)||0,
@@ -1442,61 +1440,43 @@ window.editDariTokoSaya = function(id){
     timestamp:lama.timestamp||Date.now(),
     ownerId: lama.ownerId || null
   };
- dbRef.child(id).update(dataBaru).then(()=>{
-  try{
-    activeDeviceRef.once('value').then(snap=>{
-      const all=snap.val();
-      if(all){
-        for(let dev in all){
-          if(all[dev] && all[dev][id]){
-            activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual}).catch(()=>{});
-          }
-        }
-      }
-    }).catch(()=>{});
-  }catch(err){}
-  // === FIX BIAR TIDAK PERLU REFRESH - UPDATE LANGSUNG DI MEMORI + GAMBAR ULANG ===
-  try{
-    let idx = produkData.findIndex(p=>p.id===id);
-    if(idx>=0) produkData[idx] = {...produkData[idx], ...dataBaru};
-  }catch(e){}
-  try{ terapkanFilterDanPencarian(); }catch(e){}
-  let waLogin = '';
-  try{ waLogin = localStorage.getItem('wa_toko_login')||''; }catch(e){}
-  tutupModalEdit();
-  // Kalau editnya dari Toko Saya, buka lagi Toko Saya-nya dengan data baru, jangan suruh refresh
-  if(waLogin){
-    try{ tampilkanProdukTokoSaya_ByWA(waLogin); }catch(e){}
-    setTimeout(function(){
-      let mT = document.getElementById('modal-toko-saya');
-      if(mT){ mT.classList.remove('hidden'); mT.classList.add('flex'); mT.style.display='flex'; }
-      alert('Berhasil diperbarui bosku!');
-    }, 200);
-  } else {
-    setTimeout(function(){ alert('Berhasil diperbarui bosku!'); }, 200);
-  }
-}).catch(err=>alert('Gagal: '+err.message));
-    function hapusOlehPenjual(){ const id=document.getElementById('edit-id').value; if(confirm("Hapus dagangan ini?")) dbRef.child(id).remove().then(()=>tutupModalEdit()); }
-    function hapusProdukAdmin(id){ 
-  if(!isAdmin){ alert('Harus mode admin!'); return; }
-  if(confirm("Hapus paksa produk ini?")){
-    // 1. Hapus di produk_pasar
-    dbRef.child(id).remove().then(()=>{
-      // 2. Bersihkan juga di semua device biar tidak jadi "Tanpa Nama"
+
+  dbRef.child(id).update(dataBaru).then(()=>{
+    try{
       activeDeviceRef.once('value').then(snap=>{
-        const all = snap.val();
+        const all=snap.val();
         if(all){
           for(let dev in all){
             if(all[dev] && all[dev][id]){
-              activeDeviceRef.child(dev).child(id).remove();
+              activeDeviceRef.child(dev).child(id).update({wa: dataBaru.wa, ownerName: dataBaru.penjual}).catch(()=>{});
             }
           }
         }
-      });
-      alert('Produk dihapus admin!');
-      terapkanFilterDanPencarian();
-    }).catch(e=>alert('Gagal hapus, cek Rules Firebase: '+e.message));
-  }
+      }).catch(()=>{});
+    }catch(err){}
+
+    try{
+      let idx = produkData.findIndex(p=>p.id===id);
+      if(idx>=0) produkData[idx] = {...produkData[idx], ...dataBaru};
+    }catch(e){}
+    try{ terapkanFilterDanPencarian(); }catch(e){}
+
+    let waLogin = '';
+    try{ waLogin = localStorage.getItem('wa_toko_login')||''; }catch(e){}
+
+    tutupModalEdit();
+
+    if(waLogin){
+      try{ tampilkanProdukTokoSaya_ByWA(waLogin); }catch(e){}
+      setTimeout(function(){
+        let mT = document.getElementById('modal-toko-saya');
+        if(mT){ mT.classList.remove('hidden'); mT.classList.add('flex'); mT.style.display='flex'; }
+        alert('Berhasil diperbarui bosku!');
+      }, 200);
+    } else {
+      setTimeout(function(){ alert('Berhasil diperbarui bosku!'); }, 200);
+    }
+  }).catch(err=>alert('Gagal: '+err.message));
 }
     let currentZoomPhotos=[], currentZoomIndex=0;
     function bukaDetailProduk(id){ 
