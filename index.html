@@ -922,7 +922,7 @@ async function hapusTokoAdmin(waKey){
 
     let gagal = results.filter(r=>r.status==='rejected');
     if(gagal.length > 0){
-      alert('⚠️ Sebagian kehapus, tapi ada ' + gagal.length + ' path yang ditolak Rules (biasanya wa_owner_verified).\n\nToko sudah kehapus dari tempat lain, tapi buka Firebase > Rules, ubah wa_owner_verified jadi ".write": "auth != null" biar besok bisa kehapus total.\n\nCek Console untuk detailnya.');
+      alert('⚠️ Sebagian kehapus, tapi ada ' + gagal.length + ' path yang ditolak Rules.\n\nCek Console untuk detailnya, biasanya karena Rules belum di-Publish ulang.');
     } else {
       alert('✅ HAPUS TOTAL Berhasil! Toko WA '+waKey+' + '+hapusProduk.length+' produk sudah hilang semua dari Data.');
     }
