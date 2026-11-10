@@ -510,6 +510,8 @@ auth.onAuthStateChanged(function(user){
       // Kalau currentUser sama, boleh lihat
       if(currentUser && p.ownerId===currentUser.uid) return true;
       // Selain itu, JANGAN TAMPIL di pasar umum!
+      // DI DALAM if(user){ ... } SETELAH currentUser = user;
+      try{ localStorage.setItem('my_device_id_pasar', user.uid); }catch(e){}
       return false;
     }
     return true;
@@ -1138,6 +1140,12 @@ async function cariTokoSaya_WA_PIN(){
     if(statusEl) statusEl.textContent = '✅ PIN benar! WA: '+waNorm;
     tampilkanProdukTokoSaya_ByWA(waNorm);
   }catch(e){
+    // TAMBAHAN PILIHAN 1 - KALAU BELUM VERIFIKASI, SURUH DAFTAR ULANG LEWAT OTP
+    if(e.message && e.message.includes('PERMISSION_DENIED') || e.code === 'PERMISSION_DENIED'){
+      alert('HP ini belum terverifikasi bosku! Klik Jual > Daftar Toko lagi pakai WA + PIN yang sama + OTP, baru bisa masuk lagi.');
+      if(statusEl) statusEl.textContent = 'HP baru / cache kehapus, Daftar Toko ulang + OTP ya bosku!';
+      return;
+    }
     alert('Error: '+e.message);
     if(statusEl) statusEl.textContent = 'Error: '+e.message;
   }
@@ -1375,11 +1383,15 @@ function mintaKodeBaruReverse(){
   if(!dataProdukPendingOTP) return;
   let otpBaru=Math.floor(100000+Math.random()*900000);
   dataProdukPendingOTP.otp=otpBaru;
-  otpPendingDBRef.child(dataProdukPendingOTP.wa).update({otp:otpBaru,timestamp:Date.now(),expired:Date.now()+24*60*60*1000,dipakai:false});
+  otpPendingDBRef.child(dataProdukPendingOTP.wa).update({otp:otpBaru,timestamp:Date.now(),expired:Date.now()+24*60*60*1000,dipakai:false,ownerUid: currentUser ? currentUser.uid : null});
   document.getElementById('kode-otp-reverse').textContent=otpBaru;
   alert('✅ Kode baru: '+otpBaru+' berlaku 24 jam lagi bosku!');
 }
-    function bukaVerifikasiPenjual(id){ if(isAdmin){ muatDataKeFormEdit(id); return; } document.getElementById('edit-product-id').value=id; document.getElementById('modal-login-penjual').classList.remove('hidden'); }
+    function bukaVerifikasiPenjual(id){ 
+  if(isAdmin){ muatDataKeFormEdit(id); return; } 
+  alert('Edit lewat Toko Saya ya bosku! Klik Jual > Toko Saya > Masukkan WA + PIN, baru Edit dari sana.');
+  bukaModalTokoSaya();
+}
     function tutupModalLoginPenjual(){ document.getElementById('modal-login-penjual').classList.add('hidden'); }
     function prosesVerifikasiPenjual(){ const id=document.getElementById('edit-product-id').value; const pin=document.getElementById('input-pin-konfirmasi').value; const prod=produkData.find(p=>p.id===id); if(!prod||!prod.pinPenjual){ alert('Produk ini tidak punya PIN penjual, hubungi Admin RT!'); return; } if(pin===prod.pinPenjual){ tutupModalLoginPenjual(); muatDataKeFormEdit(id); } else alert('PIN Penjual salah!'); }
    function muatDataKeFormEdit(id){
